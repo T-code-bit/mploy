@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { UserPlus, Search, FileText, Trophy } from "lucide-react";
+import cvPreview from "@/assets/cv-builder-preview.jpg";
 
 const steps = [
   {
@@ -52,27 +53,51 @@ const HowItWorksSection = () => (
         </p>
       </motion.div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-        {steps.map((s, i) => (
-          <motion.div
-            key={s.step}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.12, duration: 0.5 }}
-            className="relative text-center"
-          >
-            {i < steps.length - 1 && (
-              <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-primary-foreground/20 to-transparent" />
-            )}
-            <div className="inline-flex p-4 rounded-2xl glass-dark mb-5">
-              <s.icon className="h-7 w-7 text-secondary" />
-            </div>
-            <div className="text-xs font-bold text-secondary mb-2">{s.step}</div>
-            <h3 className="font-display text-lg font-semibold text-primary-foreground mb-2">{s.title}</h3>
-            <p className="text-sm text-primary-foreground/50 leading-relaxed">{s.description}</p>
-          </motion.div>
-        ))}
+      <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
+        {/* Steps */}
+        <div className="space-y-6">
+          {steps.map((s, i) => (
+            <motion.div
+              key={s.step}
+              initial={{ opacity: 0, x: -24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.12, duration: 0.5 }}
+              className="flex gap-5 group"
+            >
+              <div className="flex flex-col items-center">
+                <div className="p-3 rounded-2xl glass-dark group-hover:scale-110 transition-transform duration-300">
+                  <s.icon className="h-6 w-6 text-secondary" />
+                </div>
+                {i < steps.length - 1 && (
+                  <div className="w-px h-full bg-gradient-to-b from-primary-foreground/20 to-transparent mt-2" />
+                )}
+              </div>
+              <div className="pb-6">
+                <div className="text-xs font-bold text-secondary mb-1">{s.step}</div>
+                <h3 className="font-display text-lg font-semibold text-primary-foreground mb-1.5">{s.title}</h3>
+                <p className="text-sm text-primary-foreground/50 leading-relaxed">{s.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Image */}
+        <motion.div
+          initial={{ opacity: 0, x: 24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          className="hidden lg:block"
+        >
+          <div className="rounded-3xl overflow-hidden shadow-xl border border-primary-foreground/10">
+            <img
+              src={cvPreview}
+              alt="Person using M-Ploy CV Builder on laptop"
+              className="w-full h-[420px] object-cover"
+              loading="lazy"
+            />
+          </div>
+        </motion.div>
       </div>
     </div>
   </section>

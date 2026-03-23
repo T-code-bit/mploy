@@ -2,12 +2,18 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import ctaBg from "@/assets/cta-background.jpg";
 
 const CTASection = () => (
-  <section className="py-28 bg-hero relative overflow-hidden">
+  <section className="py-28 relative overflow-hidden">
+    {/* Background image with overlay */}
+    <div className="absolute inset-0">
+      <img src={ctaBg} alt="" className="w-full h-full object-cover" loading="lazy" />
+      <div className="absolute inset-0 bg-foreground/75 backdrop-blur-sm" />
+    </div>
+
     <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/8 blur-[120px]" />
-    <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-secondary/6 blur-[140px]" />
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/12 blur-[120px]" />
 
     <motion.div
       initial={{ opacity: 0, y: 24 }}

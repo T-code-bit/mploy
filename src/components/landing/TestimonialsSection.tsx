@@ -1,5 +1,9 @@
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
+import testimonial1 from "@/assets/testimonial-1.jpg";
+import testimonial2 from "@/assets/testimonial-2.jpg";
+import testimonial3 from "@/assets/testimonial-3.jpg";
+import testimonial4 from "@/assets/testimonial-4.jpg";
 
 const testimonials = [
   {
@@ -8,7 +12,7 @@ const testimonials = [
     location: "Lagos, Nigeria",
     text: "M-Ploy helped me land a remote role in just 3 weeks. The ATS-optimized CV made all the difference — I went from zero callbacks to 5 interviews.",
     rating: 5,
-    initials: "AO",
+    photo: testimonial1,
   },
   {
     name: "Sarah Mitchell",
@@ -16,7 +20,7 @@ const testimonials = [
     location: "London, UK",
     text: "The Academy courses on communication and digital literacy gave me the edge I needed. I earned my TrustBadge and got hired within a month.",
     rating: 5,
-    initials: "SM",
+    photo: testimonial2,
   },
   {
     name: "Carlos Mendez",
@@ -24,7 +28,7 @@ const testimonials = [
     location: "São Paulo, Brazil",
     text: "As an employer, the portal is incredibly intuitive. We posted 10 jobs and received quality applicants fast. The verification system builds real trust.",
     rating: 5,
-    initials: "CM",
+    photo: testimonial3,
   },
   {
     name: "Priya Sharma",
@@ -32,7 +36,7 @@ const testimonials = [
     location: "Bangalore, India",
     text: "The dynamic CV templates are beautifully designed and actually pass ATS systems. I could see my match score improve in real-time as I edited.",
     rating: 5,
-    initials: "PS",
+    photo: testimonial4,
   },
 ];
 
@@ -76,9 +80,12 @@ const TestimonialsSection = () => (
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6">"{t.text}"</p>
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-                <span className="text-xs font-bold text-primary-foreground">{t.initials}</span>
-              </div>
+              <img
+                src={t.photo}
+                alt={t.name}
+                className="h-11 w-11 rounded-xl object-cover"
+                loading="lazy"
+              />
               <div>
                 <p className="text-sm font-semibold text-card-foreground">{t.name}</p>
                 <p className="text-xs text-muted-foreground">{t.role} · {t.location}</p>

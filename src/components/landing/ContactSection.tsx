@@ -3,8 +3,9 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mail, MapPin, Phone, Send, MessageSquare } from "lucide-react";
+import { Mail, MapPin, Phone, Send, MessageSquare, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const contactInfo = [
   { icon: Mail, label: "Email", value: "hello@m-ploy.com", href: "mailto:hello@m-ploy.com" },
@@ -16,18 +17,26 @@ const ContactSection = () => {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) {
       toast.error("Please fill in all required fields");
       return;
     }
     setSending(true);
-    setTimeout(() => {
+    const { error } = await supabase.from("contact_messages").insert({
+      name: formData.name,
+      email: formData.email,
+      subject: formData.subject || null,
+      message: formData.message,
+    });
+    if (error) {
+      toast.error("Failed to send message. Please try again.");
+    } else {
       toast.success("Message sent! We'll get back to you within 24 hours.");
       setFormData({ name: "", email: "", subject: "", message: "" });
-      setSending(false);
-    }, 1000);
+    }
+    setSending(false);
   };
 
   return (
@@ -52,7 +61,6 @@ const ContactSection = () => {
         </motion.div>
 
         <div className="grid lg:grid-cols-5 gap-8 max-w-5xl mx-auto">
-          {/* Contact info */}
           <motion.div
             initial={{ opacity: 0, x: -24 }}
             whileInView={{ opacity: 1, x: 0 }}
@@ -74,7 +82,6 @@ const ContactSection = () => {
                 </div>
               </a>
             ))}
-
             <div className="p-5 bg-card rounded-2xl border border-border shadow-card">
               <p className="text-sm font-semibold text-card-foreground mb-1">Business Hours</p>
               <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 6:00 PM (SAST)</p>
@@ -82,7 +89,6 @@ const ContactSection = () => {
             </div>
           </motion.div>
 
-          {/* Contact form */}
           <motion.form
             onSubmit={handleSubmit}
             initial={{ opacity: 0, x: 24 }}
@@ -93,50 +99,23 @@ const ContactSection = () => {
             <div className="grid sm:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="text-sm font-medium text-card-foreground mb-1.5 block">Name *</label>
-                <Input
-                  placeholder="Your full name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="rounded-xl h-11 border-border"
-                />
+                <Input placeholder="Your full name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="rounded-xl h-11 border-border" />
               </div>
               <div>
                 <label className="text-sm font-medium text-card-foreground mb-1.5 block">Email *</label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="rounded-xl h-11 border-border"
-                />
+                <Input type="email" placeholder="you@example.com" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="rounded-xl h-11 border-border" />
               </div>
             </div>
             <div className="mb-4">
               <label className="text-sm font-medium text-card-foreground mb-1.5 block">Subject</label>
-              <Input
-                placeholder="What's this about?"
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="rounded-xl h-11 border-border"
-              />
+              <Input placeholder="What's this about?" value={formData.subject} onChange={(e) => setFormData({ ...formData, subject: e.target.value })} className="rounded-xl h-11 border-border" />
             </div>
             <div className="mb-6">
               <label className="text-sm font-medium text-card-foreground mb-1.5 block">Message *</label>
-              <Textarea
-                placeholder="Tell us more..."
-                rows={5}
-                value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="rounded-xl border-border resize-none"
-              />
+              <Textarea placeholder="Tell us more..." rows={5} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="rounded-xl border-border resize-none" />
             </div>
-            <Button
-              type="submit"
-              disabled={sending}
-              className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-12 font-semibold text-base shadow-glow hover:shadow-glow"
-            >
-              {sending ? "Sending..." : "Send Message"}
-              <Send className="ml-2 h-4 w-4" />
+            <Button type="submit" disabled={sending} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-12 font-semibold text-base shadow-glow hover:shadow-glow">
+              {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <>Send Message <Send className="ml-2 h-4 w-4" /></>}
             </Button>
           </motion.form>
         </div>

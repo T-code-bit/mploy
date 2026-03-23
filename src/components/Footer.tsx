@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { ShieldCheck, ArrowUpRight } from "lucide-react";
+import { ShieldCheck, ArrowUpRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const socialLinks = [
   {
@@ -44,11 +45,26 @@ const socialLinks = [
 
 const Footer = () => {
   const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
 
-  const handleSubscribe = () => {
-    if (!email) { toast.error("Please enter your email"); return; }
-    toast.success("Subscribed! You'll receive career tips and updates.");
+  const handleSubscribe = async () => {
+    if (!email || !email.includes("@")) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+    setSubscribing(true);
+    const { error } = await supabase.from("newsletter_subscribers").insert({ email });
+    if (error) {
+      if (error.code === "23505") {
+        toast.info("You're already subscribed!");
+      } else {
+        toast.error("Failed to subscribe. Please try again.");
+      }
+    } else {
+      toast.success("Subscribed! You'll receive career tips and updates.");
+    }
     setEmail("");
+    setSubscribing(false);
   };
 
   return (
@@ -67,14 +83,7 @@ const Footer = () => {
             </p>
             <div className="flex gap-2">
               {socialLinks.map((s) => (
-                <a
-                  key={s.label}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-110"
-                >
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label} className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all duration-200 hover:scale-110">
                   {s.icon}
                 </a>
               ))}
@@ -129,7 +138,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Newsletter */}
         <div className="mt-12 pt-8 border-t border-border">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
             <div>
@@ -139,18 +147,19 @@ const Footer = () => {
             <div className="flex gap-2 w-full sm:w-auto">
               <input
                 placeholder="Enter your email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubscribe()}
                 className="flex-1 sm:w-64 h-11 rounded-xl border border-input bg-background px-4 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
-              <Button onClick={handleSubscribe} className="bg-gradient-primary text-primary-foreground rounded-xl h-11 px-5 font-semibold">
-                Subscribe
+              <Button onClick={handleSubscribe} disabled={subscribing} className="bg-gradient-primary text-primary-foreground rounded-xl h-11 px-5 font-semibold">
+                {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : "Subscribe"}
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">© 2026 M-Ploy. All rights reserved.</p>
           <div className="flex gap-6">

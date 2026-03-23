@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { ShieldCheck, FileCheck, GraduationCap, ArrowRight, Sparkles } from "lucide-react";
+import { ShieldCheck, FileCheck, GraduationCap, ArrowRight, Sparkles, Globe, Users, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const HeroSection = () => (
   <section className="relative bg-hero min-h-screen flex items-center overflow-hidden">
-    {/* Mesh gradient orbs */}
-    <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-primary/8 blur-[120px]" />
+    {/* Animated gradient orbs */}
+    <div className="absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-primary/8 blur-[120px] animate-pulse" />
     <div className="absolute bottom-1/4 right-0 w-[600px] h-[600px] rounded-full bg-secondary/6 blur-[140px]" />
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full bg-primary/4 blur-[160px] rotate-45" />
 
@@ -27,9 +27,7 @@ const HeroSection = () => (
             className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full glass-dark mb-8"
           >
             <Sparkles className="h-4 w-4 text-secondary" />
-            <span className="text-sm font-medium text-primary-foreground/80">
-              AI-powered career platform
-            </span>
+            <span className="text-sm font-medium text-primary-foreground/80">AI-powered career platform</span>
             <span className="h-1.5 w-1.5 rounded-full bg-secondary animate-pulse" />
           </motion.div>
 
@@ -42,29 +40,48 @@ const HeroSection = () => (
 
           <p className="text-lg text-primary-foreground/60 max-w-xl mb-10 leading-relaxed">
             Verified job listings. ATS-optimized CVs. Employability training.
-            M-Ploy is the trusted bridge between you and your next career move.
+            M-Ploy is the trusted bridge between you and your next career move — globally.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 mb-12">
             <Link to="/jobs">
-              <Button size="lg" className="bg-gradient-accent text-secondary-foreground font-semibold px-8 rounded-xl shadow-glow-accent hover:shadow-glow-accent transition-shadow h-12">
+              <Button size="lg" className="bg-gradient-accent text-secondary-foreground font-semibold px-8 rounded-xl shadow-glow-accent hover:shadow-glow-accent transition-shadow h-13 text-base">
                 Find Verified Jobs
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link to="/cv-builder">
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/8 rounded-xl h-12"
-              >
+              <Button size="lg" variant="outline" className="border-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/8 rounded-xl h-13 text-base">
                 Build Your CV
               </Button>
             </Link>
           </div>
+
+          {/* Trust bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="flex items-center gap-6 text-primary-foreground/40"
+          >
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4" />
+              <span className="text-xs font-medium">Global Reach</span>
+            </div>
+            <div className="h-4 w-px bg-primary-foreground/15" />
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4" />
+              <span className="text-xs font-medium">10K+ Users</span>
+            </div>
+            <div className="h-4 w-px bg-primary-foreground/15" />
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4" />
+              <span className="text-xs font-medium">95% ATS Rate</span>
+            </div>
+          </motion.div>
         </motion.div>
 
-        {/* Right side — stats bento */}
+        {/* Stats bento grid */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}

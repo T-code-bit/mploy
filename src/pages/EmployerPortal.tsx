@@ -10,14 +10,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Briefcase, Users, Eye, Trash2 } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, Trash2, Building2 } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { motion } from "framer-motion";
 
 const EmployerPortal = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [jobForm, setJobForm] = useState({
@@ -93,46 +94,54 @@ const EmployerPortal = () => {
   });
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background bg-mesh">
       <Navbar />
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-10 gap-4"
+          >
             <div>
-              <h1 className="font-display text-3xl font-bold text-foreground mb-1">Employer Portal</h1>
-              <p className="text-muted-foreground">Manage your job listings and review candidates.</p>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary/10 mb-4">
+                <Building2 className="h-3.5 w-3.5 text-secondary" />
+                <span className="text-xs font-semibold text-secondary uppercase tracking-wider">Employer</span>
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-1">Employer Portal</h1>
+              <p className="text-muted-foreground text-lg">Manage your listings and review candidates.</p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-primary text-primary-foreground gap-2">
+                <Button className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
                   <Plus className="h-4 w-4" /> Post a Job
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg">
+              <DialogContent className="max-w-lg rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle>Post a New Job</DialogTitle>
+                  <DialogTitle className="font-display">Post a New Job</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">
                     <Label>Job Title</Label>
-                    <Input value={jobForm.title} onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })} placeholder="e.g. Frontend Developer" />
+                    <Input value={jobForm.title} onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })} placeholder="e.g. Frontend Developer" className="rounded-xl h-11" />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label>Company</Label>
-                      <Input value={jobForm.company} onChange={(e) => setJobForm({ ...jobForm, company: e.target.value })} />
+                      <Input value={jobForm.company} onChange={(e) => setJobForm({ ...jobForm, company: e.target.value })} className="rounded-xl h-11" />
                     </div>
                     <div className="space-y-2">
                       <Label>Location</Label>
-                      <Input value={jobForm.location} onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })} />
+                      <Input value={jobForm.location} onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })} className="rounded-xl h-11" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label>Type</Label>
                       <Select value={jobForm.type} onValueChange={(v) => setJobForm({ ...jobForm, type: v })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
+                        <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
+                        <SelectContent className="rounded-xl">
                           <SelectItem value="Full-time">Full-time</SelectItem>
                           <SelectItem value="Part-time">Part-time</SelectItem>
                           <SelectItem value="Contract">Contract</SelectItem>
@@ -142,56 +151,64 @@ const EmployerPortal = () => {
                     </div>
                     <div className="space-y-2">
                       <Label>Salary Range</Label>
-                      <Input value={jobForm.salary_range} onChange={(e) => setJobForm({ ...jobForm, salary_range: e.target.value })} placeholder="e.g. R15k - R25k" />
+                      <Input value={jobForm.salary_range} onChange={(e) => setJobForm({ ...jobForm, salary_range: e.target.value })} placeholder="e.g. $3k - $5k" className="rounded-xl h-11" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea value={jobForm.description} onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })} rows={4} />
+                    <Textarea value={jobForm.description} onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })} rows={4} className="rounded-xl" />
                   </div>
-                  <Button onClick={() => createJob.mutate()} disabled={!jobForm.title || !jobForm.company} className="w-full bg-gradient-primary text-primary-foreground">
+                  <Button onClick={() => createJob.mutate()} disabled={!jobForm.title || !jobForm.company} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold">
                     Publish Job
                   </Button>
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
+          </motion.div>
 
           {/* Stats */}
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+          <div className="grid sm:grid-cols-3 gap-4 mb-10">
             {[
-              { icon: Briefcase, label: "Active Jobs", value: myJobs.filter((j: any) => j.is_active).length },
-              { icon: Users, label: "Applications", value: applications.length },
-              { icon: Eye, label: "Total Views", value: "—" },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-card rounded-xl border border-border p-5 shadow-card">
-                <div className="flex items-center gap-3">
-                  <div className="bg-accent rounded-lg p-2.5">
-                    <stat.icon className="h-5 w-5 text-primary" />
+              { icon: Briefcase, label: "Active Jobs", value: myJobs.filter((j: any) => j.is_active).length, bg: "bg-primary/10", color: "text-primary" },
+              { icon: Users, label: "Applications", value: applications.length, bg: "bg-secondary/10", color: "text-secondary" },
+              { icon: Eye, label: "Total Views", value: "—", bg: "bg-muted", color: "text-muted-foreground" },
+            ].map((stat, i) => (
+              <motion.div
+                key={stat.label}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-card rounded-2xl border border-border p-6 shadow-card hover:shadow-lg transition-all hover:-translate-y-0.5"
+              >
+                <div className="flex items-center gap-4">
+                  <div className={`p-3 rounded-xl ${stat.bg}`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
                   </div>
                   <div>
-                    <p className="text-2xl font-bold text-card-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="font-display text-3xl font-bold text-card-foreground tracking-tight">{stat.value}</p>
+                    <p className="text-sm text-muted-foreground">{stat.label}</p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
           <Tabs defaultValue="jobs" className="space-y-6">
-            <TabsList>
-              <TabsTrigger value="jobs">My Jobs</TabsTrigger>
-              <TabsTrigger value="applications">Applications</TabsTrigger>
+            <TabsList className="bg-muted/60 rounded-xl p-1 h-auto">
+              <TabsTrigger value="jobs" className="rounded-lg data-[state=active]:shadow-sm">My Jobs</TabsTrigger>
+              <TabsTrigger value="applications" className="rounded-lg data-[state=active]:shadow-sm">Applications</TabsTrigger>
             </TabsList>
 
             <TabsContent value="jobs">
               {myJobs.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground">
-                  <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>No jobs posted yet. Click "Post a Job" to get started.</p>
+                <div className="text-center py-20">
+                  <div className="inline-flex p-5 rounded-2xl bg-muted mb-5">
+                    <Briefcase className="h-10 w-10 text-muted-foreground/40" />
+                  </div>
+                  <p className="text-muted-foreground text-lg">No jobs posted yet. Click "Post a Job" to get started.</p>
                 </div>
               ) : (
-                <div className="bg-card rounded-xl border border-border overflow-hidden">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-card">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -205,16 +222,16 @@ const EmployerPortal = () => {
                     <TableBody>
                       {myJobs.map((job: any) => (
                         <TableRow key={job.id}>
-                          <TableCell className="font-medium">{job.title}</TableCell>
-                          <TableCell>{job.location}</TableCell>
-                          <TableCell><Badge variant="secondary">{job.type}</Badge></TableCell>
+                          <TableCell className="font-semibold">{job.title}</TableCell>
+                          <TableCell className="text-muted-foreground">{job.location}</TableCell>
+                          <TableCell><Badge variant="secondary" className="rounded-lg">{job.type}</Badge></TableCell>
                           <TableCell>
-                            <Badge variant={job.is_active ? "default" : "outline"}>
+                            <Badge variant={job.is_active ? "default" : "outline"} className="rounded-lg">
                               {job.is_active ? "Active" : "Closed"}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => deleteJob.mutate(job.id)}>
+                            <Button variant="ghost" size="sm" onClick={() => deleteJob.mutate(job.id)} className="rounded-lg">
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
                           </TableCell>
@@ -228,12 +245,14 @@ const EmployerPortal = () => {
 
             <TabsContent value="applications">
               {applications.length === 0 ? (
-                <div className="text-center py-16 text-muted-foreground">
-                  <Users className="h-12 w-12 mx-auto mb-4 opacity-30" />
-                  <p>No applications received yet.</p>
+                <div className="text-center py-20">
+                  <div className="inline-flex p-5 rounded-2xl bg-muted mb-5">
+                    <Users className="h-10 w-10 text-muted-foreground/40" />
+                  </div>
+                  <p className="text-muted-foreground text-lg">No applications received yet.</p>
                 </div>
               ) : (
-                <div className="bg-card rounded-xl border border-border overflow-hidden">
+                <div className="bg-card rounded-2xl border border-border overflow-hidden shadow-card">
                   <Table>
                     <TableHeader>
                       <TableRow>
@@ -246,21 +265,24 @@ const EmployerPortal = () => {
                     <TableBody>
                       {applications.map((app: any) => (
                         <TableRow key={app.id}>
-                          <TableCell className="font-medium">{app.jobs?.title}</TableCell>
+                          <TableCell className="font-semibold">{app.jobs?.title}</TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {new Date(app.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={app.status === "accepted" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}>
+                            <Badge
+                              variant={app.status === "accepted" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}
+                              className="rounded-lg"
+                            >
                               {app.status}
                             </Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1">
-                              <Button size="sm" variant="ghost" className="text-xs text-success" onClick={() => updateApplicationStatus.mutate({ id: app.id, status: "accepted" })}>
+                              <Button size="sm" variant="ghost" className="text-xs text-success rounded-lg" onClick={() => updateApplicationStatus.mutate({ id: app.id, status: "accepted" })}>
                                 Accept
                               </Button>
-                              <Button size="sm" variant="ghost" className="text-xs text-destructive" onClick={() => updateApplicationStatus.mutate({ id: app.id, status: "rejected" })}>
+                              <Button size="sm" variant="ghost" className="text-xs text-destructive rounded-lg" onClick={() => updateApplicationStatus.mutate({ id: app.id, status: "rejected" })}>
                                 Reject
                               </Button>
                             </div>

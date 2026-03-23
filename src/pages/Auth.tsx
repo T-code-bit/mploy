@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, Briefcase, GraduationCap } from "lucide-react";
+import { ShieldCheck, Briefcase, GraduationCap, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -60,112 +61,130 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-hero items-center justify-center p-12">
-        <div className="max-w-md text-center">
-          <Link to="/" className="inline-flex items-center gap-3 mb-8">
-            <div className="bg-gradient-primary rounded-xl p-2.5">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-hero items-center justify-center p-12 relative overflow-hidden">
+        <div className="absolute top-1/4 -left-20 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[120px]" />
+        <div className="absolute bottom-1/4 right-0 w-[300px] h-[300px] rounded-full bg-secondary/6 blur-[100px]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #fff 1px, transparent 1px)', backgroundSize: '32px 32px' }} />
+
+        <div className="max-w-md text-center relative z-10">
+          <Link to="/" className="inline-flex items-center gap-3 mb-10">
+            <div className="bg-gradient-primary rounded-xl p-2.5 shadow-glow">
               <ShieldCheck className="h-8 w-8 text-primary-foreground" />
             </div>
-            <span className="font-display text-3xl font-bold text-white">M-Ploy</span>
+            <span className="font-display text-3xl font-bold text-primary-foreground tracking-tight">M-Ploy</span>
           </Link>
-          <h2 className="font-display text-2xl font-bold text-white mb-4">
+          <h2 className="font-display text-3xl font-bold text-primary-foreground mb-4 tracking-tight">
             Your Career Journey Starts Here
           </h2>
-          <p className="text-white/70 text-sm leading-relaxed">
+          <p className="text-primary-foreground/50 leading-relaxed">
             Access verified jobs, build ATS-optimized CVs, and earn industry-recognized badges — all in one platform.
           </p>
+
+          <div className="grid grid-cols-3 gap-4 mt-12">
+            {[
+              { value: "100%", label: "Verified" },
+              { value: "95%", label: "ATS Pass" },
+              { value: "50+", label: "Courses" },
+            ].map((s) => (
+              <div key={s.label} className="glass-dark rounded-xl p-4">
+                <p className="font-display text-2xl font-bold text-primary-foreground">{s.value}</p>
+                <p className="text-xs text-primary-foreground/50">{s.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Right panel - auth forms */}
-      <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
-            <div className="bg-gradient-primary rounded-lg p-1.5">
+      {/* Right panel */}
+      <div className="flex-1 flex items-center justify-center p-6 bg-mesh">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <div className="lg:hidden flex items-center gap-2.5 mb-8 justify-center">
+            <div className="bg-gradient-primary rounded-xl p-1.5">
               <ShieldCheck className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-xl font-bold text-foreground">M-Ploy</span>
+            <span className="font-display text-xl font-bold text-foreground tracking-tight">M-Ploy</span>
           </div>
 
-          <Tabs defaultValue="login" className="space-y-6">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="login">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+          <div className="bg-card rounded-2xl border border-border p-8 shadow-md">
+            <Tabs defaultValue="login" className="space-y-6">
+              <TabsList className="grid grid-cols-2 w-full rounded-xl h-11">
+                <TabsTrigger value="login" className="rounded-lg">Sign In</TabsTrigger>
+                <TabsTrigger value="signup" className="rounded-lg">Sign Up</TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
-                  <Input id="login-email" type="email" placeholder="you@example.com" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
-                  <Input id="login-password" type="password" placeholder="••••••••" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
-                </div>
-                <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground" disabled={loading}>
-                  {loading ? "Signing in..." : "Sign In"}
-                </Button>
-              </form>
-            </TabsContent>
-
-            <TabsContent value="signup">
-              <form onSubmit={handleSignup} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
-                  <Input id="signup-name" placeholder="John Doe" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input id="signup-email" type="email" placeholder="you@example.com" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input id="signup-password" type="password" placeholder="••••••••" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>I am a...</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setSignupRole("job_seeker")}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                        signupRole === "job_seeker"
-                          ? "border-primary bg-accent"
-                          : "border-border hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      <GraduationCap className={`h-6 w-6 ${signupRole === "job_seeker" ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-sm font-medium ${signupRole === "job_seeker" ? "text-primary" : "text-muted-foreground"}`}>
-                        Job Seeker
-                      </span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setSignupRole("employer")}
-                      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                        signupRole === "employer"
-                          ? "border-primary bg-accent"
-                          : "border-border hover:border-muted-foreground/30"
-                      }`}
-                    >
-                      <Briefcase className={`h-6 w-6 ${signupRole === "employer" ? "text-primary" : "text-muted-foreground"}`} />
-                      <span className={`text-sm font-medium ${signupRole === "employer" ? "text-primary" : "text-muted-foreground"}`}>
-                        Employer
-                      </span>
-                    </button>
+              <TabsContent value="login">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="login-email">Email</Label>
+                    <Input id="login-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
                   </div>
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="login-password">Password</Label>
+                    <Input id="login-password" type="password" placeholder="••••••••" className="rounded-xl h-11" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+                  </div>
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
+                    {loading ? "Signing in..." : "Sign In"}
+                    {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                  </Button>
+                </form>
+              </TabsContent>
 
-                <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground" disabled={loading}>
-                  {loading ? "Creating account..." : "Create Account"}
-                </Button>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </div>
+              <TabsContent value="signup">
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-name">Full Name</Label>
+                    <Input id="signup-name" placeholder="John Doe" className="rounded-xl h-11" value={signupName} onChange={(e) => setSignupName(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-email">Email</Label>
+                    <Input id="signup-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="signup-password">Password</Label>
+                    <Input id="signup-password" type="password" placeholder="••••••••" className="rounded-xl h-11" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} required />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>I am a...</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { role: "job_seeker" as const, icon: GraduationCap, label: "Job Seeker" },
+                        { role: "employer" as const, icon: Briefcase, label: "Employer" },
+                      ].map((option) => (
+                        <button
+                          key={option.role}
+                          type="button"
+                          onClick={() => setSignupRole(option.role)}
+                          className={`flex flex-col items-center gap-2.5 p-5 rounded-xl border-2 transition-all duration-200 ${
+                            signupRole === option.role
+                              ? "border-primary bg-accent shadow-glow"
+                              : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
+                          }`}
+                        >
+                          <option.icon className={`h-6 w-6 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
+                          <span className={`text-sm font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
+                    {loading ? "Creating account..." : "Create Account"}
+                    {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                  </Button>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

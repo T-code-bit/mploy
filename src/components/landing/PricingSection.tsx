@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Check, Zap } from "lucide-react";
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 
 const plans = [
   {
@@ -10,6 +11,7 @@ const plans = [
     description: "Get started with basic access",
     features: ["Basic job search", "1 CV template", "3 academy lessons", "Job alerts"],
     cta: "Get Started",
+    ctaLink: "/auth",
     highlighted: false,
   },
   {
@@ -26,6 +28,7 @@ const plans = [
       "Priority support",
     ],
     cta: "Go Premium",
+    ctaLink: "/auth",
     highlighted: true,
   },
   {
@@ -41,12 +44,13 @@ const plans = [
       "Analytics & reports",
     ],
     cta: "Start Hiring",
+    ctaLink: "/auth",
     highlighted: false,
   },
 ];
 
 const PricingSection = () => (
-  <section className="py-28 bg-muted/40 bg-mesh relative">
+  <section id="pricing" className="py-28 bg-muted/40 bg-mesh relative">
     <div className="container mx-auto px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -105,15 +109,17 @@ const PricingSection = () => (
                 </li>
               ))}
             </ul>
-            <Button
-              className={`w-full rounded-xl h-11 font-semibold ${
-                plan.highlighted
-                  ? "bg-gradient-accent text-secondary-foreground shadow-glow-accent hover:shadow-glow-accent"
-                  : "bg-gradient-primary text-primary-foreground"
-              }`}
-            >
-              {plan.cta}
-            </Button>
+            <Link to={plan.ctaLink}>
+              <Button
+                className={`w-full rounded-xl h-11 font-semibold ${
+                  plan.highlighted
+                    ? "bg-gradient-accent text-secondary-foreground shadow-glow-accent hover:shadow-glow-accent"
+                    : "bg-gradient-primary text-primary-foreground"
+                }`}
+              >
+                {plan.cta}
+              </Button>
+            </Link>
           </motion.div>
         ))}
       </div>

@@ -1,44 +1,54 @@
 import { motion } from "framer-motion";
-import { ShieldCheck, FileSearch, Layout, GraduationCap, ArrowRight } from "lucide-react";
+import { ShieldCheck, FileSearch, Layout, GraduationCap, ArrowRight, Briefcase, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const features = [
   {
     icon: ShieldCheck,
     title: "Verified Vault",
-    description: "Curated, authenticated job openings. Zero ghost postings, zero data-scraping scams.",
+    description: "Curated, authenticated job openings from vetted employers worldwide. Zero ghost postings, zero scams.",
     href: "/jobs",
-    gradient: "from-primary/10 to-primary/5",
     iconBg: "bg-primary/10 text-primary",
   },
   {
     icon: FileSearch,
     title: "ATS Architect",
-    description: "Real-time CV analysis against job descriptions with predictive match scoring.",
+    description: "Real-time CV analysis against job descriptions with predictive match scoring powered by AI.",
     href: "/cv-builder",
-    gradient: "from-secondary/10 to-secondary/5",
     iconBg: "bg-secondary/10 text-secondary",
   },
   {
     icon: Layout,
     title: "Dynamic Templates",
-    description: "Industry-specific CV designs optimized for AI parsers like Workday and Taleo.",
+    description: "Industry-specific CV designs optimized for AI parsers like Workday, Taleo, and Greenhouse.",
     href: "/cv-builder",
-    gradient: "from-success/10 to-success/5",
     iconBg: "bg-success/10 text-success",
   },
   {
     icon: GraduationCap,
     title: "Ready-to-Work Academy",
-    description: "Self-paced modules on communication, digital literacy, and EQ with TrustBadges.",
+    description: "Self-paced modules on communication, digital literacy, and EQ with verifiable TrustBadges.",
     href: "/academy",
-    gradient: "from-destructive/10 to-destructive/5",
     iconBg: "bg-destructive/8 text-destructive",
+  },
+  {
+    icon: Briefcase,
+    title: "Employer Portal",
+    description: "Post jobs, manage applications, and find top talent with an intuitive recruitment dashboard.",
+    href: "/employer",
+    iconBg: "bg-warning/10 text-warning",
+  },
+  {
+    icon: BarChart3,
+    title: "Career Dashboard",
+    description: "Track applications, monitor your readiness score, and get personalized career insights.",
+    href: "/dashboard",
+    iconBg: "bg-primary/10 text-primary",
   },
 ];
 
 const FeaturesSection = () => (
-  <section className="py-28 bg-background bg-mesh relative">
+  <section id="features" className="py-28 bg-background bg-mesh relative">
     <div className="container mx-auto px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -58,18 +68,18 @@ const FeaturesSection = () => (
         </p>
       </motion.div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {features.map((feature, i) => (
           <motion.div
             key={feature.title}
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: i * 0.1, duration: 0.5 }}
+            transition={{ delay: i * 0.08, duration: 0.5 }}
           >
             <Link
               to={feature.href}
-              className={`group block bg-card rounded-2xl p-7 border border-border shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 h-full card-shine`}
+              className="group block bg-card rounded-2xl p-7 border border-border shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 h-full card-shine"
             >
               <div className={`inline-flex p-3 rounded-xl ${feature.iconBg} mb-5 group-hover:scale-110 transition-transform duration-300`}>
                 <feature.icon className="h-6 w-6" />

@@ -88,7 +88,7 @@ const HeroSection = () => (
           <div className="relative rounded-3xl overflow-hidden shadow-xl">
             <img
               src={heroTeam}
-              alt="Diverse team collaborating in a modern office"
+              alt="Modern city skyline at golden hour"
               className="w-full h-[480px] object-cover"
               loading="eager"
             />

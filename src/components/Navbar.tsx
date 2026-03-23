@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ShieldCheck, LogOut, User } from "lucide-react";
+import { Menu, X, ShieldCheck, LogOut, User, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -34,61 +34,73 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="bg-gradient-primary rounded-lg p-1.5">
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="bg-gradient-primary rounded-xl p-1.5 shadow-glow transition-shadow group-hover:shadow-glow">
             <ShieldCheck className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="font-display text-xl font-bold text-foreground">M-Ploy</span>
+          <span className="font-display text-xl font-bold text-foreground tracking-tight">M-Ploy</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-0.5 bg-muted/60 rounded-xl p-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 location.pathname === link.href
-                  ? "bg-accent text-accent-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {link.label}
+              {location.pathname === link.href && (
+                <motion.div
+                  layoutId="nav-pill"
+                  className="absolute inset-0 bg-card rounded-lg shadow-xs"
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                />
+              )}
+              <span className="relative z-10">{link.label}</span>
             </Link>
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2">
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <User className="h-4 w-4" />
-                  {profile?.full_name || "Account"}
+                <Button variant="ghost" size="sm" className="gap-2 rounded-xl">
+                  <div className="h-7 w-7 rounded-lg bg-gradient-primary flex items-center justify-center">
+                    <span className="text-xs font-bold text-primary-foreground">
+                      {(profile?.full_name || "U")[0].toUpperCase()}
+                    </span>
+                  </div>
+                  <span className="text-sm font-medium">{profile?.full_name || "Account"}</span>
+                  <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+              <DropdownMenuContent align="end" className="w-48 rounded-xl">
+                <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg">
                   Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                <DropdownMenuItem onClick={handleSignOut} className="text-destructive rounded-lg">
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
+              <Button variant="ghost" size="sm" className="rounded-xl" onClick={() => navigate("/auth")}>
                 Sign In
               </Button>
-              <Button size="sm" className="bg-gradient-primary text-primary-foreground" onClick={() => navigate("/auth")}>
+              <Button size="sm" className="bg-gradient-primary text-primary-foreground rounded-xl shadow-glow hover:shadow-glow" onClick={() => navigate("/auth")}>
                 Get Started
               </Button>
             </>
           )}
         </div>
 
-        <button className="md:hidden p-2 text-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden p-2 text-foreground rounded-lg hover:bg-muted transition-colors" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
@@ -99,34 +111,34 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-card border-b border-border"
+            className="md:hidden bg-card/95 backdrop-blur-xl border-b border-border"
           >
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-2">
+            <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   to={link.href}
                   onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
                     location.pathname === link.href
                       ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {link.label}
                 </Link>
               ))}
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-2 pt-3 mt-2 border-t border-border">
                 {user ? (
-                  <Button variant="ghost" size="sm" className="flex-1" onClick={handleSignOut}>
+                  <Button variant="ghost" size="sm" className="flex-1 rounded-xl" onClick={handleSignOut}>
                     Sign Out
                   </Button>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" className="flex-1" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                    <Button variant="ghost" size="sm" className="flex-1 rounded-xl" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
                       Sign In
                     </Button>
-                    <Button size="sm" className="flex-1 bg-gradient-primary text-primary-foreground" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                    <Button size="sm" className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
                       Get Started
                     </Button>
                   </>

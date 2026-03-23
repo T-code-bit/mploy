@@ -1,9 +1,11 @@
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { PlayCircle, Clock, Award, Users, BookOpen } from "lucide-react";
+import { PlayCircle, Clock, Award, Users, BookOpen, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 
 const courses = [
@@ -19,98 +21,145 @@ const courses = [
 
 const categories = ["All", "CV & Resume", "Interviews", "Soft Skills", "Career Growth", "Job Search", "Tech Skills"];
 
-const Academy = () => (
-  <div className="min-h-screen bg-background">
-    <Navbar />
-    <div className="pt-24 pb-16">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-foreground mb-2">Ready-to-Work Academy</h1>
-          <p className="text-muted-foreground">Self-paced employability courses. Earn TrustBadges. Get hired.</p>
-        </div>
+const Academy = () => {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [search, setSearch] = useState("");
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          {[
-            { icon: BookOpen, label: "Courses", value: "50+" },
-            { icon: PlayCircle, label: "Video Lessons", value: "400+" },
-            { icon: Users, label: "Learners", value: "10K+" },
-            { icon: Award, label: "TrustBadges", value: "25+" },
-          ].map((s) => (
-            <div key={s.label} className="bg-card rounded-xl border border-border p-4 shadow-card text-center">
-              <s.icon className="h-5 w-5 text-primary mx-auto mb-2" />
-              <p className="font-display text-xl font-bold text-foreground">{s.value}</p>
-              <p className="text-xs text-muted-foreground">{s.label}</p>
+  const filtered = courses.filter((c) => {
+    const matchesCategory = activeCategory === "All" || c.category === activeCategory;
+    const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  return (
+    <div className="min-h-screen bg-background bg-mesh">
+      <Navbar />
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 mb-4">
+              <Award className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Earn TrustBadges</span>
             </div>
-          ))}
-        </div>
+            <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-2">Ready-to-Work Academy</h1>
+            <p className="text-muted-foreground text-lg">Self-paced employability courses. Build skills. Get hired.</p>
+          </motion.div>
 
-        {/* Categories */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map((c) => (
-            <Badge
-              key={c}
-              variant={c === "All" ? "default" : "outline"}
-              className={`cursor-pointer ${c === "All" ? "bg-gradient-primary text-primary-foreground" : ""}`}
-            >
-              {c}
-            </Badge>
-          ))}
-        </div>
-
-        {/* Courses */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {courses.map((course, i) => (
-            <motion.div
-              key={course.id}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-card rounded-xl border border-border overflow-hidden shadow-card hover:shadow-card-hover transition-all group cursor-pointer"
-            >
-              <div className="aspect-video bg-muted flex items-center justify-center relative">
-                <PlayCircle className="h-10 w-10 text-muted-foreground/30 group-hover:text-primary transition-colors" />
-                {course.badge && (
-                  <div className="absolute top-2 right-2">
-                    <Badge className="bg-gradient-accent text-secondary-foreground text-[10px]">
-                      <Award className="h-3 w-3 mr-1" /> TrustBadge
-                    </Badge>
-                  </div>
-                )}
-              </div>
-              <div className="p-4">
-                <Badge variant="outline" className="text-[10px] mb-2">{course.category}</Badge>
-                <h4 className="font-semibold text-card-foreground text-sm mb-2">{course.title}</h4>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
-                  <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" />{course.lessons} lessons</span>
-                  <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{course.duration}</span>
+          {/* Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
+            {[
+              { icon: BookOpen, label: "Courses", value: "50+" },
+              { icon: PlayCircle, label: "Video Lessons", value: "400+" },
+              { icon: Users, label: "Learners", value: "10K+" },
+              { icon: Award, label: "TrustBadges", value: "25+" },
+            ].map((s, i) => (
+              <motion.div
+                key={s.label}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.08 }}
+                className="bg-card rounded-2xl border border-border p-5 shadow-card text-center hover:shadow-lg transition-all hover:-translate-y-0.5"
+              >
+                <div className="inline-flex p-2.5 rounded-xl bg-primary/8 mb-3">
+                  <s.icon className="h-5 w-5 text-primary" />
                 </div>
-                {course.progress > 0 ? (
-                  <div>
-                    <div className="flex items-center justify-between text-xs mb-1">
-                      <span className="text-muted-foreground">Progress</span>
-                      <span className="font-medium text-foreground">{course.progress}%</span>
+                <p className="font-display text-2xl font-bold text-foreground">{s.value}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Search & Categories */}
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search courses..."
+                className="pl-11 h-11 rounded-xl bg-card border-border shadow-xs"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-8">
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setActiveCategory(c)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  activeCategory === c
+                    ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+
+          {/* Courses */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filtered.map((course, i) => (
+              <motion.div
+                key={course.id}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className="bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-lg transition-all group cursor-pointer hover:-translate-y-1 card-shine"
+              >
+                <div className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
+                  <PlayCircle className="h-12 w-12 text-muted-foreground/30 group-hover:text-primary group-hover:scale-110 transition-all duration-300" />
+                  {course.badge && (
+                    <div className="absolute top-3 right-3">
+                      <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-accent text-secondary-foreground text-[10px] font-bold shadow-sm">
+                        <Award className="h-3 w-3" /> TrustBadge
+                      </div>
                     </div>
-                    <Progress value={course.progress} className="h-1.5" />
-                    <Button size="sm" className="w-full mt-3 bg-gradient-primary text-primary-foreground text-xs">
-                      {course.progress === 100 ? "Review Course" : "Continue"}
-                    </Button>
+                  )}
+                  <div className="absolute top-3 left-3">
+                    <span className="px-2.5 py-1 rounded-lg bg-card/90 backdrop-blur text-[10px] font-semibold text-foreground">{course.level}</span>
                   </div>
-                ) : (
-                  <Button size="sm" variant="outline" className="w-full text-xs">
-                    Start Course
-                  </Button>
-                )}
-              </div>
-            </motion.div>
-          ))}
+                </div>
+                <div className="p-5">
+                  <span className="inline-flex px-2.5 py-1 rounded-lg bg-muted text-[10px] font-medium text-muted-foreground mb-2.5">{course.category}</span>
+                  <h4 className="font-display font-semibold text-card-foreground text-sm mb-3">{course.title}</h4>
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-4">
+                    <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" />{course.lessons} lessons</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{course.duration}</span>
+                  </div>
+                  {course.progress > 0 ? (
+                    <div>
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-semibold text-foreground">{course.progress}%</span>
+                      </div>
+                      <Progress value={course.progress} className="h-2 rounded-full" />
+                      <Button size="sm" className="w-full mt-4 bg-gradient-primary text-primary-foreground text-xs rounded-xl h-9">
+                        {course.progress === 100 ? "Review Course" : "Continue"}
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button size="sm" variant="outline" className="w-full text-xs rounded-xl h-9 hover:bg-primary hover:text-primary-foreground transition-colors">
+                      Start Course
+                    </Button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
+      <Footer />
     </div>
-    <Footer />
-  </div>
-);
+  );
+};
 
 export default Academy;

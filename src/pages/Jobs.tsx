@@ -27,7 +27,6 @@ const Jobs = () => {
   const [applyOpen, setApplyOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
 
-  // Fetch jobs from database
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ["jobs"],
     queryFn: async () => {
@@ -41,7 +40,6 @@ const Jobs = () => {
     },
   });
 
-  // Fetch user's existing applications to prevent duplicates
   const { data: myApplications = [] } = useQuery({
     queryKey: ["my-applications", user?.id],
     queryFn: async () => {
@@ -74,7 +72,6 @@ const Jobs = () => {
     onError: (e: Error) => toast.error(e.message),
   });
 
-  // Filter logic
   const filtered = jobs.filter((job) => {
     const matchesSearch =
       !search ||
@@ -123,31 +120,36 @@ const Jobs = () => {
       <Navbar />
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-2">
-              <h1 className="font-display text-3xl font-bold text-foreground">
+          {/* Hero header */}
+          <div className="relative mb-10 rounded-2xl bg-hero p-8 sm:p-12 overflow-hidden">
+            <div className="absolute top-0 right-0 w-[300px] h-[300px] rounded-full bg-primary/8 blur-[100px]" />
+            <div className="absolute bottom-0 left-0 w-[200px] h-[200px] rounded-full bg-secondary/6 blur-[80px]" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2.5 mb-3">
+                <Globe className="h-5 w-5 text-secondary" />
+                <span className="text-sm font-medium text-primary-foreground/60">Global Opportunities</span>
+              </div>
+              <h1 className="font-display text-3xl sm:text-4xl font-bold text-primary-foreground tracking-tight mb-2">
                 Verified Job Vault
               </h1>
-              <Globe className="h-5 w-5 text-primary" />
+              <p className="text-primary-foreground/50 max-w-md">
+                Global opportunities, zero scams. Every listing verified and authenticated.
+              </p>
             </div>
-            <p className="text-muted-foreground">
-              Global opportunities, zero scams. Every listing verified and authenticated.
-            </p>
           </div>
 
           {/* Search & Filter */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-8">
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search jobs, companies, locations, or skills..."
-                className="pl-10"
+                className="pl-11 h-12 rounded-xl bg-card border-border shadow-xs"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <Button variant="outline" className="gap-2">
+            <Button variant="outline" className="gap-2 h-12 rounded-xl px-5">
               <Filter className="h-4 w-4" /> Filters
             </Button>
           </div>
@@ -155,14 +157,17 @@ const Jobs = () => {
           {/* Quick filters */}
           <div className="flex flex-wrap gap-2 mb-8">
             {categories.map((f) => (
-              <Badge
+              <button
                 key={f}
-                variant={activeFilter === f ? "default" : "outline"}
-                className={`cursor-pointer transition-all ${activeFilter === f ? "bg-gradient-primary text-primary-foreground" : "hover:bg-accent"}`}
                 onClick={() => setActiveFilter(f)}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${
+                  activeFilter === f
+                    ? "bg-gradient-primary text-primary-foreground shadow-glow"
+                    : "bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20"
+                }`}
               >
                 {f}
-              </Badge>
+              </button>
             ))}
           </div>
 
@@ -175,54 +180,61 @@ const Jobs = () => {
 
           {/* Listings */}
           {!isLoading && (
-            <div className="grid gap-4">
+            <div className="grid gap-3">
               <AnimatePresence>
                 {filtered.map((job, i) => (
                   <motion.div
                     key={job.id}
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    exit={{ opacity: 0, y: -12 }}
                     transition={{ delay: i * 0.03 }}
-                    className="bg-card rounded-xl border border-border p-6 shadow-card hover:shadow-card-hover transition-all duration-200 hover:-translate-y-0.5"
+                    className="group bg-card rounded-2xl border border-border p-6 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 card-shine"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="font-semibold text-card-foreground text-lg">{job.title}</h3>
-                          {job.is_verified && (
-                            <ShieldCheck className="h-4 w-4 text-primary" />
-                          )}
+                        <div className="flex items-center gap-2.5 mb-2">
+                          <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0">
+                            <Building2 className="h-5 w-5 text-primary-foreground" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-display font-semibold text-card-foreground text-lg">{job.title}</h3>
+                              {job.is_verified && (
+                                <ShieldCheck className="h-4 w-4 text-primary" />
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">{job.company}</p>
+                          </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-3">
-                          <span className="flex items-center gap-1"><Building2 className="h-3.5 w-3.5" />{job.company}</span>
-                          <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{job.location || "Not specified"}</span>
-                          <span className="flex items-center gap-1"><Briefcase className="h-3.5 w-3.5" />{job.type}</span>
-                          <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />{timeAgo(job.created_at)}</span>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-3 ml-[52px]">
+                          <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location || "Not specified"}</span>
+                          <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{job.type}</span>
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(job.created_at)}</span>
                         </div>
                         {job.description && (
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{job.description}</p>
+                          <p className="text-sm text-muted-foreground mb-3 ml-[52px] line-clamp-2">{job.description}</p>
                         )}
-                        <div className="flex flex-wrap gap-2">
-                          {(job.requirements || []).slice(0, 5).map((tag: string) => (
-                            <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                        <div className="flex flex-wrap gap-1.5 ml-[52px]">
+                          {(job.requirements || []).slice(0, 4).map((tag: string) => (
+                            <span key={tag} className="inline-flex px-2.5 py-1 rounded-lg bg-muted text-xs font-medium text-muted-foreground">{tag}</span>
                           ))}
-                          <Badge variant="outline" className="text-xs">{job.category}</Badge>
+                          <span className="inline-flex px-2.5 py-1 rounded-lg bg-accent text-xs font-medium text-accent-foreground">{job.category}</span>
                         </div>
                       </div>
-                      <div className="text-right shrink-0">
+                      <div className="text-right shrink-0 flex flex-col items-end">
                         {job.salary_range && (
-                          <>
-                            <p className="font-display font-semibold text-foreground">{job.salary_range}</p>
-                            <p className="text-xs text-muted-foreground mb-2">per month</p>
-                          </>
+                          <div className="mb-3">
+                            <p className="font-display font-bold text-foreground text-lg">{job.salary_range}</p>
+                            <p className="text-xs text-muted-foreground">per month</p>
+                          </div>
                         )}
                         {hasApplied(job.id) ? (
-                          <Badge variant="secondary" className="mt-1">Applied ✓</Badge>
+                          <Badge variant="secondary" className="rounded-xl px-4 py-1.5">Applied ✓</Badge>
                         ) : (
                           <Button
                             size="sm"
-                            className="mt-1 bg-gradient-primary text-primary-foreground gap-1.5"
+                            className="bg-gradient-primary text-primary-foreground gap-1.5 rounded-xl shadow-glow hover:shadow-glow px-5"
                             onClick={() => handleApplyClick(job)}
                           >
                             <Send className="h-3.5 w-3.5" /> Apply Now
@@ -237,9 +249,11 @@ const Jobs = () => {
           )}
 
           {!isLoading && filtered.length === 0 && (
-            <div className="text-center py-16">
-              <Briefcase className="h-12 w-12 mx-auto mb-4 text-muted-foreground/30" />
-              <p className="text-muted-foreground">
+            <div className="text-center py-20">
+              <div className="inline-flex p-5 rounded-2xl bg-muted mb-5">
+                <Briefcase className="h-10 w-10 text-muted-foreground/40" />
+              </div>
+              <p className="text-muted-foreground text-lg">
                 {jobs.length === 0
                   ? "No jobs posted yet. Check back soon!"
                   : "No jobs found matching your search."}
@@ -251,13 +265,13 @@ const Jobs = () => {
 
       {/* Apply Dialog */}
       <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg rounded-2xl">
           <DialogHeader>
-            <DialogTitle>Apply for {selectedJob?.title}</DialogTitle>
+            <DialogTitle className="font-display">Apply for {selectedJob?.title}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="bg-accent/50 rounded-lg p-4">
-              <p className="font-medium text-card-foreground">{selectedJob?.title}</p>
+          <div className="space-y-5 pt-2">
+            <div className="bg-muted rounded-xl p-4">
+              <p className="font-semibold text-card-foreground">{selectedJob?.title}</p>
               <p className="text-sm text-muted-foreground">{selectedJob?.company} · {selectedJob?.location}</p>
             </div>
             <div className="space-y-2">
@@ -267,12 +281,13 @@ const Jobs = () => {
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Tell the employer why you're a great fit for this role..."
                 rows={5}
+                className="rounded-xl"
               />
             </div>
             <Button
               onClick={() => applyMutation.mutate({ jobId: selectedJob.id, coverLetter })}
               disabled={applyMutation.isPending}
-              className="w-full bg-gradient-primary text-primary-foreground gap-2"
+              className="w-full bg-gradient-primary text-primary-foreground gap-2 rounded-xl h-11"
             >
               {applyMutation.isPending ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</>

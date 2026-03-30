@@ -52,21 +52,7 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      // Redirect based on user role
-      if (authData.user) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", authData.user.id)
-          .single();
-        if (roleData?.role === "employer") {
-          navigate("/employer");
-        } else {
-          navigate("/dashboard");
-        }
-      } else {
-        navigate("/dashboard");
-      }
+      navigate(signupRole === "employer" ? "/employer" : "/dashboard");
     }
     setLoading(false);
   };

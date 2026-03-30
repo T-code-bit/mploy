@@ -14,13 +14,13 @@ serve(async (req) => {
   try {
     const { token } = await req.json();
     if (!token || typeof token !== "string") {
-      return new Response(JSON.stringify({ success: false, error: "Missing turnstile token" }), {
+      return new Response(JSON.stringify({ success: false, error: "Missing reCAPTCHA token" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const secret = Deno.env.get("CLOUDFLARE_TURNSTILE_SECRET_KEY");
+    const secret = Deno.env.get("RECAPTCHA_SECRET_KEY");
     if (!secret) {
       return new Response(JSON.stringify({ success: false, error: "Server configuration error" }), {
         status: 500,
@@ -28,13 +28,14 @@ serve(async (req) => {
       });
     }
 
-    const formData = new FormData();
-    formData.append("secret", secret);
-    formData.append("response", token);
+    const params = new URLSearchParams();
+    params.append("secret", secret);
+    params.append("response", token);
 
-    const result = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+    const result = await fetch("https://www.google.com/recaptcha/api/siteverify", {
       method: "POST",
-      body: formData,
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
     });
     const outcome = await result.json();
 

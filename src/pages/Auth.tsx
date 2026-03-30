@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, Briefcase, GraduationCap, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import CloudflareTurnstile from "@/components/CloudflareTurnstile";
+import GoogleReCaptcha from "@/components/GoogleReCaptcha";
 import { motion } from "framer-motion";
 
 const Auth = () => {
@@ -21,19 +21,19 @@ const Auth = () => {
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
-  const [turnstileToken, setTurnstileToken] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
 
-  const verifyTurnstile = async () => {
-    if (!turnstileToken) {
+  const verifyCaptcha = async () => {
+    if (!captchaToken) {
       toast.error("Please complete the security check");
       return false;
     }
-    const { data, error } = await supabase.functions.invoke("verify-turnstile", {
-      body: { token: turnstileToken },
+    const { data, error } = await supabase.functions.invoke("verify-recaptcha", {
+      body: { token: captchaToken },
     });
     if (error || !data?.success) {
       toast.error("Security verification failed. Please try again.");
-      setTurnstileToken("");
+      setCaptchaToken("");
       return false;
     }
     return true;
@@ -42,7 +42,7 @@ const Auth = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    if (!(await verifyTurnstile())) { setLoading(false); return; }
+    if (!(await verifyCaptcha())) { setLoading(false); return; }
     const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: loginPassword,
@@ -67,7 +67,7 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-    if (!(await verifyTurnstile())) { setLoading(false); return; }
+    if (!(await verifyCaptcha())) { setLoading(false); return; }
     const { error } = await supabase.auth.signUp({
       email: signupEmail,
       password: signupPassword,
@@ -153,8 +153,8 @@ const Auth = () => {
                     <Label htmlFor="login-password">Password</Label>
                     <Input id="login-password" type="password" placeholder="••••••••" className="rounded-xl h-11" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                   </div>
-                  <CloudflareTurnstile onVerify={setTurnstileToken} onExpire={() => setTurnstileToken("")} />
-                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !turnstileToken}>
+                  <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !captchaToken}>
                     {loading ? "Signing in..." : "Sign In"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
@@ -218,8 +218,8 @@ const Auth = () => {
                     </div>
                   )}
 
-                  <CloudflareTurnstile onVerify={setTurnstileToken} onExpire={() => setTurnstileToken("")} />
-                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !turnstileToken}>
+                  <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !captchaToken}>
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>

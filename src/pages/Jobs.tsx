@@ -99,6 +99,11 @@ const Jobs = () => {
         years_of_experience: yearsExp || null,
         availability,
         linkedin_url: linkedinUrl || null,
+        education_level: educationLevel || null,
+        expected_salary: expectedSalary || null,
+        gender: gender || null,
+        county: county || null,
+        date_of_birth: dateOfBirth || null,
       });
       if (error) throw error;
     },

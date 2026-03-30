@@ -12,6 +12,10 @@ import Academy from "./pages/Academy";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import EmployerPortal from "./pages/EmployerPortal";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +41,10 @@ const App = () => (
             <Route path="/employer" element={
               <ProtectedRoute requiredRole="employer"><EmployerPortal /></ProtectedRoute>
             } />
+            <Route path="/about" element={<About />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/cookies" element={<Cookies />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

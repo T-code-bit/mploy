@@ -127,12 +127,15 @@ const Footer = () => {
             <h4 className="font-display font-semibold text-foreground mb-4 text-sm">Company</h4>
             <div className="flex flex-col gap-3">
               {[
-                { label: "About", href: "#" },
+                { label: "About", href: "/about" },
                 { label: "Contact", href: "/#contact" },
-                { label: "Privacy", href: "#" },
-                { label: "Terms", href: "#" },
+                { label: "Privacy", href: "/privacy" },
+                { label: "Terms", href: "/terms" },
               ].map((link) => (
-                <a key={link.label} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{link.label}</a>
+                <Link key={link.label} to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group">
+                  {link.label}
+                  <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-0.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
+                </Link>
               ))}
             </div>
           </div>
@@ -163,8 +166,12 @@ const Footer = () => {
         <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">© 2026 M-Ploy. All rights reserved.</p>
           <div className="flex gap-6">
-            {["Terms", "Privacy", "Cookies"].map((label) => (
-              <a key={label} href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">{label}</a>
+            {[
+              { label: "Terms", href: "/terms" },
+              { label: "Privacy", href: "/privacy" },
+              { label: "Cookies", href: "/cookies" },
+            ].map((link) => (
+              <Link key={link.label} to={link.href} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{link.label}</Link>
             ))}
           </div>
         </div>

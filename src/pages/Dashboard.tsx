@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,16 +7,34 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Briefcase, FileCheck, GraduationCap, Award, TrendingUp,
-  Eye, Send, ChevronRight, ArrowUpRight, Loader2
+  Eye, Send, ChevronRight, ArrowUpRight, Loader2, Crown, Settings, Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
+import UpgradeBanner from "@/components/UpgradeBanner";
+import { toast } from "sonner";
 
 const Dashboard = () => {
-  const { user, profile, userRole } = useAuth();
+  const { user, profile, userRole, subscriptionTier, subscriptionEnd } = useAuth();
+  const [portalLoading, setPortalLoading] = useState(false);
+  const currentPlan = SUBSCRIPTION_TIERS[subscriptionTier];
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to open subscription management");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["dashboard-applications", user?.id],
@@ -83,6 +101,10 @@ const Dashboard = () => {
               </Button>
             </Link>
           </motion.div>
+
+          {subscriptionTier === "free" && (
+            <UpgradeBanner requiredTier="basic" feature="Unlimited job views, all CV templates, and more academy lessons" />
+          )}
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
@@ -164,6 +186,40 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-5">
+              {/* Subscription Card */}
+              <div className={`rounded-2xl border p-6 shadow-card ${subscriptionTier !== "free" ? "bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20" : "bg-card border-border"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-display font-semibold text-card-foreground flex items-center gap-2">
+                    <Crown className={`h-4 w-4 ${subscriptionTier !== "free" ? "text-primary" : "text-muted-foreground"}`} />
+                    Your Plan
+                  </h3>
+                  <Badge variant={subscriptionTier !== "free" ? "default" : "secondary"} className="rounded-lg">
+                    {currentPlan.name}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-1">
+                  {currentPlan.price}{currentPlan.period}
+                </p>
+                {subscriptionEnd && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Renews: {new Date(subscriptionEnd).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })}
+                  </p>
+                )}
+                <div className="space-y-2 mt-3">
+                  {subscriptionTier === "free" ? (
+                    <Link to="/#pricing">
+                      <Button size="sm" className="w-full bg-gradient-primary text-primary-foreground rounded-xl gap-2">
+                        <Sparkles className="h-3.5 w-3.5" /> Upgrade Plan
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button size="sm" variant="outline" className="w-full rounded-xl gap-2" onClick={handleManageSubscription} disabled={portalLoading}>
+                      {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Settings className="h-3.5 w-3.5" />}
+                      Manage Subscription
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
                 <h3 className="font-display font-semibold text-card-foreground mb-4">Quick Actions</h3>
                 <div className="space-y-2">

@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileCheck, Download, Sparkles, AlertTriangle, CheckCircle2, Layout, Plus, Trash2, Loader2 } from "lucide-react";
+import { FileCheck, Download, Sparkles, AlertTriangle, CheckCircle2, Layout, Plus, Trash2, Loader2, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { useAuth } from "@/contexts/AuthContext";
+import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
+import UpgradeBanner from "@/components/UpgradeBanner";
 
 interface Experience {
   id: string;
@@ -34,6 +37,10 @@ const templates = [
 ];
 
 const CVBuilder = () => {
+  const { subscriptionTier } = useAuth();
+  const tierLimits = SUBSCRIPTION_TIERS[subscriptionTier].limits;
+  const availableTemplates = templates.slice(0, tierLimits.cvTemplates === Infinity ? templates.length : tierLimits.cvTemplates);
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -219,6 +226,13 @@ const CVBuilder = () => {
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-2">ATS Architect</h1>
             <p className="text-muted-foreground text-lg">Build, optimize, and score your CV for maximum compatibility.</p>
           </motion.div>
+
+          {subscriptionTier === "free" && (
+            <UpgradeBanner requiredTier="basic" feature="All CV templates and unlimited downloads" />
+          )}
+          {!tierLimits.atsScore && (
+            <UpgradeBanner requiredTier="premium" feature="ATS Score Reports with detailed feedback" />
+          )}
 
           <Tabs defaultValue="builder" className="space-y-8">
             <TabsList className="bg-muted/60 rounded-xl p-1 h-auto">

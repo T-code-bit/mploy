@@ -1,6 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { SubscriptionTier, getTierFromProductId } from "@/lib/subscription";
 
 type UserRole = "job_seeker" | "employer";
 
@@ -19,6 +20,10 @@ interface AuthContextType {
   profile: Profile | null;
   userRole: UserRole | null;
   loading: boolean;
+  subscriptionTier: SubscriptionTier;
+  subscriptionEnd: string | null;
+  subscriptionLoading: boolean;
+  refreshSubscription: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -28,6 +33,10 @@ const AuthContext = createContext<AuthContextType>({
   profile: null,
   userRole: null,
   loading: true,
+  subscriptionTier: "free",
+  subscriptionEnd: null,
+  subscriptionLoading: false,
+  refreshSubscription: async () => {},
   signOut: async () => {},
 });
 
@@ -39,6 +48,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [loading, setLoading] = useState(true);
+  const [subscriptionTier, setSubscriptionTier] = useState<SubscriptionTier>("free");
+  const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -56,6 +68,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (roleData) setUserRole(roleData.role as UserRole);
   };
 
+  const refreshSubscription = useCallback(async () => {
+    if (!session) return;
+    setSubscriptionLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("check-subscription");
+      if (error) throw error;
+      if (data) {
+        const tier = getTierFromProductId(data.product_id || null);
+        setSubscriptionTier(data.subscribed ? tier : "free");
+        setSubscriptionEnd(data.subscription_end || null);
+      }
+    } catch (err) {
+      console.error("Failed to check subscription:", err);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  }, [session]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
@@ -66,6 +96,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } else {
           setProfile(null);
           setUserRole(null);
+          setSubscriptionTier("free");
+          setSubscriptionEnd(null);
         }
         setLoading(false);
       }
@@ -83,14 +115,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  // Check subscription on login and periodically
+  useEffect(() => {
+    if (session) {
+      refreshSubscription();
+      const interval = setInterval(refreshSubscription, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [session, refreshSubscription]);
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
     setUserRole(null);
+    setSubscriptionTier("free");
+    setSubscriptionEnd(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, userRole, loading, signOut }}>
+    <AuthContext.Provider value={{
+      user, session, profile, userRole, loading,
+      subscriptionTier, subscriptionEnd, subscriptionLoading,
+      refreshSubscription, signOut,
+    }}>
       {children}
     </AuthContext.Provider>
   );

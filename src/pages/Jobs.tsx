@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2, Upload, FileText, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +27,14 @@ const Jobs = () => {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
+  const [phone, setPhone] = useState("");
+  const [yearsExp, setYearsExp] = useState("");
+  const [availability, setAvailability] = useState("Immediately");
+  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
+  const [recommendationFile, setRecommendationFile] = useState<File | null>(null);
+  const [scannedIdFile, setScannedIdFile] = useState<File | null>(null);
 
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ["jobs"],
@@ -53,24 +62,62 @@ const Jobs = () => {
     enabled: !!user,
   });
 
+  const uploadFile = async (file: File, folder: string) => {
+    const ext = file.name.split(".").pop();
+    const path = `${user!.id}/${folder}/${Date.now()}.${ext}`;
+    const { error } = await supabase.storage
+      .from("application-documents")
+      .upload(path, file);
+    if (error) throw error;
+    return path;
+  };
+
   const applyMutation = useMutation({
-    mutationFn: async ({ jobId, coverLetter }: { jobId: string; coverLetter: string }) => {
+    mutationFn: async () => {
+      if (!cvFile) throw new Error("CV is required");
+      if (!scannedIdFile) throw new Error("Scanned ID is required");
+
+      const cvPath = await uploadFile(cvFile, "cv");
+      const coverLetterPath = coverLetterFile ? await uploadFile(coverLetterFile, "cover-letter") : null;
+      const recommendationPath = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
+      const scannedIdPath = await uploadFile(scannedIdFile, "scanned-id");
+
       const { error } = await supabase.from("applications").insert({
-        job_id: jobId,
+        job_id: selectedJob.id,
         applicant_id: user!.id,
         cover_letter: coverLetter || null,
+        cv_url: cvPath,
+        resume_url: coverLetterPath,
+        recommendation_letter_url: recommendationPath,
+        scanned_id_url: scannedIdPath,
+        phone: phone || null,
+        years_of_experience: yearsExp || null,
+        availability,
+        linkedin_url: linkedinUrl || null,
       });
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-applications"] });
       toast.success("Application submitted successfully!");
-      setApplyOpen(false);
-      setCoverLetter("");
-      setSelectedJob(null);
+      resetForm();
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const resetForm = () => {
+    setApplyOpen(false);
+    setCoverLetter("");
+    setPhone("");
+    setYearsExp("");
+    setAvailability("Immediately");
+    setLinkedinUrl("");
+    setCvFile(null);
+    setCoverLetterFile(null);
+    setRecommendationFile(null);
+    setScannedIdFile(null);
+    setSelectedJob(null);
+  };
 
   const filtered = jobs.filter((job) => {
     const matchesSearch =
@@ -114,6 +161,38 @@ const Jobs = () => {
   };
 
   const hasApplied = (jobId: string) => myApplications.includes(jobId);
+
+  const FileUploadField = ({ label, required, file, onFileChange }: {
+    label: string; required?: boolean; file: File | null; onFileChange: (f: File | null) => void;
+  }) => (
+    <div className="space-y-2">
+      <Label className="flex items-center gap-1">
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </Label>
+      <label className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background cursor-pointer hover:bg-muted/50 transition-colors">
+        <div className="shrink-0 p-2 rounded-lg bg-primary/10">
+          <Upload className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          {file ? (
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm text-foreground truncate">{file.name}</span>
+            </div>
+          ) : (
+            <span className="text-sm text-muted-foreground">Choose file (PDF, DOC, JPG, PNG)</span>
+          )}
+        </div>
+        <input
+          type="file"
+          className="hidden"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+        />
+      </label>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -264,8 +343,8 @@ const Jobs = () => {
       </div>
 
       {/* Apply Dialog */}
-      <Dialog open={applyOpen} onOpenChange={setApplyOpen}>
-        <DialogContent className="max-w-lg rounded-2xl">
+      <Dialog open={applyOpen} onOpenChange={(open) => { if (!open) resetForm(); else setApplyOpen(true); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-display">Apply for {selectedJob?.title}</DialogTitle>
           </DialogHeader>
@@ -274,19 +353,78 @@ const Jobs = () => {
               <p className="font-semibold text-card-foreground">{selectedJob?.title}</p>
               <p className="text-sm text-muted-foreground">{selectedJob?.company} · {selectedJob?.location}</p>
             </div>
+
+            <div className="p-3 rounded-xl bg-primary/5 border border-primary/20 flex items-start gap-2">
+              <AlertCircle className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+              <p className="text-xs text-muted-foreground">Fields marked with <span className="text-destructive font-bold">*</span> are required. Upload documents in PDF, DOC, or image format.</p>
+            </div>
+
+            {/* Personal Information */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">Personal Information</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Phone Number</Label>
+                  <Input placeholder="+1 234 567 890" className="rounded-xl h-11" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Years of Experience</Label>
+                  <Select value={yearsExp} onValueChange={setYearsExp}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="0-1">0–1 years</SelectItem>
+                      <SelectItem value="1-3">1–3 years</SelectItem>
+                      <SelectItem value="3-5">3–5 years</SelectItem>
+                      <SelectItem value="5-10">5–10 years</SelectItem>
+                      <SelectItem value="10+">10+ years</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Availability</Label>
+                  <Select value={availability} onValueChange={setAvailability}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="Immediately">Immediately</SelectItem>
+                      <SelectItem value="2 weeks">2 weeks notice</SelectItem>
+                      <SelectItem value="1 month">1 month notice</SelectItem>
+                      <SelectItem value="3 months">3 months notice</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>LinkedIn Profile</Label>
+                  <Input placeholder="linkedin.com/in/..." className="rounded-xl h-11" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} />
+                </div>
+              </div>
+            </div>
+
+            {/* Document Uploads */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-semibold text-foreground">Required Documents</h4>
+              <FileUploadField label="Upload CV" required file={cvFile} onFileChange={setCvFile} />
+              <FileUploadField label="Upload Cover Letter" file={coverLetterFile} onFileChange={setCoverLetterFile} />
+              <FileUploadField label="Recommendation Letter" file={recommendationFile} onFileChange={setRecommendationFile} />
+              <FileUploadField label="Scanned ID" required file={scannedIdFile} onFileChange={setScannedIdFile} />
+            </div>
+
+            {/* Cover Letter Text */}
             <div className="space-y-2">
-              <Label>Cover Letter (optional)</Label>
+              <Label>Additional Message (optional)</Label>
               <Textarea
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
                 placeholder="Tell the employer why you're a great fit for this role..."
-                rows={5}
+                rows={4}
                 className="rounded-xl"
               />
             </div>
+
             <Button
-              onClick={() => applyMutation.mutate({ jobId: selectedJob.id, coverLetter })}
-              disabled={applyMutation.isPending}
+              onClick={() => applyMutation.mutate()}
+              disabled={applyMutation.isPending || !cvFile || !scannedIdFile}
               className="w-full bg-gradient-primary text-primary-foreground gap-2 rounded-xl h-11"
             >
               {applyMutation.isPending ? (

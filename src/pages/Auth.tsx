@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShieldCheck, Briefcase, GraduationCap, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import CloudflareTurnstile from "@/components/CloudflareTurnstile";
 import { motion } from "framer-motion";
 
 const Auth = () => {

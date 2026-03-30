@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ShieldCheck, Briefcase, GraduationCap, ArrowRight } from "lucide-react";
+import { Briefcase, GraduationCap, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import GoogleReCaptcha from "@/components/GoogleReCaptcha";
 import { motion } from "framer-motion";
+import mployLogo from "@/assets/mploy-logo.png";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -51,21 +52,7 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      // Redirect based on user role
-      if (authData.user) {
-        const { data: roleData } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", authData.user.id)
-          .single();
-        if (roleData?.role === "employer") {
-          navigate("/employer");
-        } else {
-          navigate("/dashboard");
-        }
-      } else {
-        navigate("/dashboard");
-      }
+      navigate(signupRole === "employer" ? "/employer" : "/dashboard");
     }
     setLoading(false);
   };
@@ -108,9 +95,7 @@ const Auth = () => {
 
         <div className="max-w-md text-center relative z-10">
           <Link to="/" className="inline-flex items-center gap-3 mb-10">
-            <div className="bg-gradient-primary rounded-xl p-2.5 shadow-glow">
-              <ShieldCheck className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img src={mployLogo} alt="M-Ploy" className="h-12 w-12 rounded-xl" />
             <span className="font-display text-3xl font-bold text-primary-foreground tracking-tight">M-Ploy</span>
           </Link>
           <h2 className="font-display text-3xl font-bold text-primary-foreground mb-4 tracking-tight">
@@ -144,9 +129,7 @@ const Auth = () => {
           className="w-full max-w-md"
         >
           <div className="lg:hidden flex items-center gap-2.5 mb-8 justify-center">
-            <div className="bg-gradient-primary rounded-xl p-1.5">
-              <ShieldCheck className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img src={mployLogo} alt="M-Ploy" className="h-8 w-8 rounded-lg" />
             <span className="font-display text-xl font-bold text-foreground tracking-tight">M-Ploy</span>
           </div>
 
@@ -159,9 +142,31 @@ const Auth = () => {
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Sign in as a <span className="font-medium text-foreground">Job Seeker</span> or <span className="font-medium text-foreground">Employer</span> — one account for both.
-                  </p>
+                  <div className="space-y-2">
+                    <Label>Sign in as</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { role: "job_seeker" as const, icon: GraduationCap, label: "Job Seeker" },
+                        { role: "employer" as const, icon: Briefcase, label: "Employer" },
+                      ].map((option) => (
+                        <button
+                          key={option.role}
+                          type="button"
+                          onClick={() => setSignupRole(option.role)}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                            signupRole === option.role
+                              ? "border-primary bg-accent shadow-glow"
+                              : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
+                          }`}
+                        >
+                          <option.icon className={`h-5 w-5 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
+                          <span className={`text-sm font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
                     <Input id="login-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />

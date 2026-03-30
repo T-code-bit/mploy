@@ -379,8 +379,53 @@ const Jobs = () => {
               <h4 className="text-sm font-semibold text-foreground">Personal Information</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label>Phone Number</Label>
-                  <Input placeholder="+1 234 567 890" className="rounded-xl h-11" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <Label>Phone Number <span className="text-destructive">*</span></Label>
+                  <Input placeholder="+254 7XX XXX XXX" className="rounded-xl h-11" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Date of Birth</Label>
+                  <Input type="date" className="rounded-xl h-11" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Gender</Label>
+                  <Select value={gender} onValueChange={setGender}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                      <SelectItem value="Prefer not to say">Prefer not to say</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>County</Label>
+                  <Select value={county} onValueChange={setCounty}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select county" /></SelectTrigger>
+                    <SelectContent className="rounded-xl max-h-60">
+                      {["Nairobi", "Mombasa", "Kisumu", "Nakuru", "Eldoret/Uasin Gishu", "Kiambu", "Machakos", "Kajiado", "Nyeri", "Meru", "Kilifi", "Kwale", "Garissa", "Narok", "Migori", "Bungoma", "Kakamega", "Kericho", "Nyandarua", "Laikipia", "Trans Nzoia", "Nandi", "Bomet", "Embu", "Tharaka Nithi", "Murang'a", "Kirinyaga", "Homa Bay", "Siaya", "Kisii", "Nyamira", "Vihiga", "Busia", "Turkana", "West Pokot", "Samburu", "Baringo", "Elgeyo Marakwet", "Isiolo", "Marsabit", "Mandera", "Wajir", "Tana River", "Lamu", "Taita Taveta", "Kitui", "Makueni"].map((c) => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Education Level</Label>
+                  <Select value={educationLevel} onValueChange={setEducationLevel}>
+                    <SelectTrigger className="rounded-xl h-11"><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="KCSE">KCSE Certificate</SelectItem>
+                      <SelectItem value="Certificate">Certificate</SelectItem>
+                      <SelectItem value="Diploma">Diploma</SelectItem>
+                      <SelectItem value="Degree">Bachelor's Degree</SelectItem>
+                      <SelectItem value="Masters">Master's Degree</SelectItem>
+                      <SelectItem value="PhD">PhD / Doctorate</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Years of Experience</Label>
@@ -398,6 +443,10 @@ const Jobs = () => {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
+                  <Label>Expected Salary (KES)</Label>
+                  <Input placeholder="e.g. 80,000" className="rounded-xl h-11" value={expectedSalary} onChange={(e) => setExpectedSalary(e.target.value)} />
+                </div>
+                <div className="space-y-2">
                   <Label>Availability</Label>
                   <Select value={availability} onValueChange={setAvailability}>
                     <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
@@ -409,10 +458,10 @@ const Jobs = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label>LinkedIn Profile</Label>
-                  <Input placeholder="linkedin.com/in/..." className="rounded-xl h-11" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} />
-                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>LinkedIn Profile</Label>
+                <Input placeholder="linkedin.com/in/..." className="rounded-xl h-11" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} />
               </div>
             </div>
 

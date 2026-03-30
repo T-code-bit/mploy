@@ -43,6 +43,10 @@ const Auth = () => {
       toast.error("Password must be at least 6 characters");
       return;
     }
+    if (signupRole === "employer" && employerCode !== "6490") {
+      toast.error("Invalid employer access code");
+      return;
+    }
     setLoading(true);
     const { error } = await supabase.auth.signUp({
       email: signupEmail,

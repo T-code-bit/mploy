@@ -127,6 +127,11 @@ const Jobs = () => {
     setRecommendationFile(null);
     setScannedIdFile(null);
     setSelectedJob(null);
+    setEducationLevel("");
+    setExpectedSalary("");
+    setGender("");
+    setCounty("");
+    setDateOfBirth("");
   };
 
   const filtered = jobs.filter((job) => {

@@ -4,9 +4,12 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { PlayCircle, Clock, Award, Users, BookOpen, Search } from "lucide-react";
+import { PlayCircle, Clock, Award, Users, BookOpen, Search, Lock } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
+import UpgradeBanner from "@/components/UpgradeBanner";
 
 const courses = [
   { id: 1, title: "CV Writing Masterclass", category: "CV & Resume", lessons: 12, duration: "2h 30m", enrolled: 3400, level: "Beginner", progress: 0, badge: true },

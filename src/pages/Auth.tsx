@@ -23,9 +23,26 @@ const Auth = () => {
   const [employerCode, setEmployerCode] = useState("");
   const [turnstileToken, setTurnstileToken] = useState("");
 
+  const verifyTurnstile = async () => {
+    if (!turnstileToken) {
+      toast.error("Please complete the security check");
+      return false;
+    }
+    const { data, error } = await supabase.functions.invoke("verify-turnstile", {
+      body: { token: turnstileToken },
+    });
+    if (error || !data?.success) {
+      toast.error("Security verification failed. Please try again.");
+      setTurnstileToken("");
+      return false;
+    }
+    return true;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    if (!(await verifyTurnstile())) { setLoading(false); return; }
     const { error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: loginPassword,

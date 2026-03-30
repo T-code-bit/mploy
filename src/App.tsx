@@ -12,6 +12,10 @@ import Academy from "./pages/Academy";
 import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
 import EmployerPortal from "./pages/EmployerPortal";
+import About from "./pages/About";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

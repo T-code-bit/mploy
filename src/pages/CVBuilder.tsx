@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileCheck, Download, Sparkles, AlertTriangle, CheckCircle2, Layout, Plus, Trash2, Loader2 } from "lucide-react";
+import { FileCheck, Download, Sparkles, AlertTriangle, CheckCircle2, Layout, Plus, Trash2, Loader2, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
+import { useAuth } from "@/contexts/AuthContext";
+import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
+import UpgradeBanner from "@/components/UpgradeBanner";
 
 interface Experience {
   id: string;

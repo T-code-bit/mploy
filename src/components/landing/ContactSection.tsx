@@ -8,9 +8,9 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 const contactInfo = [
-  { icon: Mail, label: "Email", value: "hello@m-ploy.com", href: "mailto:hello@m-ploy.com" },
-  { icon: Phone, label: "Phone", value: "+27 11 234 5678", href: "tel:+27112345678" },
-  { icon: MapPin, label: "Office", value: "Johannesburg, South Africa", href: "#" },
+  { icon: Mail, label: "Email", value: "hello@m-ploy.co.ke", href: "mailto:hello@m-ploy.co.ke" },
+  { icon: Phone, label: "Phone", value: "+254 700 123 456", href: "tel:+254700123456" },
+  { icon: MapPin, label: "Office", value: "Nairobi, Kenya", href: "#" },
 ];
 
 const ContactSection = () => {
@@ -84,7 +84,7 @@ const ContactSection = () => {
             ))}
             <div className="p-5 bg-card rounded-2xl border border-border shadow-card">
               <p className="text-sm font-semibold text-card-foreground mb-1">Business Hours</p>
-              <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 6:00 PM (SAST)</p>
+              <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 6:00 PM (EAT)</p>
               <p className="text-sm text-muted-foreground">Weekends: Closed</p>
             </div>
           </motion.div>

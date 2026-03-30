@@ -13,10 +13,10 @@ const values = [
 ];
 
 const team = [
-  { name: "David Okonkwo", role: "Founder & CEO", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent globally." },
-  { name: "Lisa Chen", role: "CTO", bio: "Ex-Google engineer with 15 years in AI/ML. Building the tech that powers smarter career matching." },
-  { name: "James Mitchell", role: "Head of Product", bio: "Product leader who's shipped tools used by millions. Obsessed with user experience and accessibility." },
-  { name: "Fatima Al-Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across 40+ countries. Background in international business development." },
+  { name: "James Ochieng", role: "Founder & CEO", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent across Kenya and East Africa." },
+  { name: "Amina Wanjiku", role: "CTO", bio: "Experienced engineer with 12 years in AI/ML. Building the tech that powers smarter career matching for Kenyan talent." },
+  { name: "Peter Mwangi", role: "Head of Product", bio: "Product leader who's shipped tools used by thousands. Obsessed with user experience and accessibility." },
+  { name: "Fatima Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across Kenya and the East African region. Background in international business development." },
 ];
 
 const About = () => (
@@ -34,7 +34,7 @@ const About = () => (
             The Trusted Bridge Between <span className="text-gradient-primary">Talent & Opportunity</span>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Founded in 2024, M-Ploy was born from a simple frustration: job seekers deserved better. Too many fake listings, too many rejection black holes, too little support. We built the platform we wished existed — verified jobs, ATS-optimized CVs, and employability training, all in one place.
+            Founded in Nairobi in 2024, M-Ploy was born from a simple frustration: Kenyan job seekers deserved better. Too many fake listings, too many rejection black holes, too little support. We built the platform we wished existed — verified jobs, ATS-optimized CVs, and employability training, all in one place.
           </p>
         </motion.div>
 
@@ -93,7 +93,7 @@ const About = () => (
             {[
               { value: "10K+", label: "Active Users" },
               { value: "500+", label: "Verified Employers" },
-              { value: "40+", label: "Countries Served" },
+              { value: "47", label: "Counties Covered" },
               { value: "95%", label: "ATS Pass Rate" },
             ].map((s) => (
               <div key={s.label}>

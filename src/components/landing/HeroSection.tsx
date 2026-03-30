@@ -38,7 +38,7 @@ const HeroSection = () => (
 
           <p className="text-lg text-primary-foreground/60 max-w-xl mb-10 leading-relaxed">
             Verified job listings. ATS-optimized CVs. Employability training.
-            M-Ploy is the trusted bridge between you and your next career move — globally.
+            M-Ploy is Kenya's trusted bridge between you and your next career move.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-12">
@@ -63,7 +63,7 @@ const HeroSection = () => (
           >
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              <span className="text-xs font-medium">Global Reach</span>
+              <span className="text-xs font-medium">Made in Kenya 🇰🇪</span>
             </div>
             <div className="h-4 w-px bg-primary-foreground/15" />
             <div className="flex items-center gap-2">

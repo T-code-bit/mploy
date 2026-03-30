@@ -18,9 +18,14 @@ export type Database = {
         Row: {
           applicant_id: string
           availability: string | null
+          county: string | null
           cover_letter: string | null
           created_at: string
           cv_url: string | null
+          date_of_birth: string | null
+          education_level: string | null
+          expected_salary: string | null
+          gender: string | null
           id: string
           job_id: string
           linkedin_url: string | null
@@ -35,9 +40,14 @@ export type Database = {
         Insert: {
           applicant_id: string
           availability?: string | null
+          county?: string | null
           cover_letter?: string | null
           created_at?: string
           cv_url?: string | null
+          date_of_birth?: string | null
+          education_level?: string | null
+          expected_salary?: string | null
+          gender?: string | null
           id?: string
           job_id: string
           linkedin_url?: string | null
@@ -52,9 +62,14 @@ export type Database = {
         Update: {
           applicant_id?: string
           availability?: string | null
+          county?: string | null
           cover_letter?: string | null
           created_at?: string
           cv_url?: string | null
+          date_of_birth?: string | null
+          education_level?: string | null
+          expected_salary?: string | null
+          gender?: string | null
           id?: string
           job_id?: string
           linkedin_url?: string | null

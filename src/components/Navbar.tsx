@@ -37,10 +37,7 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="bg-gradient-primary rounded-xl p-1.5 shadow-glow transition-shadow group-hover:shadow-glow">
-            <ShieldCheck className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-display text-xl font-bold text-foreground tracking-tight">M-Ploy</span>
+          <img src={mployLogo} alt="M-Ploy logo" className="h-9 w-auto" />
         </Link>
 
         <div className="hidden md:flex items-center gap-0.5 bg-muted/60 rounded-xl p-1">

@@ -227,6 +227,13 @@ const CVBuilder = () => {
             <p className="text-muted-foreground text-lg">Build, optimize, and score your CV for maximum compatibility.</p>
           </motion.div>
 
+          {subscriptionTier === "free" && (
+            <UpgradeBanner requiredTier="basic" feature="All CV templates and unlimited downloads" />
+          )}
+          {!tierLimits.atsScore && (
+            <UpgradeBanner requiredTier="premium" feature="ATS Score Reports with detailed feedback" />
+          )}
+
           <Tabs defaultValue="builder" className="space-y-8">
             <TabsList className="bg-muted/60 rounded-xl p-1 h-auto">
               <TabsTrigger value="builder" className="rounded-lg data-[state=active]:shadow-sm">CV Builder</TabsTrigger>

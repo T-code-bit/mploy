@@ -182,6 +182,40 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-5">
+              {/* Subscription Card */}
+              <div className={`rounded-2xl border p-6 shadow-card ${subscriptionTier !== "free" ? "bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20" : "bg-card border-border"}`}>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-display font-semibold text-card-foreground flex items-center gap-2">
+                    <Crown className={`h-4 w-4 ${subscriptionTier !== "free" ? "text-primary" : "text-muted-foreground"}`} />
+                    Your Plan
+                  </h3>
+                  <Badge variant={subscriptionTier !== "free" ? "default" : "secondary"} className="rounded-lg">
+                    {currentPlan.name}
+                  </Badge>
+                </div>
+                <p className="text-sm text-muted-foreground mb-1">
+                  {currentPlan.price}{currentPlan.period}
+                </p>
+                {subscriptionEnd && (
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Renews: {new Date(subscriptionEnd).toLocaleDateString("en-KE", { month: "long", day: "numeric", year: "numeric" })}
+                  </p>
+                )}
+                <div className="space-y-2 mt-3">
+                  {subscriptionTier === "free" ? (
+                    <Link to="/#pricing">
+                      <Button size="sm" className="w-full bg-gradient-primary text-primary-foreground rounded-xl gap-2">
+                        <Sparkles className="h-3.5 w-3.5" /> Upgrade Plan
+                      </Button>
+                    </Link>
+                  ) : (
+                    <Button size="sm" variant="outline" className="w-full rounded-xl gap-2" onClick={handleManageSubscription} disabled={portalLoading}>
+                      {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Settings className="h-3.5 w-3.5" />}
+                      Manage Subscription
+                    </Button>
+                  )}
+                </div>
+              </div>
               <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
                 <h3 className="font-display font-semibold text-card-foreground mb-4">Quick Actions</h3>
                 <div className="space-y-2">

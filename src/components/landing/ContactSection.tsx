@@ -17,6 +17,7 @@ const contactInfo = [
 const ContactSection = () => {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +25,20 @@ const ContactSection = () => {
       toast.error("Please fill in all required fields");
       return;
     }
+    if (!turnstileToken) {
+      toast.error("Please complete the security check");
+      return;
+    }
     setSending(true);
+    const { data: verification, error: verifyError } = await supabase.functions.invoke("verify-turnstile", {
+      body: { token: turnstileToken },
+    });
+    if (verifyError || !verification?.success) {
+      toast.error("Security verification failed. Please try again.");
+      setTurnstileToken("");
+      setSending(false);
+      return;
+    }
     const { error } = await supabase.from("contact_messages").insert({
       name: formData.name,
       email: formData.email,

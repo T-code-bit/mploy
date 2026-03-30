@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -6,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Briefcase, FileCheck, GraduationCap, Award, TrendingUp,
-  Eye, Send, Clock, ChevronRight, Star, ArrowUpRight, Loader2
+  Eye, Send, ChevronRight, ArrowUpRight, Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -15,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, userRole } = useAuth();
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["dashboard-applications", user?.id],
@@ -28,7 +29,7 @@ const Dashboard = () => {
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
+    enabled: !!user && userRole !== "employer",
   });
 
   const stats = useMemo(() => {
@@ -37,6 +38,11 @@ const Dashboard = () => {
     const accepted = applications.filter((a: any) => a.status === "accepted").length;
     return { total, pending, accepted };
   }, [applications]);
+
+  // Redirect employers to their dedicated portal
+  if (userRole === "employer") {
+    return <Navigate to="/employer" replace />;
+  }
 
   const statusColor = (status: string) => {
     switch (status) {

@@ -19,6 +19,7 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
+  const [employerCode, setEmployerCode] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,6 +41,10 @@ const Auth = () => {
     e.preventDefault();
     if (signupPassword.length < 6) {
       toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (signupRole === "employer" && employerCode !== "6490") {
+      toast.error("Invalid employer access code");
       return;
     }
     setLoading(true);
@@ -175,6 +180,22 @@ const Auth = () => {
                       ))}
                     </div>
                   </div>
+
+                  {signupRole === "employer" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="employer-code">Employer Access Code</Label>
+                      <Input
+                        id="employer-code"
+                        type="password"
+                        placeholder="Enter access code"
+                        className="rounded-xl h-11"
+                        value={employerCode}
+                        onChange={(e) => setEmployerCode(e.target.value)}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">Contact admin to get your employer access code.</p>
+                    </div>
+                  )}
 
                   <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}

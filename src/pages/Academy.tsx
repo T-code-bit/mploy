@@ -118,18 +118,24 @@ const Academy = () => {
 
           {/* Courses */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {filtered.map((course, i) => (
+            {filtered.map((course, i) => {
+              const isLocked = maxLessons !== Infinity && i >= maxLessons;
+              return (
               <motion.div
                 key={course.id}
                 initial={{ opacity: 0, y: 16 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className="bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-lg transition-all group cursor-pointer hover:-translate-y-1 card-shine"
+                className={`bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-lg transition-all group cursor-pointer hover:-translate-y-1 card-shine ${isLocked ? "opacity-60" : ""}`}
               >
                 <div className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />
-                  <PlayCircle className="h-12 w-12 text-muted-foreground/30 group-hover:text-primary group-hover:scale-110 transition-all duration-300" />
+                  {isLocked ? (
+                    <Lock className="h-12 w-12 text-muted-foreground/40" />
+                  ) : (
+                    <PlayCircle className="h-12 w-12 text-muted-foreground/30 group-hover:text-primary group-hover:scale-110 transition-all duration-300" />
+                  )}
                   {course.badge && (
                     <div className="absolute top-3 right-3">
                       <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-accent text-secondary-foreground text-[10px] font-bold shadow-sm">
@@ -140,6 +146,13 @@ const Academy = () => {
                   <div className="absolute top-3 left-3">
                     <span className="px-2.5 py-1 rounded-lg bg-card/90 backdrop-blur text-[10px] font-semibold text-foreground">{course.level}</span>
                   </div>
+                  {isLocked && (
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <span className="px-2.5 py-1 rounded-lg bg-primary/90 text-primary-foreground text-[10px] font-bold flex items-center gap-1 w-fit">
+                        <Lock className="h-3 w-3" /> Upgrade to unlock
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="p-5">
                   <span className="inline-flex px-2.5 py-1 rounded-lg bg-muted text-[10px] font-medium text-muted-foreground mb-2.5">{course.category}</span>
@@ -148,7 +161,11 @@ const Academy = () => {
                     <span className="flex items-center gap-1"><BookOpen className="h-3 w-3" />{course.lessons} lessons</span>
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{course.duration}</span>
                   </div>
-                  {course.progress > 0 ? (
+                  {isLocked ? (
+                    <Button size="sm" variant="outline" className="w-full text-xs rounded-xl h-9" onClick={() => window.location.href = "/#pricing"}>
+                      <Lock className="h-3 w-3 mr-1" /> Upgrade Plan
+                    </Button>
+                  ) : course.progress > 0 ? (
                     <div>
                       <div className="flex items-center justify-between text-xs mb-1.5">
                         <span className="text-muted-foreground">Progress</span>
@@ -166,7 +183,8 @@ const Academy = () => {
                   )}
                 </div>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

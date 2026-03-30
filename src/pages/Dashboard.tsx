@@ -43,25 +43,6 @@ const Dashboard = () => {
   if (userRole === "employer") {
     return <Navigate to="/employer" replace />;
   }
-    queryKey: ["dashboard-applications", user?.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("applications")
-        .select("*, jobs(title, company, location)")
-        .eq("applicant_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!user,
-  });
-
-  const stats = useMemo(() => {
-    const total = applications.length;
-    const pending = applications.filter((a: any) => a.status === "pending").length;
-    const accepted = applications.filter((a: any) => a.status === "accepted").length;
-    return { total, pending, accepted };
-  }, [applications]);
 
   const statusColor = (status: string) => {
     switch (status) {

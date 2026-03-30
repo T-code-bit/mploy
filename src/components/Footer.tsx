@@ -127,12 +127,15 @@ const Footer = () => {
             <h4 className="font-display font-semibold text-foreground mb-4 text-sm">Company</h4>
             <div className="flex flex-col gap-3">
               {[
-                { label: "About", href: "#" },
+                { label: "About", href: "/about" },
                 { label: "Contact", href: "/#contact" },
-                { label: "Privacy", href: "#" },
-                { label: "Terms", href: "#" },
+                { label: "Privacy", href: "/privacy" },
+                { label: "Terms", href: "/terms" },
               ].map((link) => (
-                <a key={link.label} href={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors">{link.label}</a>
+                <Link key={link.label} to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group">
+                  {link.label}
+                  <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-0.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
+                </Link>
               ))}
             </div>
           </div>

@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ShieldCheck, ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import mployLogo from "@/assets/mploy-logo.png";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -73,10 +74,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-12 gap-8">
           <div className="col-span-2 md:col-span-4">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <div className="bg-gradient-primary rounded-xl p-1.5">
-                <ShieldCheck className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="font-display text-lg font-bold text-foreground tracking-tight">M-Ploy</span>
+              <img src={mployLogo} alt="M-Ploy logo" className="h-9 w-auto" />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-6">
               The trusted bridge between talent and opportunity. Verified careers. Optimized skills. Total readiness.

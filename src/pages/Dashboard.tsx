@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -7,13 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Briefcase, FileCheck, GraduationCap, Award, TrendingUp,
-  Eye, Send, ChevronRight, ArrowUpRight, Loader2
+  Eye, Send, ChevronRight, ArrowUpRight, Loader2, Crown, Settings, Sparkles
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
+import UpgradeBanner from "@/components/UpgradeBanner";
+import { toast } from "sonner";
 
 const Dashboard = () => {
   const { user, profile, userRole } = useAuth();

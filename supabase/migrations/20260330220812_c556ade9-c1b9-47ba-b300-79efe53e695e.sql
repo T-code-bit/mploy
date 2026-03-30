@@ -1,0 +1,7 @@
+
+ALTER TABLE public.applications
+  ADD COLUMN IF NOT EXISTS education_level TEXT,
+  ADD COLUMN IF NOT EXISTS expected_salary TEXT,
+  ADD COLUMN IF NOT EXISTS gender TEXT,
+  ADD COLUMN IF NOT EXISTS county TEXT,
+  ADD COLUMN IF NOT EXISTS date_of_birth DATE;

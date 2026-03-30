@@ -19,6 +19,7 @@ const Navbar = () => {
   const { user, profile, userRole, signOut } = useAuth();
 
   const navLinks = [
+    { label: "Home", href: "/" },
     { label: "Jobs", href: "/jobs" },
     { label: "CV Builder", href: "/cv-builder" },
     { label: "Academy", href: "/academy" },

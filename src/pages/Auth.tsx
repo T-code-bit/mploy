@@ -156,9 +156,31 @@ const Auth = () => {
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
-                  <p className="text-sm text-muted-foreground text-center">
-                    Sign in as a <span className="font-medium text-foreground">Job Seeker</span> or <span className="font-medium text-foreground">Employer</span> — one account for both.
-                  </p>
+                  <div className="space-y-2">
+                    <Label>Sign in as</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { role: "job_seeker" as const, icon: GraduationCap, label: "Job Seeker" },
+                        { role: "employer" as const, icon: Briefcase, label: "Employer" },
+                      ].map((option) => (
+                        <button
+                          key={option.role}
+                          type="button"
+                          onClick={() => setSignupRole(option.role)}
+                          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
+                            signupRole === option.role
+                              ? "border-primary bg-accent shadow-glow"
+                              : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
+                          }`}
+                        >
+                          <option.icon className={`h-5 w-5 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
+                          <span className={`text-sm font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
+                            {option.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
                     <Input id="login-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />

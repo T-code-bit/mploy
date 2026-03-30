@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mail, MapPin, Phone, Send, MessageSquare, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import CloudflareTurnstile from "@/components/CloudflareTurnstile";
 
 const contactInfo = [
   { icon: Mail, label: "Email", value: "hello@m-ploy.co.ke", href: "mailto:hello@m-ploy.co.ke" },
@@ -16,6 +17,7 @@ const contactInfo = [
 const ContactSection = () => {
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [sending, setSending] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +25,20 @@ const ContactSection = () => {
       toast.error("Please fill in all required fields");
       return;
     }
+    if (!turnstileToken) {
+      toast.error("Please complete the security check");
+      return;
+    }
     setSending(true);
+    const { data: verification, error: verifyError } = await supabase.functions.invoke("verify-turnstile", {
+      body: { token: turnstileToken },
+    });
+    if (verifyError || !verification?.success) {
+      toast.error("Security verification failed. Please try again.");
+      setTurnstileToken("");
+      setSending(false);
+      return;
+    }
     const { error } = await supabase.from("contact_messages").insert({
       name: formData.name,
       email: formData.email,
@@ -114,7 +129,8 @@ const ContactSection = () => {
               <label className="text-sm font-medium text-card-foreground mb-1.5 block">Message *</label>
               <Textarea placeholder="Tell us more..." rows={5} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="rounded-xl border-border resize-none" />
             </div>
-            <Button type="submit" disabled={sending} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-12 font-semibold text-base shadow-glow hover:shadow-glow">
+            <CloudflareTurnstile onVerify={setTurnstileToken} onExpire={() => setTurnstileToken("")} />
+            <Button type="submit" disabled={sending || !turnstileToken} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-12 font-semibold text-base shadow-glow hover:shadow-glow">
               {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <>Send Message <Send className="ml-2 h-4 w-4" /></>}
             </Button>
           </motion.form>

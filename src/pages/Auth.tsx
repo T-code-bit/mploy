@@ -43,7 +43,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     if (!(await verifyCaptcha())) { setLoading(false); return; }
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: loginPassword,
     });
@@ -51,7 +51,21 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      navigate("/dashboard");
+      // Redirect based on user role
+      if (authData.user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", authData.user.id)
+          .single();
+        if (roleData?.role === "employer") {
+          navigate("/employer");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        navigate("/dashboard");
+      }
     }
     setLoading(false);
   };

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, userRole } = useAuth();
+
+  // Redirect employers to their dedicated portal
+  if (userRole === "employer") {
+    return <Navigate to="/employer" replace />;
+  }
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["dashboard-applications", user?.id],

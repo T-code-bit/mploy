@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Mail, MapPin, Phone, Send, MessageSquare, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import CloudflareTurnstile from "@/components/CloudflareTurnstile";
 
 const contactInfo = [
   { icon: Mail, label: "Email", value: "hello@m-ploy.co.ke", href: "mailto:hello@m-ploy.co.ke" },

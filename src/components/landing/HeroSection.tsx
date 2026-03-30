@@ -38,7 +38,7 @@ const HeroSection = () => (
 
           <p className="text-lg text-primary-foreground/60 max-w-xl mb-10 leading-relaxed">
             Verified job listings. ATS-optimized CVs. Employability training.
-            M-Ploy is the trusted bridge between you and your next career move — globally.
+            M-Ploy is Kenya's trusted bridge between you and your next career move.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-12">

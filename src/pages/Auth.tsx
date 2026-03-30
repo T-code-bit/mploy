@@ -43,7 +43,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     if (!(await verifyCaptcha())) { setLoading(false); return; }
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: loginPassword,
     });
@@ -51,7 +51,21 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      navigate("/dashboard");
+      // Redirect based on user role
+      if (authData.user) {
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", authData.user.id)
+          .single();
+        if (roleData?.role === "employer") {
+          navigate("/employer");
+        } else {
+          navigate("/dashboard");
+        }
+      } else {
+        navigate("/dashboard");
+      }
     }
     setLoading(false);
   };
@@ -145,6 +159,9 @@ const Auth = () => {
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4">
+                  <p className="text-sm text-muted-foreground text-center">
+                    Sign in as a <span className="font-medium text-foreground">Job Seeker</span> or <span className="font-medium text-foreground">Employer</span> — one account for both.
+                  </p>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>
                     <Input id="login-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Briefcase, FileCheck, GraduationCap, Award, TrendingUp,
-  Eye, Send, Clock, ChevronRight, Star, ArrowUpRight, Loader2
+  Eye, Send, ChevronRight, ArrowUpRight, Loader2
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";

@@ -48,6 +48,8 @@ const App = () => (
             <Route path="/cookies" element={<Cookies />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <CookieConsent />
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

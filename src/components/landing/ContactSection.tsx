@@ -129,7 +129,8 @@ const ContactSection = () => {
               <label className="text-sm font-medium text-card-foreground mb-1.5 block">Message *</label>
               <Textarea placeholder="Tell us more..." rows={5} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} className="rounded-xl border-border resize-none" />
             </div>
-            <Button type="submit" disabled={sending} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-12 font-semibold text-base shadow-glow hover:shadow-glow">
+            <CloudflareTurnstile onVerify={setTurnstileToken} onExpire={() => setTurnstileToken("")} />
+            <Button type="submit" disabled={sending || !turnstileToken} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-12 font-semibold text-base shadow-glow hover:shadow-glow">
               {sending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : <>Send Message <Send className="ml-2 h-4 w-4" /></>}
             </Button>
           </motion.form>

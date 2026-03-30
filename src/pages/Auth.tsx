@@ -218,7 +218,8 @@ const Auth = () => {
                     </div>
                   )}
 
-                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
+                  <CloudflareTurnstile onVerify={setTurnstileToken} onExpire={() => setTurnstileToken("")} />
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !turnstileToken}>
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>

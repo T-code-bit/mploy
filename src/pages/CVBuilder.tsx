@@ -37,6 +37,10 @@ const templates = [
 ];
 
 const CVBuilder = () => {
+  const { subscriptionTier } = useAuth();
+  const tierLimits = SUBSCRIPTION_TIERS[subscriptionTier].limits;
+  const availableTemplates = templates.slice(0, tierLimits.cvTemplates === Infinity ? templates.length : tierLimits.cvTemplates);
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");

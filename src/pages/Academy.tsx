@@ -27,6 +27,9 @@ const categories = ["All", "CV & Resume", "Interviews", "Soft Skills", "Career G
 const Academy = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
+  const { subscriptionTier } = useAuth();
+  const tierLimits = SUBSCRIPTION_TIERS[subscriptionTier].limits;
+  const maxLessons = tierLimits.academyLessons;
 
   const filtered = courses.filter((c) => {
     const matchesCategory = activeCategory === "All" || c.category === activeCategory;

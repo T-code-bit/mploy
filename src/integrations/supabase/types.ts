@@ -17,33 +17,54 @@ export type Database = {
       applications: {
         Row: {
           applicant_id: string
+          availability: string | null
           cover_letter: string | null
           created_at: string
+          cv_url: string | null
           id: string
           job_id: string
+          linkedin_url: string | null
+          phone: string | null
+          recommendation_letter_url: string | null
           resume_url: string | null
+          scanned_id_url: string | null
           status: string
           updated_at: string
+          years_of_experience: string | null
         }
         Insert: {
           applicant_id: string
+          availability?: string | null
           cover_letter?: string | null
           created_at?: string
+          cv_url?: string | null
           id?: string
           job_id: string
+          linkedin_url?: string | null
+          phone?: string | null
+          recommendation_letter_url?: string | null
           resume_url?: string | null
+          scanned_id_url?: string | null
           status?: string
           updated_at?: string
+          years_of_experience?: string | null
         }
         Update: {
           applicant_id?: string
+          availability?: string | null
           cover_letter?: string | null
           created_at?: string
+          cv_url?: string | null
           id?: string
           job_id?: string
+          linkedin_url?: string | null
+          phone?: string | null
+          recommendation_letter_url?: string | null
           resume_url?: string | null
+          scanned_id_url?: string | null
           status?: string
           updated_at?: string
+          years_of_experience?: string | null
         }
         Relationships: [
           {

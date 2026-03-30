@@ -21,6 +21,7 @@ const Auth = () => {
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

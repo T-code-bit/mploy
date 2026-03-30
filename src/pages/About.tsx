@@ -13,10 +13,10 @@ const values = [
 ];
 
 const team = [
-  { name: "David Okonkwo", role: "Founder & CEO", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent globally." },
-  { name: "Lisa Chen", role: "CTO", bio: "Ex-Google engineer with 15 years in AI/ML. Building the tech that powers smarter career matching." },
-  { name: "James Mitchell", role: "Head of Product", bio: "Product leader who's shipped tools used by millions. Obsessed with user experience and accessibility." },
-  { name: "Fatima Al-Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across 40+ countries. Background in international business development." },
+  { name: "James Ochieng", role: "Founder & CEO", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent across Kenya and East Africa." },
+  { name: "Amina Wanjiku", role: "CTO", bio: "Experienced engineer with 12 years in AI/ML. Building the tech that powers smarter career matching for Kenyan talent." },
+  { name: "Peter Mwangi", role: "Head of Product", bio: "Product leader who's shipped tools used by thousands. Obsessed with user experience and accessibility." },
+  { name: "Fatima Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across Kenya and the East African region. Background in international business development." },
 ];
 
 const About = () => (

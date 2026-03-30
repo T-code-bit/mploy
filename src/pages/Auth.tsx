@@ -143,9 +143,7 @@ const Auth = () => {
           className="w-full max-w-md"
         >
           <div className="lg:hidden flex items-center gap-2.5 mb-8 justify-center">
-            <div className="bg-gradient-primary rounded-xl p-1.5">
-              <ShieldCheck className="h-5 w-5 text-primary-foreground" />
-            </div>
+            <img src={mployLogo} alt="M-Ploy" className="h-8 w-8 rounded-lg" />
             <span className="font-display text-xl font-bold text-foreground tracking-tight">M-Ploy</span>
           </div>
 

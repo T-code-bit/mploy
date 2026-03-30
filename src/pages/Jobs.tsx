@@ -35,6 +35,11 @@ const Jobs = () => {
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [recommendationFile, setRecommendationFile] = useState<File | null>(null);
   const [scannedIdFile, setScannedIdFile] = useState<File | null>(null);
+  const [educationLevel, setEducationLevel] = useState("");
+  const [expectedSalary, setExpectedSalary] = useState("");
+  const [gender, setGender] = useState("");
+  const [county, setCounty] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
 
   const { data: jobs = [], isLoading } = useQuery({
     queryKey: ["jobs"],

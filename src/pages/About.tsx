@@ -93,7 +93,7 @@ const About = () => (
             {[
               { value: "10K+", label: "Active Users" },
               { value: "500+", label: "Verified Employers" },
-              { value: "40+", label: "Countries Served" },
+              { value: "47", label: "Counties Covered" },
               { value: "95%", label: "ATS Pass Rate" },
             ].map((s) => (
               <div key={s.label}>

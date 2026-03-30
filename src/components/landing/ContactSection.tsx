@@ -84,7 +84,7 @@ const ContactSection = () => {
             ))}
             <div className="p-5 bg-card rounded-2xl border border-border shadow-card">
               <p className="text-sm font-semibold text-card-foreground mb-1">Business Hours</p>
-              <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 6:00 PM (SAST)</p>
+              <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 6:00 PM (EAT)</p>
               <p className="text-sm text-muted-foreground">Weekends: Closed</p>
             </div>
           </motion.div>

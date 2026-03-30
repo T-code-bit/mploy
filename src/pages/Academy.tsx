@@ -56,6 +56,13 @@ const Academy = () => {
             <p className="text-muted-foreground text-lg">Self-paced employability courses. Build skills. Get hired.</p>
           </motion.div>
 
+          {maxLessons < Infinity && (
+            <UpgradeBanner
+              requiredTier={maxLessons <= 3 ? "basic" : "premium"}
+              feature={`Full academy access (${maxLessons} lessons on your current plan)`}
+            />
+          )}
+
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
             {[

@@ -74,7 +74,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-12 gap-8">
           <div className="col-span-2 md:col-span-4">
             <Link to="/" className="flex items-center gap-2.5 mb-4">
-              <img src={mployLogo} alt="M-Ploy logo" className="h-9 w-auto" />
+              <img src={mployLogo} alt="M-Ploy logo" className="h-12 w-auto max-w-[160px] object-contain mix-blend-multiply" />
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-6">
               The trusted bridge between talent and opportunity. Verified careers. Optimized skills. Total readiness.

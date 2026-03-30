@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { ShieldCheck, ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, Loader2 } from "lucide-react";
+import mployLogo from "@/assets/mploy-logo.png";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";

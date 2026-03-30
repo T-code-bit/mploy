@@ -36,8 +36,8 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2.5 group">
-          <img src={mployLogo} alt="M-Ploy logo" className="h-9 w-auto" />
+        <Link to="/" className="flex items-center gap-2 group shrink-0">
+          <img src={mployLogo} alt="M-Ploy logo" className="h-12 w-auto max-w-[160px] object-contain mix-blend-multiply dark:mix-blend-screen" />
         </Link>
 
         <div className="hidden md:flex items-center gap-0.5 bg-muted/60 rounded-xl p-1">

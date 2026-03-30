@@ -109,9 +109,7 @@ const Auth = () => {
 
         <div className="max-w-md text-center relative z-10">
           <Link to="/" className="inline-flex items-center gap-3 mb-10">
-            <div className="bg-gradient-primary rounded-xl p-2.5 shadow-glow">
-              <ShieldCheck className="h-8 w-8 text-primary-foreground" />
-            </div>
+            <img src={mployLogo} alt="M-Ploy" className="h-12 w-12 rounded-xl" />
             <span className="font-display text-3xl font-bold text-primary-foreground tracking-tight">M-Ploy</span>
           </Link>
           <h2 className="font-display text-3xl font-bold text-primary-foreground mb-4 tracking-tight">

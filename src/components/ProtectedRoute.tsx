@@ -21,7 +21,8 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <Navigate to="/auth" replace />;
   }
 
-  if (requiredRole && userRole !== requiredRole) {
+  // Employers can access all sections (including job seeker routes)
+  if (requiredRole && userRole !== requiredRole && userRole !== "employer") {
     return <Navigate to="/dashboard" replace />;
   }
 

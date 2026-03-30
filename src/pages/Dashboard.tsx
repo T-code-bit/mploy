@@ -102,6 +102,10 @@ const Dashboard = () => {
             </Link>
           </motion.div>
 
+          {subscriptionTier === "free" && (
+            <UpgradeBanner requiredTier="basic" feature="Unlimited job views, all CV templates, and more academy lessons" />
+          )}
+
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
               { icon: Send, label: "Applications Sent", value: stats.total.toString(), change: `${stats.pending} pending`, color: "text-primary", bg: "bg-primary/10" },

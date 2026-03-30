@@ -19,7 +19,22 @@ import UpgradeBanner from "@/components/UpgradeBanner";
 import { toast } from "sonner";
 
 const Dashboard = () => {
-  const { user, profile, userRole } = useAuth();
+  const { user, profile, userRole, subscriptionTier, subscriptionEnd } = useAuth();
+  const [portalLoading, setPortalLoading] = useState(false);
+  const currentPlan = SUBSCRIPTION_TIERS[subscriptionTier];
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      if (data?.url) window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to open subscription management");
+    } finally {
+      setPortalLoading(false);
+    }
+  };
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["dashboard-applications", user?.id],

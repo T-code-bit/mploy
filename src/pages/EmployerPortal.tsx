@@ -188,7 +188,7 @@ const EmployerPortal = () => {
                     <Textarea value={jobForm.description} onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })} rows={4} className="rounded-xl" />
                   </div>
                   <Button onClick={() => createJob.mutate()} disabled={!jobForm.title || !jobForm.company} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold">
-                    Publish Job
+                    {editingJob ? "Update Job" : "Publish Job"}
                   </Button>
                 </div>
               </DialogContent>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, ChevronDown } from "lucide-react";
+import { Menu, X, LogOut, ChevronDown, Home, Briefcase, FileText, GraduationCap, LayoutDashboard, Building2, Info, Shield, Scale, Cookie } from "lucide-react";
 import mployLogo from "@/assets/mploy-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -20,18 +20,27 @@ const Navbar = () => {
   const { user, profile, userRole, signOut } = useAuth();
 
   const navLinks = [
-    { label: "Home", href: "/" },
-    { label: "Jobs", href: "/jobs" },
-    { label: "CV Builder", href: "/cv-builder" },
-    { label: "Academy", href: "/academy" },
-    ...(user ? [{ label: "Dashboard", href: "/dashboard" }] : []),
-    ...(userRole === "employer" ? [{ label: "Employer Portal", href: "/employer" }] : []),
+    { label: "Home", href: "/", icon: Home },
+    { label: "Jobs", href: "/jobs", icon: Briefcase },
+    { label: "CV Builder", href: "/cv-builder", icon: FileText },
+    { label: "Academy", href: "/academy", icon: GraduationCap },
+    ...(user ? [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] : []),
+    ...(userRole === "employer" ? [{ label: "Employer Portal", href: "/employer", icon: Building2 }] : []),
+  ];
+
+  const secondaryLinks = [
+    { label: "About Us", href: "/about", icon: Info },
+    { label: "Privacy Policy", href: "/privacy", icon: Shield },
+    { label: "Terms of Service", href: "/terms", icon: Scale },
+    { label: "Cookie Policy", href: "/cookies", icon: Cookie },
   ];
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
   };
+
+  const closeMobile = () => setMobileOpen(false);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 glass">
@@ -40,6 +49,7 @@ const Navbar = () => {
           <img src={mployLogo} alt="M-Ploy logo" className="h-12 w-auto max-w-[160px] object-contain mix-blend-multiply dark:mix-blend-screen" />
         </Link>
 
+        {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-0.5 bg-muted/60 rounded-xl p-1">
           {navLinks.map((link) => (
             <Link
@@ -63,6 +73,7 @@ const Navbar = () => {
           ))}
         </div>
 
+        {/* Desktop auth */}
         <div className="hidden md:flex items-center gap-2">
           {user ? (
             <DropdownMenu>
@@ -102,67 +113,137 @@ const Navbar = () => {
           )}
         </div>
 
-        <button className="md:hidden p-2 text-foreground rounded-lg hover:bg-muted transition-colors" onClick={() => setMobileOpen(!mobileOpen)}>
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden p-2 text-foreground rounded-lg hover:bg-muted transition-colors"
+          onClick={() => setMobileOpen(!mobileOpen)}
+        >
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
+      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-card/95 backdrop-blur-xl border-b border-border"
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="md:hidden bg-card/98 backdrop-blur-2xl border-b border-border overflow-hidden"
           >
-            <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  to={link.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === link.href
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <div className="border-t border-border mt-2 pt-2">
-                <p className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">More</p>
-                {[
-                  { label: "About", href: "/about" },
-                  { label: "Privacy Policy", href: "/privacy" },
-                  { label: "Terms of Service", href: "/terms" },
-                  { label: "Cookies", href: "/cookies" },
-                ].map((link) => (
-                  <Link
+            <div className="container mx-auto px-5 py-5 flex flex-col gap-0.5 max-h-[calc(100dvh-4rem)] overflow-y-auto">
+              {/* Primary navigation */}
+              <p className="px-3 pb-1.5 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-widest">
+                Navigate
+              </p>
+              {navLinks.map((link, i) => {
+                const Icon = link.icon;
+                const active = location.pathname === link.href;
+                return (
+                  <motion.div
                     key={link.href}
-                    to={link.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      location.pathname === link.href
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.03, duration: 0.2 }}
                   >
-                    {link.label}
-                  </Link>
-                ))}
+                    <Link
+                      to={link.href}
+                      onClick={closeMobile}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all ${
+                        active
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground/80 hover:bg-muted hover:text-foreground active:scale-[0.98]"
+                      }`}
+                    >
+                      <div className={`flex items-center justify-center h-8 w-8 rounded-lg ${
+                        active ? "bg-primary/15" : "bg-muted/80"
+                      }`}>
+                        <Icon className={`h-4 w-4 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                      </div>
+                      <span>{link.label}</span>
+                      {active && (
+                        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary" />
+                      )}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+
+              {/* Divider */}
+              <div className="my-2 border-t border-border/60" />
+
+              {/* Secondary links */}
+              <p className="px-3 pb-1.5 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-widest">
+                Company
+              </p>
+              <div className="grid grid-cols-2 gap-1">
+                {secondaryLinks.map((link, i) => {
+                  const Icon = link.icon;
+                  const active = location.pathname === link.href;
+                  return (
+                    <motion.div
+                      key={link.href}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.03, duration: 0.2 }}
+                    >
+                      <Link
+                        to={link.href}
+                        onClick={closeMobile}
+                        className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                          active
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.98]"
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="truncate">{link.label}</span>
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </div>
-              <div className="flex gap-2 pt-3 mt-2 border-t border-border">
+
+              {/* Divider */}
+              <div className="my-2 border-t border-border/60" />
+
+              {/* Auth actions */}
+              <div className="flex gap-2">
                 {user ? (
-                  <Button variant="ghost" size="sm" className="flex-1 rounded-xl" onClick={handleSignOut}>
-                    Sign Out
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 rounded-xl h-11 text-sm"
+                      onClick={() => { closeMobile(); navigate("/profile"); }}
+                    >
+                      Profile
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="flex-1 rounded-xl h-11 text-sm text-destructive hover:text-destructive"
+                      onClick={() => { closeMobile(); handleSignOut(); }}
+                    >
+                      <LogOut className="h-4 w-4 mr-1.5" /> Sign Out
+                    </Button>
+                  </>
                 ) : (
                   <>
-                    <Button variant="ghost" size="sm" className="flex-1 rounded-xl" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 rounded-xl h-11 text-sm"
+                      onClick={() => { closeMobile(); navigate("/auth"); }}
+                    >
                       Sign In
                     </Button>
-                    <Button size="sm" className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-gradient-primary text-primary-foreground rounded-xl h-11 text-sm shadow-glow"
+                      onClick={() => { closeMobile(); navigate("/auth"); }}
+                    >
                       Get Started
                     </Button>
                   </>

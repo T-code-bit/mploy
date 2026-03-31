@@ -27,6 +27,7 @@ interface AuthContextType {
   subscriptionEnd: string | null;
   subscriptionLoading: boolean;
   refreshSubscription: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 

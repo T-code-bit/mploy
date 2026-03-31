@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
 const Profile = () => {
-  const { user, profile, userRole } = useAuth();
+  const { user, profile, userRole, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -64,8 +64,8 @@ const Profile = () => {
         })
         .eq("user_id", user.id);
       if (error) throw error;
+      await refreshProfile();
       toast.success("Profile updated successfully!");
-      // Redirect to appropriate dashboard after completing profile
       if (isComplete) {
         navigate(userRole === "employer" ? "/employer" : "/dashboard");
       }

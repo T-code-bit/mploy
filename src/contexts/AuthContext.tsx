@@ -59,19 +59,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   const fetchProfile = async (userId: string) => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-    if (data) setProfile(data as Profile);
+    setProfileLoading(true);
+    try {
+      const { data } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+      if (data) setProfile(data as Profile);
 
-    const { data: roleData } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .single();
-    if (roleData) setUserRole(roleData.role as UserRole);
+      const { data: roleData } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .single();
+      if (roleData) setUserRole(roleData.role as UserRole);
+    } finally {
+      setProfileLoading(false);
+    }
   };
 
   const refreshProfile = useCallback(async () => {

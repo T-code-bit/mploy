@@ -42,8 +42,8 @@ const VideoShowcaseSection = () => {
                 <iframe
                   width="100%"
                   height="100%"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
-                  title="M-Ploy Platform Overview"
+                  src="https://www.youtube.com/embed/3TnsIbJNm5E?autoplay=1&rel=0"
+                  title="Tips to Ace Your Job Interviews — Indeed's Ultimate Guide"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
@@ -69,9 +69,9 @@ const VideoShowcaseSection = () => {
                 </div>
                 <div className="absolute bottom-6 left-6 right-6">
                   <p className="text-primary-foreground font-display font-semibold text-lg drop-shadow-lg">
-                    Platform Overview — How M-Ploy Works
+                    Tips to Ace Your Job Interviews — Indeed's Ultimate Guide
                   </p>
-                  <p className="text-primary-foreground/70 text-sm drop-shadow-lg">3:42</p>
+                  <p className="text-primary-foreground/70 text-sm drop-shadow-lg">7:38</p>
                 </div>
               </div>
             )}
@@ -81,9 +81,9 @@ const VideoShowcaseSection = () => {
         {/* Video grid - additional content */}
         <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto mt-8">
           {[
-            { title: "CV Builder Tutorial", duration: "2:15", bg: "from-primary/20 to-primary/5" },
-            { title: "Success Stories", duration: "4:30", bg: "from-secondary/20 to-secondary/5" },
-            { title: "ATS Tips & Tricks", duration: "3:08", bg: "from-accent/20 to-accent/5" },
+            { title: "Best Way to Prepare for an Interview", duration: "29:50", bg: "from-primary/20 to-primary/5", videoId: "JBNkIAG1V2E" },
+            { title: "How to Prepare for a Job Interview 2025", duration: "23:20", bg: "from-secondary/20 to-secondary/5", videoId: "dCJlA42sYbo" },
+            { title: "Stand Out in a Job Interview — HBR", duration: "12:04", bg: "from-accent/20 to-accent/5", videoId: "ZU9x1vFx5lI" },
           ].map((vid, i) => (
             <motion.div
               key={vid.title}
@@ -92,10 +92,19 @@ const VideoShowcaseSection = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               className="relative rounded-2xl overflow-hidden border border-border shadow-card group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
+              onClick={() => window.open(`https://www.youtube.com/watch?v=${vid.videoId}`, '_blank')}
             >
-              <div className={`aspect-video bg-gradient-to-br ${vid.bg} flex items-center justify-center`}>
-                <div className="h-12 w-12 rounded-full bg-card/80 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Play className="h-5 w-5 text-foreground ml-0.5" />
+              <div className="aspect-video relative">
+                <img
+                  src={`https://img.youtube.com/vi/${vid.videoId}/hqdefault.jpg`}
+                  alt={vid.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/30 transition-colors flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-card/80 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Play className="h-5 w-5 text-foreground ml-0.5" />
+                  </div>
                 </div>
               </div>
               <div className="p-4 bg-card">

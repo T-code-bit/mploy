@@ -86,6 +86,48 @@ const About = () => (
           </div>
         </div>
 
+        {/* Target Market */}
+        <div className="mb-20">
+          <h2 className="font-display text-3xl font-bold text-foreground text-center mb-10 tracking-tight">Who We Serve</h2>
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <motion.div initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-card rounded-2xl border border-border p-8 shadow-card">
+              <h3 className="font-display text-xl font-bold text-card-foreground mb-4">Primary Market</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />University & TVET graduates</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Young professionals</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Entry-level job seekers</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />Career changers</li>
+              </ul>
+            </motion.div>
+            <motion.div initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} className="bg-card rounded-2xl border border-border p-8 shadow-card">
+              <h3 className="font-display text-xl font-bold text-card-foreground mb-4">Secondary Market</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-secondary" />Employers & recruitment agencies</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-secondary" />SMEs seeking affordable recruitment</li>
+                <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-secondary" />Organizations seeking trained entry-level talent</li>
+              </ul>
+            </motion.div>
+          </div>
+        </div>
+
+        {/* Institutional Partnerships */}
+        <div className="mb-20">
+          <h2 className="font-display text-3xl font-bold text-foreground text-center mb-4 tracking-tight">Institutional Partnerships</h2>
+          <p className="text-muted-foreground text-center max-w-2xl mx-auto mb-10">We partner with institutions to provide the Academy as a "finishing school" for graduating students and support youth employment initiatives.</p>
+          <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto">
+            {[
+              { title: "Universities & TVETs", desc: "Integrating employability training into graduating student programs." },
+              { title: "Training Institutions", desc: "Providing platform access to supplement career development curricula." },
+              { title: "NGOs & Development Orgs", desc: "Supporting youth employment and workforce readiness initiatives." },
+            ].map((p, i) => (
+              <motion.div key={p.title} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-card rounded-2xl border border-border p-6 shadow-card text-center hover:shadow-lg transition-all hover:-translate-y-0.5">
+                <h4 className="font-display font-semibold text-card-foreground mb-2">{p.title}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">{p.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
         {/* Team */}
         <div className="mb-20">
           <h2 className="font-display text-3xl font-bold text-foreground text-center mb-10 tracking-tight">Meet the Team</h2>

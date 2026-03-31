@@ -305,6 +305,12 @@ const Jobs = () => {
                           <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location || "Not specified"}</span>
                           <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{job.type}</span>
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(job.created_at)}</span>
+                          {(job as any).deadline && (
+                            <span className={`flex items-center gap-1 font-medium ${new Date((job as any).deadline) < new Date() ? 'text-destructive' : 'text-primary'}`}>
+                              <CalendarClock className="h-3 w-3" />
+                              {new Date((job as any).deadline) < new Date() ? 'Expired' : `Deadline: ${new Date((job as any).deadline).toLocaleDateString()}`}
+                            </span>
+                          )}
                         </div>
                         {job.description && (
                           <p className="text-sm text-muted-foreground mb-3 ml-[52px] line-clamp-2">{job.description}</p>

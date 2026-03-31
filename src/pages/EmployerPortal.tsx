@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Briefcase, Users, Eye, Trash2, Building2 } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ const EmployerPortal = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<any>(null);
   const [jobForm, setJobForm] = useState({
     title: "", company: "", location: "", type: "Full-time", category: "General",
     description: "", salary_range: "",
@@ -56,20 +57,48 @@ const EmployerPortal = () => {
 
   const createJob = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("jobs").insert({
-        ...jobForm,
-        employer_id: user!.id,
-      });
-      if (error) throw error;
+      if (editingJob) {
+        const { error } = await supabase.from("jobs").update({
+          title: jobForm.title,
+          company: jobForm.company,
+          location: jobForm.location,
+          type: jobForm.type,
+          category: jobForm.category,
+          description: jobForm.description,
+          salary_range: jobForm.salary_range || null,
+        }).eq("id", editingJob.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("jobs").insert({
+          ...jobForm,
+          employer_id: user!.id,
+        });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employer-jobs"] });
-      toast.success("Job posted!");
+      toast.success(editingJob ? "Job updated!" : "Job posted!");
       setDialogOpen(false);
+      setEditingJob(null);
       setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const openEditDialog = (job: any) => {
+    setEditingJob(job);
+    setJobForm({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      type: job.type,
+      category: job.category,
+      description: job.description,
+      salary_range: job.salary_range || "",
+    });
+    setDialogOpen(true);
+  };
 
   const updateApplicationStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
@@ -113,13 +142,13 @@ const EmployerPortal = () => {
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
+                <Button onClick={() => { setEditingJob(null); setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" }); }} className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
                   <Plus className="h-4 w-4" /> Post a Job
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle className="font-display">Post a New Job</DialogTitle>
+                  <DialogTitle className="font-display">{editingJob ? "Edit Job" : "Post a New Job"}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">
@@ -159,7 +188,7 @@ const EmployerPortal = () => {
                     <Textarea value={jobForm.description} onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })} rows={4} className="rounded-xl" />
                   </div>
                   <Button onClick={() => createJob.mutate()} disabled={!jobForm.title || !jobForm.company} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold">
-                    Publish Job
+                    {editingJob ? "Update Job" : "Publish Job"}
                   </Button>
                 </div>
               </DialogContent>
@@ -231,9 +260,14 @@ const EmployerPortal = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" onClick={() => deleteJob.mutate(job.id)} className="rounded-lg">
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button variant="ghost" size="sm" onClick={() => openEditDialog(job)} className="rounded-lg">
+                                <Pencil className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => deleteJob.mutate(job.id)} className="rounded-lg">
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

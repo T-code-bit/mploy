@@ -17,6 +17,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
 import CookieConsent from "./components/CookieConsent";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,9 @@ const App = () => (
             } />
             <Route path="/employer" element={
               <ProtectedRoute requiredRole="employer"><EmployerPortal /></ProtectedRoute>
+            } />
+            <Route path="/profile" element={
+              <ProtectedRoute><Profile /></ProtectedRoute>
             } />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />

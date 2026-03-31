@@ -81,6 +81,9 @@ const Navbar = () => {
                 <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg">
                   Dashboard
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate("/profile")} className="rounded-lg">
+                  Profile Settings
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive rounded-lg">
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out

@@ -1,14 +1,10 @@
 import { motion } from "framer-motion";
 import usEmbassyLogo from "@/assets/partner-us-embassy.png";
-import gyeLogo from "@/assets/partner-gye.png";
 import btlLogo from "@/assets/partner-btl.png";
-import ictKenyaLogo from "@/assets/partner-ict-kenya.png";
 
 const partners = [
   { name: "US Embassy", logo: usEmbassyLogo },
-  { name: "Global Youth Employability, Kenya", logo: gyeLogo },
   { name: "BTL (Be The Leader)", logo: btlLogo },
-  { name: "ICT Kenya", logo: ictKenyaLogo },
 ];
 
 const TrustedBySection = () => (

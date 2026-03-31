@@ -57,20 +57,48 @@ const EmployerPortal = () => {
 
   const createJob = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("jobs").insert({
-        ...jobForm,
-        employer_id: user!.id,
-      });
-      if (error) throw error;
+      if (editingJob) {
+        const { error } = await supabase.from("jobs").update({
+          title: jobForm.title,
+          company: jobForm.company,
+          location: jobForm.location,
+          type: jobForm.type,
+          category: jobForm.category,
+          description: jobForm.description,
+          salary_range: jobForm.salary_range || null,
+        }).eq("id", editingJob.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("jobs").insert({
+          ...jobForm,
+          employer_id: user!.id,
+        });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["employer-jobs"] });
-      toast.success("Job posted!");
+      toast.success(editingJob ? "Job updated!" : "Job posted!");
       setDialogOpen(false);
+      setEditingJob(null);
       setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const openEditDialog = (job: any) => {
+    setEditingJob(job);
+    setJobForm({
+      title: job.title,
+      company: job.company,
+      location: job.location,
+      type: job.type,
+      category: job.category,
+      description: job.description,
+      salary_range: job.salary_range || "",
+    });
+    setDialogOpen(true);
+  };
 
   const updateApplicationStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {

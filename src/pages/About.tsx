@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ShieldCheck, Globe, Users, Target, Heart, Zap } from "lucide-react";
+import aboutTeamImg from "@/assets/about-team.jpg";
 
 const values = [
   { icon: ShieldCheck, title: "Trust & Verification", description: "Every job listing is authenticated. We eliminate scams and ghost postings so you can apply with confidence." },

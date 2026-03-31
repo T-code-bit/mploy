@@ -4,6 +4,7 @@ import HeroSection from "@/components/landing/HeroSection";
 import TrustedBySection from "@/components/landing/TrustedBySection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
+import VideoShowcaseSection from "@/components/landing/VideoShowcaseSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import PricingSection from "@/components/landing/PricingSection";
 import ContactSection from "@/components/landing/ContactSection";
@@ -15,6 +16,7 @@ const Index = () => (
     <HeroSection />
     <TrustedBySection />
     <FeaturesSection />
+    <VideoShowcaseSection />
     <HowItWorksSection />
     <TestimonialsSection />
     <PricingSection />

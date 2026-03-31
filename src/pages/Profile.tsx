@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -9,11 +10,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { User, Mail, Phone, MapPin, FileText, Save, Loader2 } from "lucide-react";
+import { User, Mail, Phone, MapPin, FileText, Save, Loader2, AlertTriangle } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Progress } from "@/components/ui/progress";
 
 const Profile = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, userRole } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
@@ -25,15 +28,22 @@ const Profile = () => {
     avatar_url: "",
   });
 
+  const completionFields = ["full_name", "phone", "address", "bio"] as const;
+  const completionPercent = useMemo(() => {
+    const filled = completionFields.filter((f) => form[f]?.trim()).length;
+    return Math.round((filled / completionFields.length) * 100);
+  }, [form]);
+  const isComplete = completionPercent === 100;
+
   useEffect(() => {
     if (profile) {
       setForm({
         full_name: profile.full_name || "",
-        bio: (profile as any).bio || "",
-        about: (profile as any).about || "",
-        phone: (profile as any).phone || "",
-        address: (profile as any).address || "",
-        avatar_url: (profile as any).avatar_url || "",
+        bio: profile.bio || "",
+        about: profile.about || "",
+        phone: profile.phone || "",
+        address: profile.address || "",
+        avatar_url: profile.avatar_url || "",
       });
     }
   }, [profile]);
@@ -47,14 +57,18 @@ const Profile = () => {
         .update({
           full_name: form.full_name,
           bio: form.bio,
-          about: form.about as any,
-          phone: form.phone as any,
-          address: form.address as any,
+          about: form.about,
+          phone: form.phone,
+          address: form.address,
           avatar_url: form.avatar_url,
         })
         .eq("user_id", user.id);
       if (error) throw error;
       toast.success("Profile updated successfully!");
+      // Redirect to appropriate dashboard after completing profile
+      if (isComplete) {
+        navigate(userRole === "employer" ? "/employer" : "/dashboard");
+      }
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -97,7 +111,21 @@ const Profile = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="font-display text-3xl font-bold text-foreground tracking-tight mb-2">Profile Settings</h1>
-            <p className="text-muted-foreground mb-8">Update your professional details.</p>
+            <p className="text-muted-foreground mb-4">Update your professional details.</p>
+
+            {!isComplete && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-6 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-destructive">Complete your profile to continue</p>
+                  <p className="text-xs text-muted-foreground mt-1">Please fill in all required fields (Name, Phone, Address, Bio) before accessing the platform.</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <Progress value={completionPercent} className="h-2 flex-1" />
+                    <span className="text-xs font-medium text-muted-foreground">{completionPercent}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-card rounded-2xl border border-border p-6 sm:p-8 shadow-card space-y-6">
               {/* Avatar */}

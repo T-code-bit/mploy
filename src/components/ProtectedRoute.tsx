@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
@@ -6,8 +6,15 @@ interface ProtectedRouteProps {
   requiredRole?: "job_seeker" | "employer";
 }
 
+const isProfileComplete = (profile: any): boolean => {
+  if (!profile) return false;
+  const { full_name, phone, address, bio } = profile;
+  return !!(full_name?.trim() && phone?.trim() && address?.trim() && bio?.trim());
+};
+
 const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { user, userRole, loading } = useAuth();
+  const { user, userRole, profile, loading } = useAuth();
+  const location = useLocation();
 
   if (loading) {
     return (
@@ -19,6 +26,11 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Force profile completion before accessing any protected page (except /profile itself)
+  if (location.pathname !== "/profile" && !isProfileComplete(profile)) {
+    return <Navigate to="/profile" replace />;
   }
 
   // Employers can access all sections (including job seeker routes)

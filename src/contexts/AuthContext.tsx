@@ -57,7 +57,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
-  const fetchProfile = async (userId: string) => {
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    await fetchProfile(user.id);
+  }, [user]);
+
     const { data } = await supabase
       .from("profiles")
       .select("*")

@@ -69,9 +69,9 @@ const VideoShowcaseSection = () => {
                 </div>
                 <div className="absolute bottom-6 left-6 right-6">
                   <p className="text-primary-foreground font-display font-semibold text-lg drop-shadow-lg">
-                    Platform Overview — How M-Ploy Works
+                    Tips to Ace Your Job Interviews — Indeed's Ultimate Guide
                   </p>
-                  <p className="text-primary-foreground/70 text-sm drop-shadow-lg">3:42</p>
+                  <p className="text-primary-foreground/70 text-sm drop-shadow-lg">7:38</p>
                 </div>
               </div>
             )}

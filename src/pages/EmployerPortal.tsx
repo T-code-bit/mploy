@@ -75,6 +75,7 @@ const EmployerPortal = () => {
       } else {
         const { error } = await supabase.from("jobs").insert({
           ...jobForm,
+          deadline: jobForm.deadline || null,
           employer_id: user!.id,
         });
         if (error) throw error;

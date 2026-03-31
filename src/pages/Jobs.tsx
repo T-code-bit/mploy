@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2, Upload, FileText, AlertCircle } from "lucide-react";
+import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2, Upload, FileText, AlertCircle, CalendarClock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -305,6 +305,12 @@ const Jobs = () => {
                           <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location || "Not specified"}</span>
                           <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{job.type}</span>
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(job.created_at)}</span>
+                          {(job as any).deadline && (
+                            <span className={`flex items-center gap-1 font-medium ${new Date((job as any).deadline) < new Date() ? 'text-destructive' : 'text-primary'}`}>
+                              <CalendarClock className="h-3 w-3" />
+                              {new Date((job as any).deadline) < new Date() ? 'Expired' : `Deadline: ${new Date((job as any).deadline).toLocaleDateString()}`}
+                            </span>
+                          )}
                         </div>
                         {job.description && (
                           <p className="text-sm text-muted-foreground mb-3 ml-[52px] line-clamp-2">{job.description}</p>

@@ -123,6 +123,7 @@ export type Database = {
           category: string
           company: string
           created_at: string
+          deadline: string | null
           description: string
           employer_id: string
           id: string
@@ -139,6 +140,7 @@ export type Database = {
           category?: string
           company: string
           created_at?: string
+          deadline?: string | null
           description?: string
           employer_id: string
           id?: string
@@ -155,6 +157,7 @@ export type Database = {
           category?: string
           company?: string
           created_at?: string
+          deadline?: string | null
           description?: string
           employer_id?: string
           id?: string

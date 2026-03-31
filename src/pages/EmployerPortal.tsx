@@ -27,7 +27,7 @@ const EmployerPortal = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [jobForm, setJobForm] = useState({
     title: "", company: "", location: "", type: "Full-time", category: "General",
-    description: "", salary_range: "",
+    description: "", salary_range: "", deadline: "",
   });
 
   const { data: myJobs = [] } = useQuery({
@@ -69,14 +69,27 @@ const EmployerPortal = () => {
           category: jobForm.category,
           description: jobForm.description,
           salary_range: jobForm.salary_range || null,
+          deadline: jobForm.deadline || null,
         }).eq("id", editingJob.id);
         if (error) throw error;
       } else {
         const { error } = await supabase.from("jobs").insert({
           ...jobForm,
+          deadline: jobForm.deadline || null,
           employer_id: user!.id,
         });
         if (error) throw error;
+
+        // Notify subscribers about new job
+        await supabase.functions.invoke("notify-new-job", {
+          body: {
+            jobTitle: jobForm.title,
+            company: jobForm.company,
+            location: jobForm.location,
+            type: jobForm.type,
+            deadline: jobForm.deadline || null,
+          },
+        });
       }
     },
     onSuccess: () => {
@@ -84,7 +97,7 @@ const EmployerPortal = () => {
       toast.success(editingJob ? "Job updated!" : "Job posted!");
       setDialogOpen(false);
       setEditingJob(null);
-      setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" });
+      setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "", deadline: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -99,6 +112,7 @@ const EmployerPortal = () => {
       category: job.category,
       description: job.description,
       salary_range: job.salary_range || "",
+      deadline: job.deadline ? new Date(job.deadline).toISOString().slice(0, 16) : "",
     });
     setDialogOpen(true);
   };
@@ -145,7 +159,7 @@ const EmployerPortal = () => {
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => { setEditingJob(null); setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" }); }} className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
+                <Button onClick={() => { setEditingJob(null); setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "", deadline: "" }); }} className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
                   <Plus className="h-4 w-4" /> Post a Job
                 </Button>
               </DialogTrigger>
@@ -185,6 +199,10 @@ const EmployerPortal = () => {
                       <Label>Salary Range</Label>
                       <Input value={jobForm.salary_range} onChange={(e) => setJobForm({ ...jobForm, salary_range: e.target.value })} placeholder="e.g. $3k - $5k" className="rounded-xl h-11" />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Application Deadline</Label>
+                    <Input type="datetime-local" value={jobForm.deadline} onChange={(e) => setJobForm({ ...jobForm, deadline: e.target.value })} className="rounded-xl h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>
@@ -244,9 +262,10 @@ const EmployerPortal = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Title</TableHead>
+                         <TableHead>Title</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Type</TableHead>
+                        <TableHead>Deadline</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead></TableHead>
                       </TableRow>
@@ -257,6 +276,9 @@ const EmployerPortal = () => {
                           <TableCell className="font-semibold">{job.title}</TableCell>
                           <TableCell className="text-muted-foreground">{job.location}</TableCell>
                           <TableCell><Badge variant="secondary" className="rounded-lg">{job.type}</Badge></TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {job.deadline ? new Date(job.deadline).toLocaleDateString() : "No deadline"}
+                          </TableCell>
                           <TableCell>
                             <Badge variant={job.is_active ? "default" : "outline"} className="rounded-lg">
                               {job.is_active ? "Active" : "Closed"}

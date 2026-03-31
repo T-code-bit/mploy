@@ -294,6 +294,7 @@ const EmployerPortal = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Job</TableHead>
+                        <TableHead>Applicant</TableHead>
                         <TableHead>Applied</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Action</TableHead>

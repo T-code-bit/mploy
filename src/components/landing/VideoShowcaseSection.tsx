@@ -1,10 +1,16 @@
-import { motion } from "framer-motion";
-import { Play } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, X } from "lucide-react";
 import { useState } from "react";
 import interviewImg from "@/assets/interview-scene.jpg";
 
+const videos = [
+  { title: "Best Way to Prepare for an Interview", duration: "29:50", videoId: "JBNkIAG1V2E" },
+  { title: "How to Prepare for a Job Interview 2025", duration: "23:20", videoId: "dCJlA42sYbo" },
+  { title: "Stand Out in a Job Interview — HBR", duration: "12:04", videoId: "ZU9x1vFx5lI" },
+];
+
 const VideoShowcaseSection = () => {
-  const [playing, setPlaying] = useState(false);
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
   return (
     <section className="py-28 bg-background relative overflow-hidden">
@@ -30,6 +36,7 @@ const VideoShowcaseSection = () => {
           </p>
         </motion.div>
 
+        {/* Main featured video */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
@@ -37,8 +44,8 @@ const VideoShowcaseSection = () => {
           className="max-w-4xl mx-auto"
         >
           <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-border group">
-            {playing ? (
-              <div className="aspect-video">
+            {activeVideoId === "3TnsIbJNm5E" ? (
+              <div className="aspect-video relative">
                 <iframe
                   width="100%"
                   height="100%"
@@ -49,11 +56,17 @@ const VideoShowcaseSection = () => {
                   allowFullScreen
                   className="w-full h-full"
                 />
+                <button
+                  onClick={() => setActiveVideoId(null)}
+                  className="absolute top-3 right-3 h-9 w-9 rounded-full bg-background/80 flex items-center justify-center hover:bg-background transition-colors z-10"
+                >
+                  <X className="h-4 w-4 text-foreground" />
+                </button>
               </div>
             ) : (
               <div
                 className="aspect-video relative cursor-pointer"
-                onClick={() => setPlaying(true)}
+                onClick={() => setActiveVideoId("3TnsIbJNm5E")}
               >
                 <img
                   src={interviewImg}
@@ -78,35 +91,46 @@ const VideoShowcaseSection = () => {
           </div>
         </motion.div>
 
-        {/* Video grid - additional content */}
+        {/* Video grid — plays inline */}
         <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto mt-8">
-          {[
-            { title: "Best Way to Prepare for an Interview", duration: "29:50", bg: "from-primary/20 to-primary/5", videoId: "JBNkIAG1V2E" },
-            { title: "How to Prepare for a Job Interview 2025", duration: "23:20", bg: "from-secondary/20 to-secondary/5", videoId: "dCJlA42sYbo" },
-            { title: "Stand Out in a Job Interview — HBR", duration: "12:04", bg: "from-accent/20 to-accent/5", videoId: "ZU9x1vFx5lI" },
-          ].map((vid, i) => (
+          {videos.map((vid, i) => (
             <motion.div
-              key={vid.title}
+              key={vid.videoId}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               className="relative rounded-2xl overflow-hidden border border-border shadow-card group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
-              onClick={() => window.open(`https://www.youtube.com/watch?v=${vid.videoId}`, '_blank')}
+              onClick={() => setActiveVideoId(activeVideoId === vid.videoId ? null : vid.videoId)}
             >
-              <div className="aspect-video relative">
-                <img
-                  src={`https://img.youtube.com/vi/${vid.videoId}/hqdefault.jpg`}
-                  alt={vid.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/30 transition-colors flex items-center justify-center">
-                  <div className="h-12 w-12 rounded-full bg-card/80 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Play className="h-5 w-5 text-foreground ml-0.5" />
+              {activeVideoId === vid.videoId ? (
+                <div className="aspect-video relative">
+                  <iframe
+                    width="100%"
+                    height="100%"
+                    src={`https://www.youtube.com/embed/${vid.videoId}?autoplay=1&rel=0`}
+                    title={vid.title}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video relative">
+                  <img
+                    src={`https://img.youtube.com/vi/${vid.videoId}/hqdefault.jpg`}
+                    alt={vid.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/30 transition-colors flex items-center justify-center">
+                    <div className="h-12 w-12 rounded-full bg-card/80 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Play className="h-5 w-5 text-foreground ml-0.5" />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               <div className="p-4 bg-card">
                 <p className="font-display font-semibold text-card-foreground text-sm">{vid.title}</p>
                 <p className="text-xs text-muted-foreground">{vid.duration}</p>

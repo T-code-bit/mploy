@@ -265,6 +265,9 @@ const EmployerPortal = () => {
                           <TableCell className="font-semibold">{job.title}</TableCell>
                           <TableCell className="text-muted-foreground">{job.location}</TableCell>
                           <TableCell><Badge variant="secondary" className="rounded-lg">{job.type}</Badge></TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
+                            {job.deadline ? new Date(job.deadline).toLocaleDateString() : "No deadline"}
+                          </TableCell>
                           <TableCell>
                             <Badge variant={job.is_active ? "default" : "outline"} className="rounded-lg">
                               {job.is_active ? "Active" : "Closed"}

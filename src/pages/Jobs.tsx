@@ -178,6 +178,20 @@ const Jobs = () => {
 
   const hasApplied = (jobId: string) => myApplications.includes(jobId);
 
+  const isOwner = (job: any) => user && job.employer_id === user.id;
+
+  const deleteJobMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("jobs").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast.success("Job deleted successfully");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const FileUploadField = ({ label, required, file, onFileChange }: {
     label: string; required?: boolean; file: File | null; onFileChange: (f: File | null) => void;
   }) => (

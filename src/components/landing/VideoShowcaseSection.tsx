@@ -42,8 +42,8 @@ const VideoShowcaseSection = () => {
                 <iframe
                   width="100%"
                   height="100%"
-                  src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
-                  title="M-Ploy Platform Overview"
+                  src="https://www.youtube.com/embed/3TnsIbJNm5E?autoplay=1&rel=0"
+                  title="Tips to Ace Your Job Interviews — Indeed's Ultimate Guide"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen

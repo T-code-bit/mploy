@@ -57,14 +57,18 @@ const Profile = () => {
         .update({
           full_name: form.full_name,
           bio: form.bio,
-          about: form.about as any,
-          phone: form.phone as any,
-          address: form.address as any,
+          about: form.about,
+          phone: form.phone,
+          address: form.address,
           avatar_url: form.avatar_url,
         })
         .eq("user_id", user.id);
       if (error) throw error;
       toast.success("Profile updated successfully!");
+      // Redirect to appropriate dashboard after completing profile
+      if (isComplete) {
+        navigate(userRole === "employer" ? "/employer" : "/dashboard");
+      }
     } catch (e: any) {
       toast.error(e.message);
     } finally {

@@ -304,6 +304,11 @@ const EmployerPortal = () => {
                       {applications.map((app: any) => (
                         <TableRow key={app.id}>
                           <TableCell className="font-semibold">{app.jobs?.title}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary rounded-lg" onClick={() => { setViewingApplicant(app.applicant_id); setProfileDialogOpen(true); }}>
+                              <UserCircle className="h-3.5 w-3.5" /> View Profile
+                            </Button>
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {new Date(app.created_at).toLocaleDateString()}
                           </TableCell>

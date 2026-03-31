@@ -69,6 +69,7 @@ const EmployerPortal = () => {
           category: jobForm.category,
           description: jobForm.description,
           salary_range: jobForm.salary_range || null,
+          deadline: jobForm.deadline || null,
         }).eq("id", editingJob.id);
         if (error) throw error;
       } else {

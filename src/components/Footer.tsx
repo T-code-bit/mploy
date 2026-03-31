@@ -162,7 +162,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-muted-foreground">© 2026 M-Ploy. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} M-Ploy. All rights reserved. Made with ❤️ in Nairobi.</p>
           <div className="flex gap-6">
             {[
               { label: "Terms", href: "/terms" },

@@ -92,7 +92,7 @@ const HowItWorksSection = () => (
           <div className="rounded-3xl overflow-hidden shadow-xl border border-primary-foreground/10">
             <img
               src={cvPreview}
-              alt="Graduates celebrating by throwing caps into the sky"
+              alt="Graduates celebrating their career success"
               className="w-full h-[420px] object-cover"
               loading="lazy"
             />

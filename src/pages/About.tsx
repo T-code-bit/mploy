@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ShieldCheck, Globe, Users, Target, Heart, Zap } from "lucide-react";
+import aboutTeamImg from "@/assets/about-team.jpg";
 
 const values = [
   { icon: ShieldCheck, title: "Trust & Verification", description: "Every job listing is authenticated. We eliminate scams and ghost postings so you can apply with confidence." },
@@ -25,7 +26,7 @@ const About = () => (
     <div className="pt-24 pb-16">
       <div className="container mx-auto px-4">
         {/* Hero */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-3xl mx-auto mb-20">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center max-w-3xl mx-auto mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/8 mb-5">
             <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             <span className="text-xs font-semibold text-primary uppercase tracking-wider">About M-Ploy</span>
@@ -36,6 +37,21 @@ const About = () => (
           <p className="text-muted-foreground text-lg leading-relaxed">
             Founded in Nairobi in 2024, M-Ploy was born from a simple frustration: Kenyan job seekers deserved better. Too many fake listings, too many rejection black holes, too little support. We built the platform we wished existed — verified jobs, ATS-optimized CVs, and employability training, all in one place.
           </p>
+        </motion.div>
+
+        {/* Team Image Banner */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.97 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-5xl mx-auto mb-20 rounded-3xl overflow-hidden shadow-xl border border-border"
+        >
+          <img
+            src={aboutTeamImg}
+            alt="M-Ploy team collaborating in a modern Nairobi office"
+            className="w-full h-[300px] sm:h-[400px] object-cover"
+            loading="lazy"
+          />
         </motion.div>
 
         {/* Mission */}

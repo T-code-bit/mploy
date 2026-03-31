@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, Clock, Award, Users, BookOpen, Search, Lock } from "lucide-react";
+import academyImg from "@/assets/academy-learning.jpg";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -53,7 +54,10 @@ const Academy = () => {
               <span className="text-xs font-semibold text-primary uppercase tracking-wider">Earn TrustBadges</span>
             </div>
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight mb-2">Ready-to-Work Academy</h1>
-            <p className="text-muted-foreground text-lg">Self-paced employability courses. Build skills. Get hired.</p>
+            <p className="text-muted-foreground text-lg mb-6">Self-paced employability courses. Build skills. Get hired.</p>
+            <div className="rounded-2xl overflow-hidden shadow-lg border border-border">
+              <img src={academyImg} alt="Students learning in a modern digital classroom" className="w-full h-[200px] sm:h-[280px] object-cover" loading="lazy" />
+            </div>
           </motion.div>
 
           {maxLessons < Infinity && (

@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, FileSearch, Layout, GraduationCap, ArrowRight, Briefcase, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import cvReviewImg from "@/assets/cv-review.jpg";
 
 const features = [
   {
@@ -84,6 +85,21 @@ const FeaturesSection = () => (
         <p className="text-muted-foreground leading-relaxed text-lg">
           From verified opportunities to ATS-ready CVs and employability training — all in one integrated ecosystem.
         </p>
+      </motion.div>
+
+      {/* Visual showcase image */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="max-w-4xl mx-auto mb-12 rounded-3xl overflow-hidden shadow-xl border border-border"
+      >
+        <img
+          src={cvReviewImg}
+          alt="Professional reviewing CV on laptop with M-Ploy ATS tools"
+          className="w-full h-[240px] sm:h-[320px] object-cover"
+          loading="lazy"
+        />
       </motion.div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -21,6 +21,7 @@ const EmployerPortal = () => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<any>(null);
   const [jobForm, setJobForm] = useState({
     title: "", company: "", location: "", type: "Full-time", category: "General",
     description: "", salary_range: "",

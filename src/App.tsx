@@ -19,6 +19,7 @@ import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import CookieConsent from "./components/CookieConsent";
+import BackToTop from "./components/BackToTop";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
           <CookieConsent />
+          <BackToTop />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

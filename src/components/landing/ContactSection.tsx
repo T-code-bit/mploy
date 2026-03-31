@@ -9,9 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import GoogleReCaptcha from "@/components/GoogleReCaptcha";
 
 const contactInfo = [
-  { icon: Mail, label: "Email", value: "hello@m-ploy.co.ke", href: "mailto:hello@m-ploy.co.ke" },
-  { icon: Phone, label: "Phone", value: "+254 700 123 456", href: "tel:+254700123456" },
-  { icon: MapPin, label: "Office", value: "Nairobi, Kenya", href: "#" },
+  { icon: Mail, label: "Email", value: "tribaltechnexus@gmail.com", href: "mailto:tribaltechnexus@gmail.com" },
+  { icon: Phone, label: "Phone", value: "+254 793 264 418", href: "tel:+254793264418" },
+  { icon: MapPin, label: "Office", value: "Eldoret, Kenya", href: "#" },
 ];
 
 const ContactSection = () => {

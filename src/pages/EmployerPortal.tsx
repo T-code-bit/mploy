@@ -340,6 +340,11 @@ const EmployerPortal = () => {
           </Tabs>
         </div>
       </div>
+      <ApplicantProfileDialog
+        applicantId={viewingApplicant}
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
       <Footer />
     </div>
   );

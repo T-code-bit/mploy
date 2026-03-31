@@ -1,9 +1,11 @@
 import { motion } from "framer-motion";
 import usEmbassyLogo from "@/assets/partner-us-embassy.png";
 import btlLogo from "@/assets/partner-btl.png";
+import kenyaSealLogo from "@/assets/partner-kenya-seal.png";
 
 const partners = [
   { name: "US Embassy", logo: usEmbassyLogo },
+  { name: "Republic of Kenya", logo: kenyaSealLogo },
   { name: "BTL (Be The Leader)", logo: btlLogo },
 ];
 
@@ -24,7 +26,7 @@ const TrustedBySection = () => (
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-2 gap-8 items-center max-w-2xl mx-auto">
+      <div className="grid grid-cols-3 gap-8 items-center max-w-4xl mx-auto">
         {partners.map((partner, i) => (
           <motion.div
             key={partner.name}
@@ -34,7 +36,7 @@ const TrustedBySection = () => (
             transition={{ delay: i * 0.1, duration: 0.5 }}
             className="flex flex-col items-center gap-3 p-6 rounded-2xl hover:bg-muted/50 transition-all duration-300 group"
           >
-            <div className="h-24 w-24 md:h-28 md:w-28 flex items-center justify-center">
+            <div className="h-32 w-32 md:h-40 md:w-40 flex items-center justify-center">
               <img
                 src={partner.logo}
                 alt={`${partner.name} logo`}

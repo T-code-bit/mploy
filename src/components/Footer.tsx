@@ -1,6 +1,9 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Loader2 } from "lucide-react";
+import { ArrowUpRight, Loader2, MapPin, Phone, Mail } from "lucide-react";
 import mployLogo from "@/assets/mploy-logo.png";
+import usEmbassyLogo from "@/assets/partner-us-embassy.png";
+import btlLogo from "@/assets/partner-btl.png";
+import kenyaSealLogo from "@/assets/partner-kenya-seal.png";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -160,7 +163,45 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        {/* Partners / Trusted By */}
+        <div className="border-t border-border mt-8 pt-8">
+          <p className="text-center text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-6">
+            In Partnership With
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
+            <a href="https://ke.usembassy.gov/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+              <img src={usEmbassyLogo} alt="U.S. Embassy Nairobi" className="h-10 w-10 object-contain" />
+              <div className="hidden sm:block">
+                <span className="block text-xs font-semibold text-foreground leading-tight">U.S. Embassy</span>
+                <span className="block text-[10px] text-muted-foreground leading-tight">Nairobi, Kenya</span>
+              </div>
+            </a>
+            <a href="https://www.president.go.ke/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+              <img src={kenyaSealLogo} alt="Republic of Kenya" className="h-10 w-10 object-contain" />
+              <div className="hidden sm:block">
+                <span className="block text-xs font-semibold text-foreground leading-tight">Republic of Kenya</span>
+                <span className="block text-[10px] text-muted-foreground leading-tight">Government of Kenya</span>
+              </div>
+            </a>
+            <div className="flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
+              <img src={btlLogo} alt="BTL - Be The Leader" className="h-10 w-10 object-contain" />
+              <div className="hidden sm:block">
+                <span className="block text-xs font-semibold text-foreground leading-tight">BTL</span>
+                <span className="block text-[10px] text-muted-foreground leading-tight">Be The Leader</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Contact bar */}
+        <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> Eldoret, Kenya</span>
+          <a href="tel:+254793264418" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Phone className="h-3.5 w-3.5 text-primary" /> +254 793 264 418</a>
+          <a href="mailto:tribaltechnexus@gmail.com" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Mail className="h-3.5 w-3.5 text-primary" /> tribaltechnexus@gmail.com</a>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-border mt-6 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} M-Ploy. All rights reserved. Made by <a href="https://tribaltechnexus.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">TribalTechNexus</a></p>
           <div className="flex gap-6">
             {[

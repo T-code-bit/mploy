@@ -148,7 +148,7 @@ const EmployerPortal = () => {
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => { setEditingJob(null); setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" }); }} className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
+                <Button onClick={() => { setEditingJob(null); setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "", deadline: "" }); }} className="bg-gradient-accent text-secondary-foreground gap-2 rounded-xl h-11 px-6 font-semibold shadow-glow-accent hover:shadow-glow-accent">
                   <Plus className="h-4 w-4" /> Post a Job
                 </Button>
               </DialogTrigger>

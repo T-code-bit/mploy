@@ -86,7 +86,7 @@ const EmployerPortal = () => {
       toast.success(editingJob ? "Job updated!" : "Job posted!");
       setDialogOpen(false);
       setEditingJob(null);
-      setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "" });
+      setJobForm({ title: "", company: "", location: "", type: "Full-time", category: "General", description: "", salary_range: "", deadline: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });

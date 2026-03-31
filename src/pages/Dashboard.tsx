@@ -186,6 +186,24 @@ const Dashboard = () => {
             </div>
 
             <div className="space-y-5">
+              {/* Profile Card */}
+              <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                    <Settings className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-display font-semibold text-card-foreground">Your Profile</h3>
+                    <p className="text-xs text-muted-foreground">Update your professional details</p>
+                  </div>
+                </div>
+                <Link to="/profile">
+                  <Button variant="outline" className="w-full rounded-xl h-11 gap-2">
+                    <User className="h-4 w-4" /> Edit Profile
+                  </Button>
+                </Link>
+              </div>
+
               {/* Subscription Card */}
               <div className={`rounded-2xl border p-6 shadow-card ${subscriptionTier !== "free" ? "bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20" : "bg-card border-border"}`}>
                 <div className="flex items-center justify-between mb-3">

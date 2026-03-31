@@ -127,7 +127,7 @@ const Academy = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.05 }}
-                className={`bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-lg transition-all group cursor-pointer hover:-translate-y-1 card-shine ${isLocked ? "opacity-60" : ""}`}
+                className={`bg-card rounded-2xl border border-border overflow-hidden shadow-card hover:shadow-lg transition-all group cursor-pointer hover:-translate-y-1 card-shine ${isLocked ? "relative" : ""}`}
               >
                 <div className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5" />

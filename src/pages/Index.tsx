@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/landing/HeroSection";
+import TrustedBySection from "@/components/landing/TrustedBySection";
 import FeaturesSection from "@/components/landing/FeaturesSection";
 import HowItWorksSection from "@/components/landing/HowItWorksSection";
 import TestimonialsSection from "@/components/landing/TestimonialsSection";
@@ -12,6 +13,7 @@ const Index = () => (
   <div className="min-h-screen">
     <Navbar />
     <HeroSection />
+    <TrustedBySection />
     <FeaturesSection />
     <HowItWorksSection />
     <TestimonialsSection />

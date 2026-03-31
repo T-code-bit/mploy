@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ShieldCheck, FileSearch, Layout, GraduationCap, ArrowRight, Briefcase, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
+import cvReviewImg from "@/assets/cv-review.jpg";
 
 const features = [
   {

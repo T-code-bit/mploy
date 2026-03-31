@@ -111,7 +111,21 @@ const Profile = () => {
             animate={{ opacity: 1, y: 0 }}
           >
             <h1 className="font-display text-3xl font-bold text-foreground tracking-tight mb-2">Profile Settings</h1>
-            <p className="text-muted-foreground mb-8">Update your professional details.</p>
+            <p className="text-muted-foreground mb-4">Update your professional details.</p>
+
+            {!isComplete && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-6 flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-destructive">Complete your profile to continue</p>
+                  <p className="text-xs text-muted-foreground mt-1">Please fill in all required fields (Name, Phone, Address, Bio) before accessing the platform.</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <Progress value={completionPercent} className="h-2 flex-1" />
+                    <span className="text-xs font-medium text-muted-foreground">{completionPercent}%</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="bg-card rounded-2xl border border-border p-6 sm:p-8 shadow-card space-y-6">
               {/* Avatar */}

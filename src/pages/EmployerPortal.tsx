@@ -101,6 +101,7 @@ const EmployerPortal = () => {
       category: job.category,
       description: job.description,
       salary_range: job.salary_range || "",
+      deadline: job.deadline ? new Date(job.deadline).toISOString().slice(0, 16) : "",
     });
     setDialogOpen(true);
   };

@@ -93,9 +93,17 @@ const VideoShowcaseSection = () => {
               transition={{ delay: i * 0.1 }}
               className="relative rounded-2xl overflow-hidden border border-border shadow-card group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
             >
-              <div className={`aspect-video bg-gradient-to-br ${vid.bg} flex items-center justify-center`}>
-                <div className="h-12 w-12 rounded-full bg-card/80 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <Play className="h-5 w-5 text-foreground ml-0.5" />
+              <div className="aspect-video relative">
+                <img
+                  src={`https://img.youtube.com/vi/${vid.videoId}/hqdefault.jpg`}
+                  alt={vid.title}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/30 transition-colors flex items-center justify-center">
+                  <div className="h-12 w-12 rounded-full bg-card/80 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Play className="h-5 w-5 text-foreground ml-0.5" />
+                  </div>
                 </div>
               </div>
               <div className="p-4 bg-card">

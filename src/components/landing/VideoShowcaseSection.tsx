@@ -92,6 +92,7 @@ const VideoShowcaseSection = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               className="relative rounded-2xl overflow-hidden border border-border shadow-card group cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
+              onClick={() => window.open(`https://www.youtube.com/watch?v=${vid.videoId}`, '_blank')}
             >
               <div className="aspect-video relative">
                 <img

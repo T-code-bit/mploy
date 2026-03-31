@@ -25,6 +25,7 @@ const Jobs = () => {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [viewJob, setViewJob] = useState<any>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const [phone, setPhone] = useState("");

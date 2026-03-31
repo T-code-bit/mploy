@@ -29,11 +29,11 @@ const Profile = () => {
     if (profile) {
       setForm({
         full_name: profile.full_name || "",
-        bio: (profile as any).bio || "",
-        about: (profile as any).about || "",
-        phone: (profile as any).phone || "",
-        address: (profile as any).address || "",
-        avatar_url: (profile as any).avatar_url || "",
+        bio: profile.bio || "",
+        about: profile.about || "",
+        phone: profile.phone || "",
+        address: profile.address || "",
+        avatar_url: profile.avatar_url || "",
       });
     }
   }, [profile]);

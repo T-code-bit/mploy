@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, Clock, Award, Users, BookOpen, Search, Lock } from "lucide-react";
+import academyImg from "@/assets/academy-learning.jpg";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";

@@ -57,11 +57,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
-  const refreshProfile = useCallback(async () => {
-    if (!user) return;
-    await fetchProfile(user.id);
-  }, [user]);
-
+  const fetchProfile = async (userId: string) => {
     const { data } = await supabase
       .from("profiles")
       .select("*")
@@ -76,6 +72,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .single();
     if (roleData) setUserRole(roleData.role as UserRole);
   };
+
+  const refreshProfile = useCallback(async () => {
+    if (!user) return;
+    await fetchProfile(user.id);
+  }, [user]);
 
   const refreshSubscription = useCallback(async () => {
     if (!session) return;

@@ -251,9 +251,10 @@ const EmployerPortal = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Title</TableHead>
+                         <TableHead>Title</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Type</TableHead>
+                        <TableHead>Deadline</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead></TableHead>
                       </TableRow>

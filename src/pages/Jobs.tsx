@@ -401,6 +401,63 @@ const Jobs = () => {
         </div>
       </div>
 
+      {/* View Job Dialog */}
+      <Dialog open={!!viewJob} onOpenChange={(open) => { if (!open) setViewJob(null); }}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl">{viewJob?.title}</DialogTitle>
+          </DialogHeader>
+          {viewJob && (
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center">
+                  <Building2 className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="font-semibold text-card-foreground">{viewJob.company}</p>
+                  <p className="text-sm text-muted-foreground">{viewJob.location}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="secondary" className="rounded-lg">{viewJob.type}</Badge>
+                <Badge variant="outline" className="rounded-lg">{viewJob.category}</Badge>
+                {viewJob.is_verified && <Badge className="rounded-lg gap-1"><ShieldCheck className="h-3 w-3" /> Verified</Badge>}
+                <Badge variant={viewJob.is_active ? "default" : "destructive"} className="rounded-lg">
+                  {viewJob.is_active ? "Active" : "Closed"}
+                </Badge>
+              </div>
+              {viewJob.salary_range && (
+                <div className="bg-muted rounded-xl p-3">
+                  <p className="text-xs text-muted-foreground">Salary Range</p>
+                  <p className="font-display font-bold text-foreground">{viewJob.salary_range}</p>
+                </div>
+              )}
+              {viewJob.deadline && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarClock className="h-4 w-4" />
+                  <span>Deadline: {new Date(viewJob.deadline).toLocaleDateString()}</span>
+                </div>
+              )}
+              <div>
+                <h4 className="text-sm font-semibold text-foreground mb-2">Description</h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{viewJob.description}</p>
+              </div>
+              {viewJob.requirements?.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Requirements</h4>
+                  <div className="flex flex-wrap gap-1.5">
+                    {viewJob.requirements.map((r: string) => (
+                      <span key={r} className="px-2.5 py-1 rounded-lg bg-muted text-xs font-medium text-muted-foreground">{r}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">Posted {new Date(viewJob.created_at).toLocaleDateString()}</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Apply Dialog */}
       <Dialog open={applyOpen} onOpenChange={(open) => { if (!open) resetForm(); else setApplyOpen(true); }}>
         <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">

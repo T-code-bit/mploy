@@ -8,42 +8,60 @@ const features = [
     title: "Verified Vault",
     description: "Curated, authenticated job openings from vetted employers worldwide. Zero ghost postings, zero scams.",
     href: "/jobs",
-    iconBg: "bg-primary/10 text-primary",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    stat: "100%",
+    statLabel: "Verified",
   },
   {
     icon: FileSearch,
     title: "ATS Architect",
     description: "Real-time CV analysis against job descriptions with predictive match scoring powered by AI.",
     href: "/cv-builder",
-    iconBg: "bg-secondary/10 text-secondary",
+    iconBg: "bg-secondary/10",
+    iconColor: "text-secondary",
+    stat: "95%",
+    statLabel: "Pass rate",
   },
   {
     icon: Layout,
     title: "Dynamic Templates",
     description: "Industry-specific CV designs optimized for AI parsers like Workday, Taleo, and Greenhouse.",
     href: "/cv-builder",
-    iconBg: "bg-success/10 text-success",
+    iconBg: "bg-success/10",
+    iconColor: "text-success",
+    stat: "6+",
+    statLabel: "Templates",
   },
   {
     icon: GraduationCap,
     title: "Ready-to-Work Academy",
     description: "Self-paced modules on communication, digital literacy, and EQ with verifiable TrustBadges.",
     href: "/academy",
-    iconBg: "bg-destructive/8 text-destructive",
+    iconBg: "bg-warning/10",
+    iconColor: "text-warning",
+    stat: "50+",
+    statLabel: "Courses",
   },
   {
     icon: Briefcase,
     title: "Employer Portal",
     description: "Post jobs, manage applications, and find top talent with an intuitive recruitment dashboard.",
     href: "/employer",
-    iconBg: "bg-warning/10 text-warning",
+    iconBg: "bg-destructive/8",
+    iconColor: "text-destructive",
+    stat: "500+",
+    statLabel: "Employers",
   },
   {
     icon: BarChart3,
     title: "Career Dashboard",
     description: "Track applications, monitor your readiness score, and get personalized career insights.",
     href: "/dashboard",
-    iconBg: "bg-primary/10 text-primary",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    stat: "Real-time",
+    statLabel: "Insights",
   },
 ];
 
@@ -81,8 +99,14 @@ const FeaturesSection = () => (
               to={feature.href}
               className="group block bg-card rounded-2xl p-7 border border-border shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1.5 h-full card-shine"
             >
-              <div className={`inline-flex p-3 rounded-xl ${feature.iconBg} mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                <feature.icon className="h-6 w-6" />
+              <div className="flex items-start justify-between mb-5">
+                <div className={`inline-flex p-3 rounded-xl ${feature.iconBg} group-hover:scale-110 transition-transform duration-300`}>
+                  <feature.icon className={`h-6 w-6 ${feature.iconColor}`} />
+                </div>
+                <div className="text-right">
+                  <p className="font-display text-lg font-bold text-foreground">{feature.stat}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">{feature.statLabel}</p>
+                </div>
               </div>
               <h3 className="font-display text-lg font-semibold text-card-foreground mb-2.5">
                 {feature.title}

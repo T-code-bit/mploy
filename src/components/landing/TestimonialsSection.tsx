@@ -13,6 +13,7 @@ const testimonials = [
     text: "M-Ploy helped me land a remote role in just 3 weeks. The ATS-optimized CV made all the difference — I went from zero callbacks to 5 interviews.",
     rating: 5,
     photo: testimonial1,
+    highlight: "3 weeks to hired",
   },
   {
     name: "Brian Otieno",
@@ -21,6 +22,7 @@ const testimonials = [
     text: "The Academy courses on communication and digital literacy gave me the edge I needed. I earned my TrustBadge and got hired within a month.",
     rating: 5,
     photo: testimonial2,
+    highlight: "TrustBadge certified",
   },
   {
     name: "Grace Njeri",
@@ -29,6 +31,7 @@ const testimonials = [
     text: "As an employer, the portal is incredibly intuitive. We posted 10 jobs and received quality applicants fast. The verification system builds real trust.",
     rating: 5,
     photo: testimonial3,
+    highlight: "Employer verified",
   },
   {
     name: "Kevin Kamau",
@@ -37,6 +40,7 @@ const testimonials = [
     text: "The dynamic CV templates are beautifully designed and actually pass ATS systems. I could see my match score improve in real-time as I edited.",
     rating: 5,
     photo: testimonial4,
+    highlight: "95% ATS score",
   },
 ];
 
@@ -70,20 +74,23 @@ const TestimonialsSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1, duration: 0.5 }}
-            className="bg-card rounded-2xl p-6 border border-border shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative"
+            className="bg-card rounded-2xl p-6 border border-border shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 relative group"
           >
             <Quote className="h-8 w-8 text-primary/10 absolute top-5 right-5" />
-            <div className="flex items-center gap-1 mb-4">
+            <div className="flex items-center gap-1 mb-3">
               {Array.from({ length: t.rating }).map((_, j) => (
                 <Star key={j} className="h-3.5 w-3.5 text-secondary fill-secondary" />
               ))}
             </div>
+            <div className="inline-flex px-2 py-0.5 rounded-md bg-primary/8 mb-3">
+              <span className="text-[10px] font-bold text-primary uppercase tracking-wider">{t.highlight}</span>
+            </div>
             <p className="text-sm text-muted-foreground leading-relaxed mb-6">"{t.text}"</p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 pt-4 border-t border-border">
               <img
                 src={t.photo}
-                alt={t.name}
-                className="h-11 w-11 rounded-xl object-cover"
+                alt={`${t.name}, ${t.role}`}
+                className="h-11 w-11 rounded-xl object-cover ring-2 ring-border"
                 loading="lazy"
               />
               <div>
@@ -94,6 +101,28 @@ const TestimonialsSection = () => (
           </motion.div>
         ))}
       </div>
+
+      {/* Social proof bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mt-12 flex flex-wrap items-center justify-center gap-8 text-center"
+      >
+        {[
+          { value: "4.8/5", label: "Average Rating" },
+          { value: "2,340+", label: "Reviews" },
+          { value: "92%", label: "Would Recommend" },
+        ].map((s) => (
+          <div key={s.label} className="flex items-center gap-3">
+            <div>
+              <p className="font-display text-xl font-bold text-foreground">{s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </div>
+            <div className="h-8 w-px bg-border last:hidden" />
+          </div>
+        ))}
+      </motion.div>
     </div>
   </section>
 );

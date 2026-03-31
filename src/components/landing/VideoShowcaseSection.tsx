@@ -81,9 +81,9 @@ const VideoShowcaseSection = () => {
         {/* Video grid - additional content */}
         <div className="grid sm:grid-cols-3 gap-5 max-w-4xl mx-auto mt-8">
           {[
-            { title: "CV Builder Tutorial", duration: "2:15", bg: "from-primary/20 to-primary/5" },
-            { title: "Success Stories", duration: "4:30", bg: "from-secondary/20 to-secondary/5" },
-            { title: "ATS Tips & Tricks", duration: "3:08", bg: "from-accent/20 to-accent/5" },
+            { title: "Best Way to Prepare for an Interview", duration: "29:50", bg: "from-primary/20 to-primary/5", videoId: "JBNkIAG1V2E" },
+            { title: "How to Prepare for a Job Interview 2025", duration: "23:20", bg: "from-secondary/20 to-secondary/5", videoId: "dCJlA42sYbo" },
+            { title: "Stand Out in a Job Interview — HBR", duration: "12:04", bg: "from-accent/20 to-accent/5", videoId: "ZU9x1vFx5lI" },
           ].map((vid, i) => (
             <motion.div
               key={vid.title}

@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil, UserCircle } from "lucide-react";
+import ApplicantProfileDialog from "@/components/ApplicantProfileDialog";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";

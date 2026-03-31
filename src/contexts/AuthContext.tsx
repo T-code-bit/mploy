@@ -11,6 +11,9 @@ interface Profile {
   full_name: string;
   avatar_url: string | null;
   bio: string | null;
+  about: string | null;
+  phone: string | null;
+  address: string | null;
   role: UserRole;
 }
 

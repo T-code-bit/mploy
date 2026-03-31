@@ -64,8 +64,8 @@ const Profile = () => {
         })
         .eq("user_id", user.id);
       if (error) throw error;
+      await refreshProfile();
       toast.success("Profile updated successfully!");
-      // Redirect to appropriate dashboard after completing profile
       if (isComplete) {
         navigate(userRole === "employer" ? "/employer" : "/dashboard");
       }

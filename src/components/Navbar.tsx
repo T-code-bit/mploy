@@ -130,6 +130,28 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              <div className="border-t border-border mt-2 pt-2">
+                <p className="px-4 py-1 text-xs font-semibold text-muted-foreground uppercase tracking-wider">More</p>
+                {[
+                  { label: "About", href: "/about" },
+                  { label: "Privacy Policy", href: "/privacy" },
+                  { label: "Terms of Service", href: "/terms" },
+                  { label: "Cookies", href: "/cookies" },
+                ].map((link) => (
+                  <Link
+                    key={link.href}
+                    to={link.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      location.pathname === link.href
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
               <div className="flex gap-2 pt-3 mt-2 border-t border-border">
                 {user ? (
                   <Button variant="ghost" size="sm" className="flex-1 rounded-xl" onClick={handleSignOut}>

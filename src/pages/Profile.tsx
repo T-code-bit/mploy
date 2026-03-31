@@ -15,7 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
 const Profile = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, userRole } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
@@ -26,6 +27,13 @@ const Profile = () => {
     address: "",
     avatar_url: "",
   });
+
+  const completionFields = ["full_name", "phone", "address", "bio"] as const;
+  const completionPercent = useMemo(() => {
+    const filled = completionFields.filter((f) => form[f]?.trim()).length;
+    return Math.round((filled / completionFields.length) * 100);
+  }, [form]);
+  const isComplete = completionPercent === 100;
 
   useEffect(() => {
     if (profile) {

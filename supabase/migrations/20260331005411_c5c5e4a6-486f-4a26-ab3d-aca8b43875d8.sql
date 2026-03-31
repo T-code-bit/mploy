@@ -1,0 +1,1 @@
+ALTER TABLE public.jobs ADD COLUMN deadline timestamp with time zone DEFAULT NULL;

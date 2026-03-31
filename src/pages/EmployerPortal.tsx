@@ -79,6 +79,17 @@ const EmployerPortal = () => {
           employer_id: user!.id,
         });
         if (error) throw error;
+
+        // Notify subscribers about new job
+        await supabase.functions.invoke("notify-new-job", {
+          body: {
+            jobTitle: jobForm.title,
+            company: jobForm.company,
+            location: jobForm.location,
+            type: jobForm.type,
+            deadline: jobForm.deadline || null,
+          },
+        });
       }
     },
     onSuccess: () => {

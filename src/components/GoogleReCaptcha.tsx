@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useState } from "react";
 
 const RECAPTCHA_SITE_KEY = "6LdDyZ4sAAAAALpayoNXABG7Y1CUV5tO53-1J1RE";
+const SCRIPT_ID = "recaptcha-api-script";
 
 interface GoogleReCaptchaProps {
   onVerify: (token: string) => void;
@@ -15,62 +16,71 @@ declare global {
       render: (container: HTMLElement, options: Record<string, unknown>) => number;
       reset: (widgetId: number) => void;
     };
-    onReCaptchaLoad?: () => void;
-    __recaptchaCallbacks?: Array<() => void>;
   }
 }
 
-let scriptLoaded = false;
-let scriptReady = false;
-
-function loadRecaptchaScript(onReady: () => void) {
-  if (scriptReady && window.grecaptcha) {
-    onReady();
-    return;
-  }
-
-  if (!window.__recaptchaCallbacks) {
-    window.__recaptchaCallbacks = [];
-  }
-  window.__recaptchaCallbacks.push(onReady);
-
-  if (!scriptLoaded) {
-    scriptLoaded = true;
-    window.onReCaptchaLoad = () => {
-      scriptReady = true;
-      window.__recaptchaCallbacks?.forEach((cb) => cb());
-      window.__recaptchaCallbacks = [];
-    };
-
-    // Remove any existing reCAPTCHA script to avoid conflicts
-    const existing = document.querySelector('script[src*="recaptcha/api.js"]');
-    if (existing) {
-      existing.remove();
+function ensureRecaptchaScript(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // If already loaded and available
+    if (window.grecaptcha?.ready) {
+      window.grecaptcha.ready(() => resolve());
+      return;
     }
 
+    // If script tag exists but not yet loaded, wait for it
+    const existing = document.getElementById(SCRIPT_ID) as HTMLScriptElement | null;
+    if (existing) {
+      const check = () => {
+        if (window.grecaptcha?.ready) {
+          window.grecaptcha.ready(() => resolve());
+        } else {
+          setTimeout(check, 100);
+        }
+      };
+      check();
+      return;
+    }
+
+    // Load fresh
     const script = document.createElement("script");
-    script.src = "https://www.google.com/recaptcha/api.js?onload=onReCaptchaLoad&render=explicit";
+    script.id = SCRIPT_ID;
+    script.src = "https://www.google.com/recaptcha/api.js?render=explicit";
     script.async = true;
     script.defer = true;
-    script.onerror = () => {
-      console.error("Failed to load reCAPTCHA script");
-      scriptLoaded = false;
+    script.onload = () => {
+      const wait = () => {
+        if (window.grecaptcha?.ready) {
+          window.grecaptcha.ready(() => resolve());
+        } else {
+          setTimeout(wait, 100);
+        }
+      };
+      wait();
     };
+    script.onerror = () => reject(new Error("Failed to load reCAPTCHA"));
     document.head.appendChild(script);
-  }
+  });
 }
 
 const GoogleReCaptcha = ({ onVerify, onExpire, onError }: GoogleReCaptchaProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<number | null>(null);
+  const mountedRef = useRef(true);
   const callbacksRef = useRef({ onVerify, onExpire, onError });
   const [loadError, setLoadError] = useState(false);
   callbacksRef.current = { onVerify, onExpire, onError };
 
-  const renderWidget = useCallback(() => {
-    if (!containerRef.current || !window.grecaptcha || widgetIdRef.current !== null) return;
+  const renderWidget = useCallback(async () => {
     try {
-      // Clear container first to avoid duplicate widgets
+      await ensureRecaptchaScript();
+      if (!mountedRef.current || !containerRef.current || !window.grecaptcha) return;
+
+      // Reset if already rendered
+      if (widgetIdRef.current !== null) {
+        try { window.grecaptcha.reset(widgetIdRef.current); } catch {}
+        return;
+      }
+
       containerRef.current.innerHTML = "";
       widgetIdRef.current = window.grecaptcha.render(containerRef.current, {
         sitekey: RECAPTCHA_SITE_KEY,
@@ -84,22 +94,25 @@ const GoogleReCaptcha = ({ onVerify, onExpire, onError }: GoogleReCaptchaProps) 
       });
       setLoadError(false);
     } catch (e) {
-      console.error("reCAPTCHA render error:", e);
-      setLoadError(true);
+      console.error("reCAPTCHA error:", e);
+      if (mountedRef.current) setLoadError(true);
     }
   }, []);
 
   const retryLoad = useCallback(() => {
+    // Remove old script to force fresh load
+    const old = document.getElementById(SCRIPT_ID);
+    if (old) old.remove();
     widgetIdRef.current = null;
-    scriptLoaded = false;
-    scriptReady = false;
     setLoadError(false);
-    loadRecaptchaScript(renderWidget);
+    renderWidget();
   }, [renderWidget]);
 
   useEffect(() => {
-    loadRecaptchaScript(renderWidget);
+    mountedRef.current = true;
+    renderWidget();
     return () => {
+      mountedRef.current = false;
       widgetIdRef.current = null;
     };
   }, [renderWidget]);

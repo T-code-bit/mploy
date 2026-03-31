@@ -43,6 +43,9 @@ const App = () => (
             <Route path="/employer" element={
               <ProtectedRoute requiredRole="employer"><EmployerPortal /></ProtectedRoute>
             } />
+            <Route path="/profile" element={
+              <ProtectedRoute><Profile /></ProtectedRoute>
+            } />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />

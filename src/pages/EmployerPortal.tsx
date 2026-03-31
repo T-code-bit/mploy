@@ -190,6 +190,10 @@ const EmployerPortal = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
+                    <Label>Application Deadline</Label>
+                    <Input type="datetime-local" value={jobForm.deadline} onChange={(e) => setJobForm({ ...jobForm, deadline: e.target.value })} className="rounded-xl h-11" />
+                  </div>
+                  <div className="space-y-2">
                     <Label>Description</Label>
                     <Textarea value={jobForm.description} onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })} rows={4} className="rounded-xl" />
                   </div>

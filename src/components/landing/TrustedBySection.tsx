@@ -24,7 +24,7 @@ const TrustedBySection = () => (
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 gap-8 items-center max-w-2xl mx-auto">
         {partners.map((partner, i) => (
           <motion.div
             key={partner.name}

@@ -337,14 +337,37 @@ const Jobs = () => {
                           <span className="inline-flex px-2.5 py-1 rounded-lg bg-accent text-xs font-medium text-accent-foreground">{job.category}</span>
                         </div>
                       </div>
-                      <div className="text-right shrink-0 flex flex-col items-end">
+                      <div className="text-right shrink-0 flex flex-col items-end gap-2">
                         {job.salary_range && (
-                          <div className="mb-3">
+                          <div>
                             <p className="font-display font-bold text-foreground text-lg">{job.salary_range}</p>
                             <p className="text-xs text-muted-foreground">per month</p>
                           </div>
                         )}
-                        {hasApplied(job.id) ? (
+                        {isOwner(job) ? (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 rounded-xl"
+                              onClick={() => setViewJob(job)}
+                            >
+                              <Eye className="h-3.5 w-3.5" /> View
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                              onClick={() => {
+                                if (confirm("Delete this job listing?")) {
+                                  deleteJobMutation.mutate(job.id);
+                                }
+                              }}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" /> Delete
+                            </Button>
+                          </div>
+                        ) : hasApplied(job.id) ? (
                           <Badge variant="secondary" className="rounded-xl px-4 py-1.5">Applied ✓</Badge>
                         ) : (
                           <Button

@@ -10,7 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil, UserCircle } from "lucide-react";
+import ApplicantProfileDialog from "@/components/ApplicantProfileDialog";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -22,6 +23,8 @@ const EmployerPortal = () => {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<any>(null);
+  const [viewingApplicant, setViewingApplicant] = useState<string | null>(null);
+  const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [jobForm, setJobForm] = useState({
     title: "", company: "", location: "", type: "Full-time", category: "General",
     description: "", salary_range: "",
@@ -291,6 +294,7 @@ const EmployerPortal = () => {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Job</TableHead>
+                        <TableHead>Applicant</TableHead>
                         <TableHead>Applied</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Action</TableHead>
@@ -300,6 +304,11 @@ const EmployerPortal = () => {
                       {applications.map((app: any) => (
                         <TableRow key={app.id}>
                           <TableCell className="font-semibold">{app.jobs?.title}</TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary rounded-lg" onClick={() => { setViewingApplicant(app.applicant_id); setProfileDialogOpen(true); }}>
+                              <UserCircle className="h-3.5 w-3.5" /> View Profile
+                            </Button>
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {new Date(app.created_at).toLocaleDateString()}
                           </TableCell>
@@ -331,6 +340,11 @@ const EmployerPortal = () => {
           </Tabs>
         </div>
       </div>
+      <ApplicantProfileDialog
+        applicantId={viewingApplicant}
+        open={profileDialogOpen}
+        onOpenChange={setProfileDialogOpen}
+      />
       <Footer />
     </div>
   );

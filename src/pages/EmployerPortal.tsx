@@ -148,7 +148,7 @@ const EmployerPortal = () => {
               </DialogTrigger>
               <DialogContent className="max-w-lg rounded-2xl">
                 <DialogHeader>
-                  <DialogTitle className="font-display">Post a New Job</DialogTitle>
+                  <DialogTitle className="font-display">{editingJob ? "Edit Job" : "Post a New Job"}</DialogTitle>
                 </DialogHeader>
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">

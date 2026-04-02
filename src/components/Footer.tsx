@@ -202,7 +202,7 @@ const Footer = () => {
 
         {/* Bottom bar */}
         <div className="border-t border-border mt-6 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} M-Ploy. All rights reserved. Made by <a href="https://tribaltechnexus.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">TribalTechNexus</a></p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} M-Ploy. All rights reserved. Made by <a href="https://tribaltechnexus.vercel.app" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">TribalTechNexus</a></p>
           <div className="flex gap-6">
             {[
               { label: "Terms", href: "/terms" },

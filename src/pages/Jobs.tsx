@@ -14,6 +14,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 const categories = ["All", "Remote", "Full-time", "Part-time", "Contract", "Internship"];
@@ -26,6 +36,7 @@ const Jobs = () => {
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [viewJob, setViewJob] = useState<any>(null);
+  const [deleteJob, setDeleteJob] = useState<any>(null);
   const [applyOpen, setApplyOpen] = useState(false);
   const [coverLetter, setCoverLetter] = useState("");
   const [phone, setPhone] = useState("");
@@ -178,7 +189,7 @@ const Jobs = () => {
 
   const hasApplied = (jobId: string) => myApplications.includes(jobId);
 
-  const isOwner = (job: any) => user && job.employer_id === user.id;
+  const isOwner = (job: any) => user && userRole === "employer" && job.employer_id === user.id;
 
   const deleteJobMutation = useMutation({
     mutationFn: async (id: string) => {
@@ -188,6 +199,7 @@ const Jobs = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       toast.success("Job deleted successfully");
+      setDeleteJob(null);
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -358,11 +370,7 @@ const Jobs = () => {
                               size="sm"
                               variant="outline"
                               className="gap-1.5 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
-                              onClick={() => {
-                                if (confirm("Delete this job listing?")) {
-                                  deleteJobMutation.mutate(job.id);
-                                }
-                              }}
+                              onClick={() => setDeleteJob(job)}
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete
                             </Button>
@@ -457,6 +465,29 @@ const Jobs = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!deleteJob} onOpenChange={(open) => { if (!open) setDeleteJob(null); }}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display">Delete Job Listing</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <span className="font-semibold text-foreground">"{deleteJob?.title}"</span> at {deleteJob?.company}? This action cannot be undone and all associated applications will be affected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-xl bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deleteJob) deleteJobMutation.mutate(deleteJob.id);
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-2" /> Delete Permanently
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Apply Dialog */}
       <Dialog open={applyOpen} onOpenChange={(open) => { if (!open) resetForm(); else setApplyOpen(true); }}>

@@ -24,6 +24,7 @@ const EmployerPortal = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<any>(null);
   const [viewingApplicant, setViewingApplicant] = useState<string | null>(null);
+  const [viewingApplicationId, setViewingApplicationId] = useState<string | null>(null);
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [jobForm, setJobForm] = useState({
     title: "", company: "", location: "", type: "Full-time", category: "General",
@@ -327,7 +328,7 @@ const EmployerPortal = () => {
                         <TableRow key={app.id}>
                           <TableCell className="font-semibold">{app.jobs?.title}</TableCell>
                           <TableCell>
-                            <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary rounded-lg" onClick={() => { setViewingApplicant(app.applicant_id); setProfileDialogOpen(true); }}>
+                            <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary rounded-lg" onClick={() => { setViewingApplicant(app.applicant_id); setViewingApplicationId(app.id); setProfileDialogOpen(true); }}>
                               <UserCircle className="h-3.5 w-3.5" /> View Profile
                             </Button>
                           </TableCell>
@@ -364,6 +365,7 @@ const EmployerPortal = () => {
       </div>
       <ApplicantProfileDialog
         applicantId={viewingApplicant}
+        applicationId={viewingApplicationId}
         open={profileDialogOpen}
         onOpenChange={setProfileDialogOpen}
       />

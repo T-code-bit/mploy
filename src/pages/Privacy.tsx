@@ -41,7 +41,7 @@ const sections = [
   },
   {
     title: "10. Contact Us",
-    content: `If you have questions about this privacy policy or your data, please contact us:\n\nEmail: privacy@m-ploy.com\nAddress: M-Ploy Headquarters, Johannesburg, South Africa\nPhone: +27 11 234 5678`,
+    content: `If you have questions about this privacy policy or your data, please contact us:\n\nEmail: privacy@m-ploy.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 700 000 000`,
   },
 ];
 

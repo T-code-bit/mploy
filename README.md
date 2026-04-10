@@ -1,3 +1,3 @@
-# Welcome to your Lovable project
+# Welcome to my world Im Tribal Tech Nexus!
 
-TODO: Document your project here
+Mploy Project in progress

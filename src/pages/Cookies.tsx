@@ -25,7 +25,7 @@ const sections = [
   },
   {
     title: "Contact Us",
-    content: `If you have questions about our use of cookies:\n\nEmail: privacy@m-ploy.com\nAddress: M-Ploy Headquarters, Johannesburg, South Africa`,
+    content: `If you have questions about our use of cookies:\n\nEmail: privacy@m-ploy.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya`,
   },
 ];
 

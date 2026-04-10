@@ -45,11 +45,11 @@ const sections = [
   },
   {
     title: "11. Governing Law",
-    content: `These terms are governed by the laws of South Africa. Any disputes shall be resolved through arbitration in Johannesburg, South Africa, unless otherwise required by local consumer protection laws.`,
+    content: `These terms are governed by the laws of Kenya. Any disputes shall be resolved through arbitration in Nairobi, Kenya, unless otherwise required by local consumer protection laws.`,
   },
   {
     title: "12. Contact",
-    content: `For questions about these terms:\n\nEmail: legal@m-ploy.com\nAddress: M-Ploy Headquarters, Johannesburg, South Africa\nPhone: +27 11 234 5678`,
+    content: `For questions about these terms:\n\nEmail: legal@m-ploy.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 700 000 000`,
   },
 ];
 

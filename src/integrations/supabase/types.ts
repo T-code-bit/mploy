@@ -24,6 +24,8 @@ export type Database = {
           cv_url: string | null
           date_of_birth: string | null
           education_level: string | null
+          employer_contact_info: string | null
+          employer_feedback: string | null
           expected_salary: string | null
           gender: string | null
           id: string
@@ -46,6 +48,8 @@ export type Database = {
           cv_url?: string | null
           date_of_birth?: string | null
           education_level?: string | null
+          employer_contact_info?: string | null
+          employer_feedback?: string | null
           expected_salary?: string | null
           gender?: string | null
           id?: string
@@ -68,6 +72,8 @@ export type Database = {
           cv_url?: string | null
           date_of_birth?: string | null
           education_level?: string | null
+          employer_contact_info?: string | null
+          employer_feedback?: string | null
           expected_salary?: string | null
           gender?: string | null
           id?: string

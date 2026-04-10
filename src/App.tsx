@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import CookieConsent from "./components/CookieConsent";
 import BackToTop from "./components/BackToTop";
+import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
 

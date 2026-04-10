@@ -108,6 +108,23 @@ const Footer = () => {
           </div>
 
           <div className="md:col-span-2">
+            <h4 className="font-display font-semibold text-foreground mb-4 text-sm">Job Seekers</h4>
+            <div className="flex flex-col gap-3">
+              {[
+                { label: "Browse Jobs", href: "/jobs" },
+                { label: "Build Your CV", href: "/cv-builder" },
+                { label: "My Applications", href: "/dashboard" },
+                { label: "My Profile", href: "/profile" },
+              ].map((link) => (
+                <Link key={link.label} to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group">
+                  {link.label}
+                  <ArrowUpRight className="h-3 w-3 opacity-0 -translate-y-0.5 group-hover:opacity-100 group-hover:translate-y-0 transition-all" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="md:col-span-2">
             <h4 className="font-display font-semibold text-foreground mb-4 text-sm">For Employers</h4>
             <div className="flex flex-col gap-3">
               {[
@@ -131,6 +148,7 @@ const Footer = () => {
                 { label: "Contact", href: "/#contact" },
                 { label: "Privacy", href: "/privacy" },
                 { label: "Terms", href: "/terms" },
+                { label: "Cookies", href: "/cookies" },
               ].map((link) => (
                 <Link key={link.label} to={link.href} className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 group">
                   {link.label}

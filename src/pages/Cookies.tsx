@@ -57,6 +57,7 @@ const Cookies = () => {
     </div>
     <Footer />
   </div>
-);
+  );
+};
 
 export default Cookies;

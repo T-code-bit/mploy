@@ -11,8 +11,10 @@ import { Link } from "react-router-dom";
 import GoogleReCaptcha from "@/components/GoogleReCaptcha";
 import { motion } from "framer-motion";
 import mployLogo from "@/assets/mploy-logo.png";
+import usePageTitle from "@/hooks/usePageTitle";
 
 const Auth = () => {
+  usePageTitle("Sign In");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
@@ -52,7 +54,9 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      navigate(signupRole === "employer" ? "/employer" : "/dashboard");
+      // Redirect based on the role selector on the login form
+      const selectedRole = signupRole;
+      navigate(selectedRole === "employer" ? "/employer" : "/dashboard");
     }
     setLoading(false);
   };

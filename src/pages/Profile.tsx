@@ -11,10 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { User, Mail, Phone, MapPin, FileText, Save, Loader2, AlertTriangle } from "lucide-react";
+import usePageTitle from "@/hooks/usePageTitle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 
 const Profile = () => {
+  usePageTitle("Profile Settings");
   const { user, profile, userRole, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);

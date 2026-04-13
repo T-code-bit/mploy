@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import {
   Briefcase, FileCheck, GraduationCap, Award, TrendingUp,
-  Eye, Send, ChevronRight, ArrowUpRight, Loader2, Crown, Settings, Sparkles, User
+  Eye, Send, ChevronRight, ArrowUpRight, Loader2, Crown, Settings, Sparkles, User, MessageSquare, Mail
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
@@ -16,9 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
 import UpgradeBanner from "@/components/UpgradeBanner";
+import usePageTitle from "@/hooks/usePageTitle";
 import { toast } from "sonner";
 
 const Dashboard = () => {
+  usePageTitle("Dashboard");
   const { user, profile, userRole, subscriptionTier, subscriptionEnd } = useAuth();
   const [portalLoading, setPortalLoading] = useState(false);
   const currentPlan = SUBSCRIPTION_TIERS[subscriptionTier];
@@ -163,22 +165,41 @@ const Dashboard = () => {
               ) : (
                 <div className="space-y-3">
                   {applications.slice(0, 8).map((app: any) => (
-                    <div key={app.id} className="flex items-center justify-between p-4 rounded-xl bg-background/80 border border-border hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center">
-                          <Briefcase className="h-4 w-4 text-primary-foreground" />
+                    <div key={app.id} className="p-4 rounded-xl bg-background/80 border border-border hover:bg-muted/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center">
+                            <Briefcase className="h-4 w-4 text-primary-foreground" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">{app.jobs?.title || "Unknown Job"}</p>
+                            <p className="text-xs text-muted-foreground">{app.jobs?.company || "Unknown Company"}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-semibold text-foreground">{app.jobs?.title || "Unknown Job"}</p>
-                          <p className="text-xs text-muted-foreground">{app.jobs?.company || "Unknown Company"}</p>
+                        <div className="text-right">
+                          <Badge variant="outline" className={`text-[10px] rounded-lg ${statusColor(app.status)}`}>
+                            {app.status}
+                          </Badge>
+                          <p className="text-[11px] text-muted-foreground mt-1">{timeAgo(app.created_at)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <Badge variant="outline" className={`text-[10px] rounded-lg ${statusColor(app.status)}`}>
-                          {app.status}
-                        </Badge>
-                        <p className="text-[11px] text-muted-foreground mt-1">{timeAgo(app.created_at)}</p>
-                      </div>
+                      {/* Employer Feedback */}
+                      {(app.employer_feedback || app.employer_contact_info) && (
+                        <div className="mt-3 pt-3 border-t border-border/60 space-y-1.5">
+                          {app.employer_feedback && (
+                            <div className="flex items-start gap-2">
+                              <MessageSquare className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                              <p className="text-xs text-muted-foreground leading-relaxed">{app.employer_feedback}</p>
+                            </div>
+                          )}
+                          {app.employer_contact_info && (
+                            <div className="flex items-start gap-2">
+                              <Mail className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
+                              <p className="text-xs text-foreground font-medium">{app.employer_contact_info}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2, Upload, FileText, AlertCircle, CalendarClock, Eye, Trash2 } from "lucide-react";
+import usePageTitle from "@/hooks/usePageTitle";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,7 @@ import { toast } from "sonner";
 const categories = ["All", "Remote", "Full-time", "Part-time", "Contract", "Internship"];
 
 const Jobs = () => {
+  usePageTitle("Verified Jobs");
   const { user, userRole } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();

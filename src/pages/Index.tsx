@@ -12,8 +12,11 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import PricingSection from "@/components/landing/PricingSection";
 import ContactSection from "@/components/landing/ContactSection";
 import CTASection from "@/components/landing/CTASection";
+import usePageTitle from "@/hooks/usePageTitle";
 
-const Index = () => (
+const Index = () => {
+  usePageTitle("");
+  return (
   <div className="min-h-screen">
     <Navbar />
     <HeroSection />
@@ -30,6 +33,7 @@ const Index = () => (
     <CTASection />
     <Footer />
   </div>
-);
+  );
+};
 
 export default Index;

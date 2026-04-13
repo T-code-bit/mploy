@@ -25,6 +25,8 @@ const Auth = () => {
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetSent, setResetSent] = useState(false);
 
   const verifyCaptcha = async () => {
     if (!captchaToken) {
@@ -184,6 +186,25 @@ const Auth = () => {
                     {loading ? "Signing in..." : "Sign In"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!loginEmail) {
+                        toast.error("Enter your email address first");
+                        return;
+                      }
+                      setLoading(true);
+                      const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+                        redirectTo: window.location.origin,
+                      });
+                      if (error) toast.error(error.message);
+                      else toast.success("Password reset link sent! Check your email.");
+                      setLoading(false);
+                    }}
+                    className="w-full text-center text-sm text-primary hover:underline pt-1"
+                  >
+                    Forgot your password?
+                  </button>
                 </form>
               </TabsContent>
 

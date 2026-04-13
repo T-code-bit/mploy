@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
+import usePageTitle from "@/hooks/usePageTitle";
 
 const sections = [
   {
@@ -45,7 +46,9 @@ const sections = [
   },
 ];
 
-const Privacy = () => (
+const Privacy = () => {
+  usePageTitle("Privacy Policy");
+  return (
   <div className="min-h-screen bg-background">
     <Navbar />
     <div className="pt-24 pb-16">

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { PlayCircle, Clock, Award, Users, BookOpen, Search, Lock } from "lucide-react";
 import academyImg from "@/assets/academy-learning.jpg";
+import usePageTitle from "@/hooks/usePageTitle";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -26,6 +27,7 @@ const courses = [
 const categories = ["All", "CV & Resume", "Interviews", "Soft Skills", "Career Growth", "Job Search", "Tech Skills"];
 
 const Academy = () => {
+  usePageTitle("Academy");
   const [activeCategory, setActiveCategory] = useState("All");
   const [search, setSearch] = useState("");
   const { subscriptionTier } = useAuth();

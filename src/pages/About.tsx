@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ShieldCheck, Globe, Users, Target, Heart, Zap } from "lucide-react";
 import aboutTeamImg from "@/assets/about-team.jpg";
+import usePageTitle from "@/hooks/usePageTitle";
 
 const values = [
   { icon: ShieldCheck, title: "Trust & Verification", description: "Every job listing is authenticated. We eliminate scams and ghost postings so you can apply with confidence." },
@@ -20,8 +21,9 @@ const team = [
   { name: "Fatima Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across Kenya and the East African region. Background in international business development." },
 ];
 
-const About = () => (
-  <div className="min-h-screen bg-background">
+const About = () => {
+  usePageTitle("About Us");
+  return (
     <Navbar />
     <div className="pt-24 pb-16">
       <div className="container mx-auto px-4">

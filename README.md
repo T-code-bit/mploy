@@ -144,7 +144,7 @@ npm run preview
 ```
 
 ## 🏗️ Project Structure
-
+```
 mploy/
 ├── public/                 # Static assets
 ├── src/

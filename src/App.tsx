@@ -18,6 +18,8 @@ import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import ResetPassword from "./pages/ResetPassword";
+import Admin from "./pages/Admin";
 import CookieConsent from "./components/CookieConsent";
 import BackToTop from "./components/BackToTop";
 import ScrollToTop from "./components/ScrollToTop";
@@ -35,6 +37,10 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/admin" element={
+              <ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>
+            } />
             <Route path="/jobs" element={<Jobs />} />
             <Route path="/cv-builder" element={
               <ProtectedRoute><CVBuilder /></ProtectedRoute>

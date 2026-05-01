@@ -3,7 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: "job_seeker" | "employer";
+  requiredRole?: "job_seeker" | "employer" | "admin";
 }
 
 const isProfileComplete = (profile: any): boolean => {
@@ -26,6 +26,11 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Admins bypass all profile and role checks
+  if (userRole === "admin") {
+    return <>{children}</>;
   }
 
   // Force profile completion before accessing any protected page (except /profile itself)

@@ -212,7 +212,7 @@ const Auth = () => {
                       }
                       setLoading(true);
                       const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-                        redirectTo: window.location.origin,
+                        redirectTo: `${window.location.origin}/reset-password`,
                       });
                       if (error) toast.error(error.message);
                       else toast.success("Password reset link sent! Check your email.");
@@ -242,23 +242,24 @@ const Auth = () => {
 
                   <div className="space-y-2">
                     <Label>I am a...</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                       {[
                         { role: "job_seeker" as const, icon: GraduationCap, label: "Job Seeker" },
                         { role: "employer" as const, icon: Briefcase, label: "Employer" },
+                        { role: "admin" as const, icon: Shield, label: "Admin" },
                       ].map((option) => (
                         <button
                           key={option.role}
                           type="button"
                           onClick={() => setSignupRole(option.role)}
-                          className={`flex flex-col items-center gap-2.5 p-5 rounded-xl border-2 transition-all duration-200 ${
+                          className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
                             signupRole === option.role
                               ? "border-primary bg-accent shadow-glow"
                               : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
                           }`}
                         >
-                          <option.icon className={`h-6 w-6 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
-                          <span className={`text-sm font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
+                          <option.icon className={`h-5 w-5 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
+                          <span className={`text-xs font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
                             {option.label}
                           </span>
                         </button>
@@ -279,6 +280,22 @@ const Auth = () => {
                         required
                       />
                       <p className="text-xs text-muted-foreground">Contact admin to get your employer access code.</p>
+                    </div>
+                  )}
+
+                  {signupRole === "admin" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-code">Admin Access Code</Label>
+                      <Input
+                        id="admin-code"
+                        type="password"
+                        placeholder="Enter admin code"
+                        className="rounded-xl h-11"
+                        value={adminCode}
+                        onChange={(e) => setAdminCode(e.target.value)}
+                        required
+                      />
+                      <p className="text-xs text-muted-foreground">Restricted — system administrators only.</p>
                     </div>
                   )}
 

@@ -140,7 +140,6 @@ const Jobs = () => {
     setScannedIdFile(null);
     setSelectedJob(null);
     setEducationLevel("");
-    setExpectedSalary("");
     setGender("");
     setCounty("");
     setDateOfBirth("");

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, GraduationCap, ArrowRight } from "lucide-react";
+import { Briefcase, GraduationCap, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import GoogleReCaptcha from "@/components/GoogleReCaptcha";
@@ -22,8 +22,9 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
-  const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
+  const [signupRole, setSignupRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
+  const [adminCode, setAdminCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [resetSent, setResetSent] = useState(false);
@@ -56,9 +57,21 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      // Redirect based on the role selector on the login form
-      const selectedRole = signupRole;
-      navigate(selectedRole === "employer" ? "/employer" : "/dashboard");
+      // Look up actual role to redirect correctly
+      const userId = authData.user?.id;
+      if (userId) {
+        const { data: roleRow } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .maybeSingle();
+        const actualRole = roleRow?.role;
+        if (actualRole === "admin") navigate("/admin");
+        else if (actualRole === "employer") navigate("/employer");
+        else navigate("/dashboard");
+      } else {
+        navigate("/dashboard");
+      }
     }
     setLoading(false);
   };
@@ -71,6 +84,10 @@ const Auth = () => {
     }
     if (signupRole === "employer" && employerCode !== "6490") {
       toast.error("Invalid employer access code");
+      return;
+    }
+    if (signupRole === "admin" && adminCode !== "MPLOY-ADMIN-2026") {
+      toast.error("Invalid admin access code");
       return;
     }
     setLoading(true);

@@ -223,12 +223,6 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
                         <span>Experience: {application.years_of_experience}</span>
                       </div>
                     )}
-                    {application.expected_salary && (
-                      <div className="flex items-center gap-2 text-sm">
-                        <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        <span>Expected: {application.expected_salary}</span>
-                      </div>
-                    )}
                     {application.availability && (
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-muted-foreground" />

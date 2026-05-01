@@ -50,7 +50,6 @@ const Jobs = () => {
   const [recommendationFile, setRecommendationFile] = useState<File | null>(null);
   const [scannedIdFile, setScannedIdFile] = useState<File | null>(null);
   const [educationLevel, setEducationLevel] = useState("");
-  const [expectedSalary, setExpectedSalary] = useState("");
   const [gender, setGender] = useState("");
   const [county, setCounty] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -114,7 +113,6 @@ const Jobs = () => {
         availability,
         linkedin_url: linkedinUrl || null,
         education_level: educationLevel || null,
-        expected_salary: expectedSalary || null,
         gender: gender || null,
         county: county || null,
         date_of_birth: dateOfBirth || null,
@@ -142,7 +140,6 @@ const Jobs = () => {
     setScannedIdFile(null);
     setSelectedJob(null);
     setEducationLevel("");
-    setExpectedSalary("");
     setGender("");
     setCounty("");
     setDateOfBirth("");
@@ -575,23 +572,17 @@ const Jobs = () => {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <Label>Expected Salary (KES)</Label>
-                  <Input placeholder="e.g. 80,000" className="rounded-xl h-11" value={expectedSalary} onChange={(e) => setExpectedSalary(e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Availability</Label>
-                  <Select value={availability} onValueChange={setAvailability}>
-                    <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
-                    <SelectContent className="rounded-xl">
-                      <SelectItem value="Immediately">Immediately</SelectItem>
-                      <SelectItem value="2 weeks">2 weeks notice</SelectItem>
-                      <SelectItem value="1 month">1 month notice</SelectItem>
-                      <SelectItem value="3 months">3 months notice</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label>Availability</Label>
+                <Select value={availability} onValueChange={setAvailability}>
+                  <SelectTrigger className="rounded-xl h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="Immediately">Immediately</SelectItem>
+                    <SelectItem value="2 weeks">2 weeks notice</SelectItem>
+                    <SelectItem value="1 month">1 month notice</SelectItem>
+                    <SelectItem value="3 months">3 months notice</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label>LinkedIn Profile</Label>

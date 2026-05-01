@@ -91,17 +91,36 @@ Deno.serve(async (req) => {
     const emailSubject = `🚀 New Job Alert: ${jobTitle} at ${company}`;
     const emailHtml = buildEmailHtml(jobTitle, company, location, type, deadline);
 
+    const SITE_NAME = "M-Ploy";
+    const SENDER_DOMAIN = "notify.mploy.vercel.app";
+    const FROM_DOMAIN = "notify.mploy.vercel.app";
+
     let enqueued = 0;
     for (const sub of subscribers) {
       try {
+        const messageId = crypto.randomUUID();
+        const idempotencyKey = `job-alert-${jobTitle}-${company}-${sub.email}`.replace(/\s+/g, "-").toLowerCase();
+
+        await supabase.from("email_send_log").insert({
+          message_id: messageId,
+          template_name: "job_alert",
+          recipient_email: sub.email,
+          status: "pending",
+        });
+
         await supabase.rpc("enqueue_email", {
           queue_name: "transactional_emails",
           payload: {
+            message_id: messageId,
             to: sub.email,
+            from: `${SITE_NAME} Jobs <noreply@${FROM_DOMAIN}>`,
+            sender_domain: SENDER_DOMAIN,
             subject: emailSubject,
             html: emailHtml,
-            from_name: "M-Ploy Jobs",
-            template_name: "job_alert",
+            purpose: "transactional",
+            label: "job_alert",
+            idempotency_key: idempotencyKey,
+            queued_at: new Date().toISOString(),
           },
         });
         enqueued++;

@@ -3,7 +3,7 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionTier, getTierFromProductId } from "@/lib/subscription";
 
-type UserRole = "job_seeker" | "employer";
+type UserRole = "job_seeker" | "employer" | "admin";
 
 interface Profile {
   id: string;

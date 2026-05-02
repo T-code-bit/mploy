@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { SubscriptionTier, getTierFromProductId } from "@/lib/subscription";
+import { SubscriptionTier } from "@/lib/subscription";
 
 type UserRole = "job_seeker" | "employer" | "admin";
 
@@ -88,10 +88,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!session) return;
     setSubscriptionLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("check-subscription");
+      const { data, error } = await supabase.functions.invoke("paystack-check-subscription");
       if (error) throw error;
       if (data) {
-        const tier = getTierFromProductId(data.product_id || null);
+        const tier = (data.tier || "free") as SubscriptionTier;
         setSubscriptionTier(data.subscribed ? tier : "free");
         setSubscriptionEnd(data.subscription_end || null);
       }

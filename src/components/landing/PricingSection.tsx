@@ -22,20 +22,17 @@ const PricingSection = () => {
     }
     if (tier === "free") return;
 
-    const priceId = SUBSCRIPTION_TIERS[tier].price_id;
-    if (!priceId) return;
-
     setLoadingTier(tier);
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { priceId },
+      const { data, error } = await supabase.functions.invoke("paystack-create-subscription", {
+        body: { tier },
       });
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, "_blank");
+        window.location.href = data.url;
       }
     } catch (err: any) {
-      toast.error(err.message || "Failed to create checkout session");
+      toast.error(err.message || "Failed to start checkout");
     } finally {
       setLoadingTier(null);
     }
@@ -65,7 +62,7 @@ const PricingSection = () => {
           <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-5 tracking-tight">
             Plans That Fit <span className="text-gradient-accent">Your Journey</span>
           </h2>
-          <p className="text-muted-foreground text-lg">Choose the plan that matches your career ambitions.</p>
+          <p className="text-muted-foreground text-lg">Secure monthly billing in KES via Paystack — cancel anytime.</p>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">

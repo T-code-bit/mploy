@@ -144,12 +144,13 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="jobs" className="space-y-6">
-          <TabsList className="grid grid-cols-5 w-full">
+          <TabsList className="grid grid-cols-3 md:grid-cols-6 w-full">
             <TabsTrigger value="jobs"><Briefcase className="h-4 w-4 mr-1" />Jobs ({jobs.length})</TabsTrigger>
-            <TabsTrigger value="applications"><FileText className="h-4 w-4 mr-1" />Applications ({applications.length})</TabsTrigger>
+            <TabsTrigger value="applications"><FileText className="h-4 w-4 mr-1" />Apps ({applications.length})</TabsTrigger>
             <TabsTrigger value="users"><Users className="h-4 w-4 mr-1" />Users ({profiles.length})</TabsTrigger>
-            <TabsTrigger value="subscribers"><Mail className="h-4 w-4 mr-1" />Subscribers ({subscribers.length})</TabsTrigger>
-            <TabsTrigger value="messages">Messages ({messages.length})</TabsTrigger>
+            <TabsTrigger value="reviews"><Star className="h-4 w-4 mr-1" />Reviews ({reviews.length})</TabsTrigger>
+            <TabsTrigger value="subscribers"><Mail className="h-4 w-4 mr-1" />Subs ({subscribers.length})</TabsTrigger>
+            <TabsTrigger value="messages">Msgs ({messages.length})</TabsTrigger>
           </TabsList>
 
           <TabsContent value="jobs" className="space-y-3">
@@ -184,6 +185,45 @@ const Admin = () => {
                   <p className="font-semibold">{p.full_name || "Unnamed"}</p>
                   <p className="text-sm text-muted-foreground">{p.phone || p.address || "—"}</p>
                   <Badge className="mt-1 text-xs capitalize">{p.role}</Badge>
+                </div>
+              </Card>
+            ))}
+          </TabsContent>
+
+          <TabsContent value="reviews" className="space-y-3">
+            {reviews.length === 0 ? (
+              <Card className="p-6 text-center text-muted-foreground">No reviews submitted yet.</Card>
+            ) : reviews.map((r: any) => (
+              <Card key={r.id} className="p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold">{r.name}</p>
+                      <Badge variant={r.is_approved ? "default" : "secondary"} className="text-xs">
+                        {r.is_approved ? "Approved" : "Pending"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {Array.from({ length: r.rating }).map(() => "★").join("")}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {[r.role, r.location].filter(Boolean).join(" · ") || "—"}
+                    </p>
+                    {r.highlight && <p className="text-xs font-bold text-primary uppercase mt-1">{r.highlight}</p>}
+                    <p className="text-sm mt-2 whitespace-pre-line">{r.text}</p>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {r.is_approved ? (
+                      <Button variant="outline" size="sm" onClick={() => approveReview.mutate({ id: r.id, approved: false })}>
+                        <X className="h-4 w-4 mr-1" />Unapprove
+                      </Button>
+                    ) : (
+                      <Button size="sm" onClick={() => approveReview.mutate({ id: r.id, approved: true })}>
+                        <Check className="h-4 w-4 mr-1" />Approve
+                      </Button>
+                    )}
+                    <ConfirmDelete label="review" onConfirm={() => deleteMutation.mutate({ table: "reviews", id: r.id })} />
+                  </div>
                 </div>
               </Card>
             ))}

@@ -67,14 +67,7 @@ const Admin = () => {
     },
   });
 
-  const { data: messages = [] } = useQuery({
-    queryKey: ["admin-messages"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
-  });
+
 
   const { data: reviews = [] } = useQuery({
     queryKey: ["admin-reviews"],

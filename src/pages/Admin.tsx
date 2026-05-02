@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trash2, Shield, Briefcase, Users, FileText, Mail, Loader2 } from "lucide-react";
+import { Trash2, Shield, Briefcase, Users, FileText, Mail, Loader2, Star, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -67,14 +67,53 @@ const Admin = () => {
     },
   });
 
+  const { data: messages = [] } = useQuery({
+    queryKey: ["admin-messages"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("contact_messages").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ["admin-reviews"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("reviews").select("*").order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const deleteMutation = useMutation({
-    mutationFn: async ({ table, id }: { table: "jobs" | "applications" | "newsletter_subscribers" | "contact_messages"; id: string }) => {
+    mutationFn: async ({ table, id }: { table: "jobs" | "applications" | "newsletter_subscribers" | "contact_messages" | "reviews"; id: string }) => {
       const { error } = await supabase.from(table).delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_, vars) => {
       toast.success("Deleted successfully");
-      qc.invalidateQueries({ queryKey: [`admin-${vars.table === "newsletter_subscribers" ? "subscribers" : vars.table === "contact_messages" ? "messages" : vars.table}`] });
+      const keyMap: Record<string, string> = {
+        jobs: "admin-jobs",
+        applications: "admin-applications",
+        newsletter_subscribers: "admin-subscribers",
+        contact_messages: "admin-messages",
+        reviews: "admin-reviews",
+      };
+      qc.invalidateQueries({ queryKey: [keyMap[vars.table]] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const approveReview = useMutation({
+    mutationFn: async ({ id, approved }: { id: string; approved: boolean }) => {
+      const { error } = await supabase.from("reviews").update({ is_approved: approved }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Review updated");
+      qc.invalidateQueries({ queryKey: ["admin-reviews"] });
+      qc.invalidateQueries({ queryKey: ["approved-reviews-landing"] });
+      qc.invalidateQueries({ queryKey: ["approved-reviews"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });

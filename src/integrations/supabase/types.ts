@@ -283,6 +283,51 @@ export type Database = {
         }
         Relationships: []
       }
+      paystack_subscribers: {
+        Row: {
+          created_at: string
+          current_period_end: string | null
+          customer_code: string | null
+          email: string
+          email_token: string | null
+          id: string
+          plan_code: string | null
+          status: string
+          subscription_code: string | null
+          tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_period_end?: string | null
+          customer_code?: string | null
+          email: string
+          email_token?: string | null
+          id?: string
+          plan_code?: string | null
+          status?: string
+          subscription_code?: string | null
+          tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_period_end?: string | null
+          customer_code?: string | null
+          email?: string
+          email_token?: string | null
+          id?: string
+          plan_code?: string | null
+          status?: string
+          subscription_code?: string | null
+          tier?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           about: string | null
@@ -322,6 +367,51 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          highlight: string | null
+          id: string
+          is_approved: boolean
+          location: string | null
+          name: string
+          photo_url: string | null
+          rating: number
+          role: string | null
+          text: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          highlight?: string | null
+          id?: string
+          is_approved?: boolean
+          location?: string | null
+          name: string
+          photo_url?: string | null
+          rating?: number
+          role?: string | null
+          text: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          highlight?: string | null
+          id?: string
+          is_approved?: boolean
+          location?: string | null
+          name?: string
+          photo_url?: string | null
+          rating?: number
+          role?: string | null
+          text?: string
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
       }

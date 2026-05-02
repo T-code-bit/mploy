@@ -145,6 +145,7 @@ const Footer = () => {
             <div className="flex flex-col gap-3">
               {[
                 { label: "About", href: "/about" },
+                { label: "Reviews", href: "/reviews" },
                 { label: "Contact", href: "/#contact" },
                 { label: "Privacy", href: "/privacy" },
                 { label: "Terms", href: "/terms" },

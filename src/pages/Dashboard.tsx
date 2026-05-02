@@ -26,13 +26,14 @@ const Dashboard = () => {
   const currentPlan = SUBSCRIPTION_TIERS[subscriptionTier];
 
   const handleManageSubscription = async () => {
+    if (!confirm("Cancel your monthly subscription? You'll keep access until the end of your current period.")) return;
     setPortalLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("customer-portal");
+      const { data, error } = await supabase.functions.invoke("paystack-cancel-subscription");
       if (error) throw error;
-      if (data?.url) window.open(data.url, "_blank");
+      toast.success("Subscription cancelled");
     } catch (err: any) {
-      toast.error(err.message || "Failed to open subscription management");
+      toast.error(err.message || "Failed to cancel subscription");
     } finally {
       setPortalLoading(false);
     }

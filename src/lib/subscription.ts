@@ -1,11 +1,9 @@
-// Stripe product and price IDs for subscription tiers
+// Paystack-backed subscription tiers (KES, monthly recurring)
 export const SUBSCRIPTION_TIERS = {
   free: {
     name: "Free",
     price: "KES 0",
     period: "/month",
-    product_id: null,
-    price_id: null,
     description: "Get started with basic access",
     features: [
       "Browse 5 job listings per day",
@@ -27,8 +25,6 @@ export const SUBSCRIPTION_TIERS = {
     name: "Basic",
     price: "KES 999",
     period: "/month",
-    product_id: "prod_UFInef25SXfARs",
-    price_id: "price_1TGoBvGEMP5kXJHGeqPZpWtg",
     description: "Full access for active job seekers",
     features: [
       "Unlimited job listings",
@@ -51,8 +47,6 @@ export const SUBSCRIPTION_TIERS = {
     name: "Premium",
     price: "KES 2,499",
     period: "/month",
-    product_id: "prod_UFInNrkACKqgjP",
-    price_id: "price_1TGoCNGEMP5kXJHGDqWIgKoZ",
     description: "Full power for serious job seekers",
     features: [
       "Everything in Basic",
@@ -78,11 +72,3 @@ export const SUBSCRIPTION_TIERS = {
 } as const;
 
 export type SubscriptionTier = keyof typeof SUBSCRIPTION_TIERS;
-
-export function getTierFromProductId(productId: string | null): SubscriptionTier {
-  if (!productId) return "free";
-  for (const [key, tier] of Object.entries(SUBSCRIPTION_TIERS)) {
-    if (tier.product_id === productId) return key as SubscriptionTier;
-  }
-  return "free";
-}

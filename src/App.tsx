@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
 import Admin from "./pages/Admin";
+import Reviews from "./pages/Reviews";
 import CookieConsent from "./components/CookieConsent";
 import BackToTop from "./components/BackToTop";
 import ScrollToTop from "./components/ScrollToTop";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/cookies" element={<Cookies />} />
+            <Route path="/reviews" element={<Reviews />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <CookieConsent />

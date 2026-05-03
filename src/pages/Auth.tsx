@@ -209,30 +209,51 @@ const Auth = () => {
                         <button
                           key={option.role}
                           type="button"
-                          onClick={() => setSignupRole(option.role)}
+                          onClick={() => setLoginRole(option.role)}
                           className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                            signupRole === option.role
+                            loginRole === option.role
                               ? "border-primary bg-accent shadow-glow"
                               : "border-border hover:border-muted-foreground/30 hover:bg-muted/50"
                           }`}
                         >
-                          <option.icon className={`h-5 w-5 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
-                          <span className={`text-xs font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
+                          <option.icon className={`h-5 w-5 ${loginRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
+                          <span className={`text-xs font-medium ${loginRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
                             {option.label}
                           </span>
                         </button>
                       ))}
                     </div>
-                    <p className="text-xs text-muted-foreground">Sign in with the same email and password you used to register. You'll be routed to the correct console automatically.</p>
+                    <p className="text-xs text-muted-foreground">
+                      {loginRole === "admin"
+                        ? "Enter the admin access code to sign in."
+                        : "Sign in with the same email and password you used to register."}
+                    </p>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input id="login-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Password</Label>
-                    <Input id="login-password" type="password" placeholder="••••••••" className="rounded-xl h-11" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
-                  </div>
+                  {loginRole === "admin" ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-login-code">Admin Access Code</Label>
+                      <Input
+                        id="admin-login-code"
+                        type="password"
+                        placeholder="Enter access code"
+                        className="rounded-xl h-11"
+                        value={adminLoginCode}
+                        onChange={(e) => setAdminLoginCode(e.target.value)}
+                        required
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="login-email">Email</Label>
+                        <Input id="login-email" type="email" placeholder="you@example.com" className="rounded-xl h-11" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="login-password">Password</Label>
+                        <Input id="login-password" type="password" placeholder="••••••••" className="rounded-xl h-11" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
+                      </div>
+                    </>
+                  )}
                   <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
                   <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !captchaToken}>
                     {loading ? "Signing in..." : "Sign In"}

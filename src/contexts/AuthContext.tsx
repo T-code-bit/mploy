@@ -102,6 +102,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [session]);
 
+  // Admins always have unrestricted (premium) access
+  useEffect(() => {
+    if (userRole === "admin") {
+      setSubscriptionTier("premium");
+    }
+  }, [userRole]);
+
+  const _noop = useCallback(async () => {
+    } catch (err) {
+      console.error("Failed to check subscription:", err);
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  }, [session]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {

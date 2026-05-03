@@ -167,10 +167,11 @@ const Auth = () => {
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label>Sign in as</Label>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-2">
                       {[
                         { role: "job_seeker" as const, icon: GraduationCap, label: "Job Seeker" },
                         { role: "employer" as const, icon: Briefcase, label: "Employer" },
+                        { role: "admin" as const, icon: Shield, label: "Admin" },
                       ].map((option) => (
                         <button
                           key={option.role}
@@ -183,12 +184,13 @@ const Auth = () => {
                           }`}
                         >
                           <option.icon className={`h-5 w-5 ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`} />
-                          <span className={`text-sm font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
+                          <span className={`text-xs font-medium ${signupRole === option.role ? "text-primary" : "text-muted-foreground"}`}>
                             {option.label}
                           </span>
                         </button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground">Sign in with the same email and password you used to register. You'll be routed to the correct console automatically.</p>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="login-email">Email</Label>

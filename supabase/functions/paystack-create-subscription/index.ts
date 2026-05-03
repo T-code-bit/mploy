@@ -75,6 +75,8 @@ serve(async (req) => {
         amount: t.amount,
         plan: planCode,
         currency: "KES",
+        // Enable all available Paystack payment channels (card, mobile money, bank, USSD, QR, bank transfer, EFT, Apple Pay)
+        channels: ["card", "bank", "ussd", "qr", "mobile_money", "bank_transfer", "eft", "apple_pay"],
         callback_url: `${origin}/dashboard?paystack=success`,
         metadata: { user_id: user.id, tier },
       }),

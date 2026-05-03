@@ -45,9 +45,43 @@ const Auth = () => {
     return true;
   };
 
+  const [adminLoginCode, setAdminLoginCode] = useState("");
+  const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Admin access-code login bypass
+    if (loginRole === "admin") {
+      if (!(await verifyCaptcha())) { setLoading(false); return; }
+      try {
+        const { data, error } = await supabase.functions.invoke("admin-access-login", {
+          body: { code: adminLoginCode },
+        });
+        if (error || !data?.access_token) {
+          toast.error("Invalid admin access code");
+          setLoading(false);
+          return;
+        }
+        const { error: setErr } = await supabase.auth.setSession({
+          access_token: data.access_token,
+          refresh_token: data.refresh_token,
+        });
+        if (setErr) {
+          toast.error(setErr.message);
+          setLoading(false);
+          return;
+        }
+        toast.success("Welcome, Administrator");
+        navigate("/admin");
+      } catch (err: any) {
+        toast.error(err.message || "Admin login failed");
+      }
+      setLoading(false);
+      return;
+    }
+
     if (!(await verifyCaptcha())) { setLoading(false); return; }
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
@@ -57,7 +91,6 @@ const Auth = () => {
       toast.error(error.message);
     } else {
       toast.success("Welcome back!");
-      // Look up actual role to redirect correctly
       const userId = authData.user?.id;
       if (userId) {
         const { data: roleRow } = await supabase

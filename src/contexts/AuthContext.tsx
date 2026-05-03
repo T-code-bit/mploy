@@ -109,13 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [userRole]);
 
-  const _noop = useCallback(async () => {
-    } catch (err) {
-      console.error("Failed to check subscription:", err);
-    } finally {
-      setSubscriptionLoading(false);
-    }
-  }, [session]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(

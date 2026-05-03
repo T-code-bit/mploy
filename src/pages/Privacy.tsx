@@ -22,7 +22,7 @@ const sections = [
   },
   {
     title: "5. Your Rights",
-    content: `Depending on your location, you may have the right to:\n• Access the personal data we hold about you\n• Request correction of inaccurate data\n• Request deletion of your data ("right to be forgotten")\n• Object to or restrict certain processing\n• Data portability — receive your data in a structured format\n• Withdraw consent at any time\n\nTo exercise these rights, contact us at privacy@m-ploy.com.`,
+    content: `Depending on your location, you may have the right to:\n• Access the personal data we hold about you\n• Request correction of inaccurate data\n• Request deletion of your data ("right to be forgotten")\n• Object to or restrict certain processing\n• Data portability — receive your data in a structured format\n• Withdraw consent at any time\n\nTo exercise these rights, contact us at mploykenya@gmail.com.`,
   },
   {
     title: "6. Cookies & Tracking",
@@ -42,7 +42,7 @@ const sections = [
   },
   {
     title: "10. Contact Us",
-    content: `If you have questions about this privacy policy or your data, please contact us:\n\nEmail: privacy@m-ploy.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 700 000 000`,
+    content: `If you have questions about this privacy policy or your data, please contact us:\n\nEmail: mploykenya@gmail.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 700 000 000`,
   },
 ];
 

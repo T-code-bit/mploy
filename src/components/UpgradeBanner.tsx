@@ -11,12 +11,12 @@ interface UpgradeBannerProps {
 }
 
 const UpgradeBanner = ({ requiredTier, feature }: UpgradeBannerProps) => {
-  const { subscriptionTier } = useAuth();
+  const { subscriptionTier, userRole } = useAuth();
   const tierOrder: SubscriptionTier[] = ["free", "basic", "premium"];
   const currentIdx = tierOrder.indexOf(subscriptionTier);
   const requiredIdx = tierOrder.indexOf(requiredTier);
 
-  if (currentIdx >= requiredIdx) return null;
+  if (userRole === "admin" || currentIdx >= requiredIdx) return null;
 
   const targetPlan = SUBSCRIPTION_TIERS[requiredTier];
 

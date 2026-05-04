@@ -63,6 +63,18 @@ const PricingSection = () => {
             Plans That Fit <span className="text-gradient-accent">Your Journey</span>
           </h2>
           <p className="text-muted-foreground text-lg">Secure monthly billing in KES via Paystack — cancel anytime.</p>
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
+            <span className="font-semibold">We accept:</span>
+            {[
+              "Visa", "Mastercard", "Amex", "Verve",
+              "M-Pesa", "Airtel Money", "Paybill", "Till",
+              "Bank Transfer", "USSD", "Apple Pay", "QR",
+            ].map((m) => (
+              <span key={m} className="px-2.5 py-1 rounded-full bg-muted border border-border font-medium">
+                {m}
+              </span>
+            ))}
+          </div>
         </motion.div>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">

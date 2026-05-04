@@ -60,7 +60,10 @@ const Dashboard = () => {
     return { total, pending, accepted };
   }, [applications]);
 
-  // Redirect employers to their dedicated portal
+  // Redirect admins to their console and employers to their portal
+  if (userRole === "admin") {
+    return <Navigate to="/admin" replace />;
+  }
   if (userRole === "employer") {
     return <Navigate to="/employer" replace />;
   }

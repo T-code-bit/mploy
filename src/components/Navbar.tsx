@@ -24,8 +24,9 @@ const Navbar = () => {
     { label: "Jobs", href: "/jobs", icon: Briefcase },
     { label: "CV Builder", href: "/cv-builder", icon: FileText },
     { label: "Academy", href: "/academy", icon: GraduationCap },
-    ...(user ? [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] : []),
+    ...(user && userRole !== "admin" ? [{ label: "Dashboard", href: "/dashboard", icon: LayoutDashboard }] : []),
     ...(userRole === "employer" ? [{ label: "Employer Portal", href: "/employer", icon: Building2 }] : []),
+    ...(userRole === "admin" ? [{ label: "Admin Console", href: "/admin", icon: Shield }] : []),
   ];
 
   const secondaryLinks = [
@@ -89,8 +90,8 @@ const Navbar = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 rounded-xl">
-                <DropdownMenuItem onClick={() => navigate("/dashboard")} className="rounded-lg">
-                  Dashboard
+                <DropdownMenuItem onClick={() => navigate(userRole === "admin" ? "/admin" : userRole === "employer" ? "/employer" : "/dashboard")} className="rounded-lg">
+                  {userRole === "admin" ? "Admin Console" : userRole === "employer" ? "Employer Portal" : "Dashboard"}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/profile")} className="rounded-lg">
                   Profile Settings

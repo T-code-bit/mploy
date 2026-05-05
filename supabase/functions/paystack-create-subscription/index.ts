@@ -75,8 +75,10 @@ serve(async (req) => {
         amount: t.amount,
         plan: planCode,
         currency: "KES",
-        // Omit channels → Paystack shows ALL methods enabled on the account
-        // (cards: Visa/Mastercard/Amex/Verve, M-Pesa, Airtel Money, Paybill/Till, bank transfer, USSD, QR, Apple Pay)
+        // Explicitly enable all payment channels available on the Paystack account.
+        // Cards: Visa/Mastercard/Amex/Verve · Mobile money: M-Pesa, Airtel Money · Paybill/Till
+        // Bank transfer · USSD · QR · Apple Pay · EFT
+        channels: ["card", "mobile_money", "mobile_money_ke", "bank", "bank_transfer", "ussd", "qr", "eft", "apple_pay"],
         callback_url: `${origin}/dashboard?paystack=success`,
         metadata: { user_id: user.id, tier },
       }),

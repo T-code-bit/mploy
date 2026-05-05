@@ -107,18 +107,35 @@ export const EmailFooter = ({ recipient }: { recipient?: string }) => (
     <Hr style={{ borderColor: '#e5e7eb', margin: '32px 0 24px' }} />
 
     {/* Social Links */}
-    <Section style={{ textAlign: 'center' as const, marginBottom: '24px' }}>
+    <Section style={{ textAlign: 'center' as const, marginBottom: '20px' }}>
       <Text style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 12px', fontWeight: '600' }}>
-        Follow Us
+        Connect with M-Ploy
       </Text>
       <Text style={{ margin: '0' }}>
-        <Link href="https://twitter.com/mployke" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Twitter</Link>
+        <Link href="https://www.facebook.com/betheleader001/" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Facebook</Link>
         {' · '}
-        <Link href="https://linkedin.com/company/mploy" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>LinkedIn</Link>
+        <Link href="https://x.com/LeaderBtl5600/" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Twitter / X</Link>
         {' · '}
-        <Link href="https://instagram.com/mployke" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Instagram</Link>
+        <Link href="https://ke.linkedin.com/company/be-the-leader-btl" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>LinkedIn</Link>
         {' · '}
-        <Link href="https://facebook.com/mployke" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Facebook</Link>
+        <Link href="https://www.instagram.com/betheleader_org/" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Instagram</Link>
+        {' · '}
+        <Link href="https://www.tiktok.com/@usaembassyinnairobikenya" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>TikTok</Link>
+      </Text>
+    </Section>
+
+    {/* Contact info */}
+    <Section style={{ textAlign: 'center' as const, marginBottom: '20px' }}>
+      <Text style={{ fontSize: '13px', color: '#374151', margin: '0 0 4px', fontWeight: '600' }}>
+        M-Ploy · Nairobi, Kenya
+      </Text>
+      <Text style={{ fontSize: '12px', color: '#6b7280', margin: '0 0 4px' }}>
+        <Link href="tel:+254793264418" style={linkStyle}>+254 793 264 418</Link>
+        {' · '}
+        <Link href="mailto:mploykenya@gmail.com" style={linkStyle}>mploykenya@gmail.com</Link>
+      </Text>
+      <Text style={{ fontSize: '11px', color: '#9ca3af', margin: '0' }}>
+        Mon – Fri · 8:00 AM – 5:00 PM (EAT)
       </Text>
     </Section>
 

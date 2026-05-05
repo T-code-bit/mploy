@@ -11,7 +11,7 @@ import GoogleReCaptcha from "@/components/GoogleReCaptcha";
 const contactInfo = [
   { icon: Mail, label: "Email", value: "mploykenya@gmail.com", href: "mailto:mploykenya@gmail.com" },
   { icon: Phone, label: "Phone", value: "+254 793 264 418", href: "tel:+254793264418" },
-  { icon: MapPin, label: "Office", value: "Eldoret, Kenya", href: "#" },
+  { icon: MapPin, label: "Office", value: "Nairobi, Kenya", href: "#" },
 ];
 
 const ContactSection = () => {
@@ -99,7 +99,7 @@ const ContactSection = () => {
             ))}
             <div className="p-5 bg-card rounded-2xl border border-border shadow-card">
               <p className="text-sm font-semibold text-card-foreground mb-1">Business Hours</p>
-              <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 6:00 PM (EAT)</p>
+              <p className="text-sm text-muted-foreground">Mon – Fri: 8:00 AM – 5:00 PM (EAT)</p>
               <p className="text-sm text-muted-foreground">Weekends: Closed</p>
             </div>
           </motion.div>

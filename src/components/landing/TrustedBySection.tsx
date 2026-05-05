@@ -36,7 +36,7 @@ const TrustedBySection = () => (
             transition={{ delay: i * 0.1, duration: 0.5 }}
             className="flex flex-col items-center gap-3 p-6 rounded-2xl hover:bg-muted/50 transition-all duration-300 group"
           >
-            <div className="h-32 w-32 md:h-40 md:w-40 flex items-center justify-center">
+            <div className="h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56 flex items-center justify-center">
               <img
                 src={partner.logo}
                 alt={`${partner.name} logo`}

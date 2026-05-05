@@ -15,7 +15,8 @@ const values = [
 ];
 
 const team = [
-  { name: "James Ochieng", role: "Founder & CEO", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent across Kenya and East Africa." },
+  { name: "James Ochieng", role: "Founder & CEO, M-Ploy", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent across Kenya and East Africa." },
+  { name: "Cavin Apodo", role: "Founder & CEO, BTL (Be The Leader)", bio: "Visionary leader behind Be The Leader (BTL), our institutional partner powering youth leadership and employability programs across Kenya." },
   { name: "Amina Wanjiku", role: "CTO", bio: "Experienced engineer with 12 years in AI/ML. Building the tech that powers smarter career matching for Kenyan talent." },
   { name: "Peter Mwangi", role: "Head of Product", bio: "Product leader who's shipped tools used by thousands. Obsessed with user experience and accessibility." },
   { name: "Fatima Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across Kenya and the East African region. Background in international business development." },
@@ -134,7 +135,7 @@ const About = () => {
         {/* Team */}
         <div className="mb-20">
           <h2 className="font-display text-3xl font-bold text-foreground text-center mb-10 tracking-tight">Meet the Team</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
             {team.map((t, i) => (
               <motion.div key={t.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-card rounded-2xl border border-border p-6 shadow-card text-center">
                 <div className="h-16 w-16 rounded-2xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">

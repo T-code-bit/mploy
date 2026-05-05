@@ -249,16 +249,15 @@ const Dashboard = () => {
                   </p>
                 )}
                 <div className="space-y-2 mt-3">
-                  {subscriptionTier === "free" ? (
-                    <Link to="/#pricing">
-                      <Button size="sm" className="w-full bg-gradient-primary text-primary-foreground rounded-xl gap-2">
-                        <Sparkles className="h-3.5 w-3.5" /> Upgrade Plan
-                      </Button>
-                    </Link>
-                  ) : (
+                  <Link to="/#pricing">
+                    <Button size="sm" className="w-full bg-gradient-primary text-primary-foreground rounded-xl gap-2">
+                      <Sparkles className="h-3.5 w-3.5" /> {subscriptionTier === "free" ? "Upgrade Plan" : "Change / View Plans"}
+                    </Button>
+                  </Link>
+                  {subscriptionTier !== "free" && (
                     <Button size="sm" variant="outline" className="w-full rounded-xl gap-2" onClick={handleManageSubscription} disabled={portalLoading}>
                       {portalLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Settings className="h-3.5 w-3.5" />}
-                      Manage Subscription
+                      Cancel Subscription
                     </Button>
                   )}
                 </div>

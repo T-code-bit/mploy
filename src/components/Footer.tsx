@@ -188,25 +188,25 @@ const Footer = () => {
             In Partnership With
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-            <a href="https://ke.usembassy.gov/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
-              <img src={usEmbassyLogo} alt="U.S. Embassy Nairobi" className="h-10 w-10 object-contain" />
+            <a href="https://ke.usembassy.gov/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity">
+              <img src={usEmbassyLogo} alt="U.S. Embassy Nairobi" className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain" />
               <div className="hidden sm:block">
-                <span className="block text-xs font-semibold text-foreground leading-tight">U.S. Embassy</span>
-                <span className="block text-[10px] text-muted-foreground leading-tight">Nairobi, Kenya</span>
+                <span className="block text-sm font-semibold text-foreground leading-tight">U.S. Embassy</span>
+                <span className="block text-xs text-muted-foreground leading-tight">Nairobi, Kenya</span>
               </div>
             </a>
-            <a href="https://www.president.go.ke/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
-              <img src={kenyaSealLogo} alt="Republic of Kenya" className="h-10 w-10 object-contain" />
+            <a href="https://www.president.go.ke/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity">
+              <img src={kenyaSealLogo} alt="Republic of Kenya" className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain" />
               <div className="hidden sm:block">
-                <span className="block text-xs font-semibold text-foreground leading-tight">Republic of Kenya</span>
-                <span className="block text-[10px] text-muted-foreground leading-tight">Government of Kenya</span>
+                <span className="block text-sm font-semibold text-foreground leading-tight">Republic of Kenya</span>
+                <span className="block text-xs text-muted-foreground leading-tight">Government of Kenya</span>
               </div>
             </a>
-            <div className="flex items-center gap-2.5 opacity-70 hover:opacity-100 transition-opacity">
-              <img src={btlLogo} alt="BTL - Be The Leader" className="h-10 w-10 object-contain" />
+            <div className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity">
+              <img src={btlLogo} alt="BTL - Be The Leader" className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 object-contain" />
               <div className="hidden sm:block">
-                <span className="block text-xs font-semibold text-foreground leading-tight">BTL</span>
-                <span className="block text-[10px] text-muted-foreground leading-tight">Be The Leader</span>
+                <span className="block text-sm font-semibold text-foreground leading-tight">BTL</span>
+                <span className="block text-xs text-muted-foreground leading-tight">Be The Leader</span>
               </div>
             </div>
           </div>
@@ -214,7 +214,8 @@ const Footer = () => {
 
         {/* Contact bar */}
         <div className="border-t border-border mt-8 pt-6 flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> Eldoret, Kenya</span>
+          <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> Nairobi, Kenya</span>
+          <span className="flex items-center gap-1.5">Mon–Fri 8:00 AM – 5:00 PM (EAT)</span>
           <a href="tel:+254793264418" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Phone className="h-3.5 w-3.5 text-primary" /> +254 793 264 418</a>
           <a href="mailto:mploykenya@gmail.com" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Mail className="h-3.5 w-3.5 text-primary" /> mploykenya@gmail.com</a>
         </div>

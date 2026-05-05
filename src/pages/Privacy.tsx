@@ -42,7 +42,7 @@ const sections = [
   },
   {
     title: "10. Contact Us",
-    content: `If you have questions about this privacy policy or your data, please contact us:\n\nEmail: mploykenya@gmail.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 700 000 000`,
+    content: `If you have questions about this privacy policy or your data, please contact us:\n\nEmail: mploykenya@gmail.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 793 264 418`,
   },
 ];
 

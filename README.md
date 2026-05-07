@@ -36,4 +36,4 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 
 ---
 
-**Made to empower job seekers across Africa** 🌍
+**Made to empower job seekers worldwide** 🌍

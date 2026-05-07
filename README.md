@@ -68,8 +68,8 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 ---
 
 ## 🔗 Quick Links
-- **Live Site:** https://mploy.vercel.app
-- **GitHub:** https://github.com/T-code-bit/mploy
+- **Live Site:** [Tap Here](https://mploy.vercel.app)
+- **GitHub:** [Github Repository Here](https://github.com/T-code-bit/mploy)
 - **Topics:** Employment • Job Search • Youth Empowerment • Web Development
 
 ---

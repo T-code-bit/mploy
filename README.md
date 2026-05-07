@@ -1,178 +1,235 @@
-# M-Ploy: AI-Powered Career Platform
+# 🇰🇪 M-Ploy: AI-Powered Career Platform
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 
-M-Ploy is Kenya's premier AI-powered career platform, designed to revolutionize job searching and career development. Our platform bridges the gap between talented job seekers and verified employers, offering verified job listings, ATS-optimized CV building, and comprehensive employability training.
+> **Stop Searching. Start Getting Hired.**
 
-## 🌟 Features
+M-Ploy is Kenya's premier AI-powered career platform, revolutionizing job searching and career development. We bridge the gap between talented job seekers and verified employers worldwide, combining intelligent matching with skill development.
 
-### For Job Seekers
-- **Verified Job Vault**: Access curated, authenticated job openings from vetted employers worldwide
-- **AI-Powered CV Builder**: Real-time CV analysis with predictive match scoring (95% pass rate)
-- **Dynamic Templates**: Industry-specific CV designs optimized for ATS systems
-- **Ready-to-Work Academy**: 50+ self-paced courses on communication, digital literacy, and EQ
-- **TrustBadges**: Verifiable credentials for completed training modules
+---
 
-### For Employers
-- **Employer Portal**: Intuitive dashboard for posting jobs and managing applications
-- **Talent Discovery**: Advanced tools to find top candidates
-- **Verified Listings**: Zero ghost postings, zero scams
+## ✨ Key Features
 
-### Platform Features
-- **Secure Authentication**: Role-based access with Supabase Auth
-- **Subscription Management**: Premium features with Stripe integration
-- **Real-time Notifications**: Email and in-app notifications
-- **Mobile-Responsive**: Optimized for all devices
-- **Dark/Light Mode**: User preference support
+### 💼 For Job Seekers
+- **Verified Job Vault** - Curated, authenticated job openings from vetted employers worldwide
+- **AI-Powered CV Builder** - Real-time CV analysis with predictive match scoring (95% pass rate)
+- **Dynamic ATS-Optimized Templates** - Industry-specific CV designs optimized for Applicant Tracking Systems
+- **Ready-to-Work Academy** - 50+ self-paced courses covering communication, digital literacy, and emotional intelligence
+- **TrustBadges** - Verifiable digital credentials for completed training modules
 
-## 🚀 Tech Stack
+### 🏢 For Employers
+- **Intelligent Employer Portal** - Intuitive dashboard for posting jobs and managing applications
+- **Advanced Talent Discovery** - Powerful tools to find and connect with top candidates
+- **Verified Listings** - Zero ghost postings, zero scams—transparent hiring
+
+### 🔧 Platform Capabilities
+- **Secure Authentication** - Role-based access control with Supabase Auth
+- **Premium Subscriptions** - Advanced features with Stripe integration
+- **Real-time Notifications** - Email and in-app updates
+- **Fully Responsive** - Optimized for desktop, tablet, and mobile
+- **Dark & Light Mode** - User-preferred theming
+
+---
+
+## 🏗️ Tech Stack
 
 ### Frontend
-- **React 18** - Modern UI framework
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS** - Utility-first styling
-- **Framer Motion** - Smooth animations
-- **Shadcn/UI** - Accessible component library
-- **React Query** - Server state management
-- **React Router** - Client-side routing
+| Technology | Purpose |
+|---|---|
+| **React 18** | Modern UI framework |
+| **TypeScript** | Type-safe development |
+| **Vite** | Lightning-fast build tool and dev server |
+| **Tailwind CSS** | Utility-first CSS styling |
+| **Framer Motion** | Smooth, delightful animations |
+| **Shadcn/UI** | Accessible component library |
+| **React Query** | Server state management & caching |
+| **React Router** | Client-side routing |
 
 ### Backend
-- **Supabase** - Backend-as-a-Service
-- **PostgreSQL** - Database
-- **Edge Functions** - Serverless compute
-- **Supabase Auth** - Authentication
-- **Supabase Storage** - File storage
+| Technology | Purpose |
+|---|---|
+| **Supabase** | Backend-as-a-Service platform |
+| **PostgreSQL** | Reliable relational database |
+| **Edge Functions** | Serverless compute for real-time features |
+| **Supabase Auth** | Secure authentication & authorization |
+| **Supabase Storage** | Scalable file storage |
 
-### Testing & Quality
-- **Vitest** - Unit testing
-- **Playwright** - End-to-end testing
-- **ESLint** - Code linting
-- **TypeScript** - Type checking
+### Quality & Testing
+| Tool | Purpose |
+|---|---|
+| **Vitest** | Fast unit testing |
+| **Playwright** | Comprehensive end-to-end testing |
+| **ESLint** | Code quality & consistency |
+| **TypeScript** | Compile-time type checking |
 
 ### DevOps
-- **Bun** - Fast package manager
-- **Vite** - Build tooling
+- **Bun** - Ultra-fast JavaScript runtime & package manager
+- **Vite** - Optimized build and deployment tooling
 
-## 📋 Prerequisites
+---
 
-- Node.js 18+ or Bun
-- Supabase account and project
-- Git
+## 🚀 Quick Start
 
-## 🛠️ Installation
+### Prerequisites
+- **Node.js 18+** or **Bun**
+- **Supabase** account and project
+- **Git** for version control
 
-1. **Clone the repository**
-   ```bash
-   git clone
-   cd mploy
-   ```
+### Installation Steps
 
-2. **Install dependencies**
-   ```bash
-   # Using Bun (recommended)
-   bun install
-
-   # Or using npm
-   npm install
-   ```
-
-3. **Environment Setup**
-   ```bash
-   cp .env.example .env.local
-   ```
-
-   Fill in your environment variables:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_key
-   VITE_RECAPTCHA_SITE_KEY=your_recaptcha_key
-   ```
-
-4. **Supabase Setup**
-   ```bash
-   # Install Supabase CLI
-   npm install -g supabase
-
-   # Link to your project
-   supabase link --project-ref your-project-ref
-
-   # Push migrations
-   supabase db push
-
-   # Deploy functions
-   supabase functions deploy
-   ```
-
-5. **Start development server**
-   ```bash
-   # using npm
-   npm run dev
-   ```
-
-   The app will be available at `http://localhost:5173`
-
-## 🧪 Testing
-
+#### 1. Clone Repository
 ```bash
-# Run unit tests
+git clone https://github.com/T-code-bit/mploy.git
+cd mploy
+```
+
+#### 2. Install Dependencies
+```bash
+# Using Bun (recommended for speed)
+bun install
+
+# Or using npm
+npm install
+```
+
+#### 3. Configure Environment
+```bash
+cp .env.example .env.local
+```
+
+Update `.env.local` with your credentials:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_key
+VITE_RECAPTCHA_SITE_KEY=your_recaptcha_key
+```
+
+#### 4. Setup Supabase
+```bash
+# Install Supabase CLI
+npm install -g supabase
+
+# Link to your Supabase project
+supabase link --project-ref your-project-ref
+
+# Apply database migrations
+supabase db push
+
+# Deploy Edge Functions
+supabase functions deploy
+```
+
+#### 5. Start Development Server
+```bash
+npm run dev
+```
+✅ App will be available at `http://localhost:5173`
+
+---
+
+## 📂 Project Structure
+
+```
+mploy/
+├── public/                      # Static assets (favicon, fonts, etc.)
+├── src/
+│   ├── components/             # Reusable UI components
+│   │   ├── ui/                # Shadcn/UI component library
+│   │   └── landing/           # Landing page sections
+│   ├── contexts/              # React Context providers
+│   ├── hooks/                 # Custom React hooks
+│   ├── integrations/          # Third-party service integrations
+│   │   └── supabase/          # Supabase client & generated types
+│   ├── lib/                   # Utility functions & helpers
+│   ├── pages/                 # Page-level route components
+│   └── assets/                # Images, icons, media files
+├── supabase/
+│   ├── functions/             # Supabase Edge Functions
+│   ├── migrations/            # Database migration scripts
+│   └── config.toml            # Supabase configuration
+├── test/                      # Test files & fixtures
+├── package.json               # Dependencies & scripts
+└── .env.example               # Environment variables template
+```
+
+---
+
+## 🧪 Testing & Quality
+
+### Run Tests
+```bash
+# Execute unit tests
 npm run test
 
-# Run tests in watch mode
+# Watch mode (re-run on changes)
 npm run test:watch
 
-# Run end-to-end tests
+# End-to-end tests with Playwright
 npx playwright test
 
-# Run linting
+# Check code quality
 npm run lint
 ```
 
-## 📦 Build for Production
-
+### Build & Deploy
 ```bash
-# Build the app
+# Build optimized production bundle
 npm run build
 
-# Preview production build
+# Preview production build locally
 npm run preview
 ```
 
-## 🏗️ Project Structure
-```
-mploy/
-├── public/                 # Static assets
-├── src/
-│   ├── components/         # Reusable UI components
-│   │   ├── ui/            # Shadcn/UI components
-│   │   └── landing/       # Landing page sections
-│   ├── contexts/          # React contexts
-│   ├── hooks/             # Custom React hooks
-│   ├── integrations/      # External service integrations
-│   │   └── supabase/      # Supabase client and types
-│   ├── lib/               # Utility functions
-│   ├── pages/             # Route components
-│   └── assets/            # Images and media
-├── supabase/
-│   ├── functions/         # Edge functions
-│   ├── migrations/        # Database migrations
-│   └── config.toml        # Supabase configuration
-├── test/                  # Test files
-└── package.json           # Dependencies and scripts
-```
+---
 
-### Development Guidelines
+## 📋 Development Guidelines
+
+✅ **Code Quality Standards**
 - Follow TypeScript best practices
-- Write tests for new features
-- Ensure code passes linting
-- Update documentation as needed
+- Write tests for all new features
+- Ensure code passes ESLint checks
+- Keep TypeScript strict mode enabled
+- Update documentation for API changes
 
+✅ **Commit Conventions**
+- Use clear, descriptive commit messages
+- Reference related issues with `#issue-number`
+- Keep commits small and focused
 
-M-Ploy - Stop Searching. Start Getting Hired. 🇰🇪
+✅ **Before Submitting PR**
+- Run full test suite: `npm run test`
+- Run linter: `npm run lint`
+- Build for production: `npm run build`
 
+---
 
-Mploy Project in progress
+## 🤝 Contributing
+
+Contributions are welcome! To get started:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙋 Support & Contact
+
+For questions, bugs, or feature requests:
+- Open an [Issue](https://github.com/T-code-bit/mploy/issues)
+- Check [Discussions](https://github.com/T-code-bit/mploy/discussions)
+
+---
+
+**Made with ❤️ in Kenya** | Stop Searching. Start Getting Hired. 🚀

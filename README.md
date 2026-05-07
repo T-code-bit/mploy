@@ -5,7 +5,7 @@
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=for-the-badge)](https://reactjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white&style=for-the-badge)](https://supabase.com/)
 
-**An AI-powered platform connecting job seekers with quality employment opportunities while building essential skills.**
+**An employability platform founded by Cavin Apodo the CEO at Be the Leader(BTL) connecting job seekers with quality employment opportunities while building essential skills.**
 
 ---
 
@@ -80,6 +80,6 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 
 [Visit M-Ploy](https://mploy.vercel.app) | [Explore Code](https://github.com/T-code-bit/mploy)
 
-**Made to empower job seekers across Africa** 🌍
+**Made to empower job seekers worldwide** 🌍
 
 </div>

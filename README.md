@@ -29,32 +29,6 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 
 ---
 
-## 🚀 Quick Start
-
-```bash
-git clone https://github.com/T-code-bit/mploy.git
-cd mploy
-npm install
-npm run dev
-```
-
----
-
-## 📁 Project Structure
-```
-mploy/
-├── src/
-│   ├── pages/        # Route pages
-│   ├── components/   # Reusable UI components
-│   ├── hooks/        # Custom React hooks
-│   ├── integrations/ # External APIs (Supabase)
-│   └── lib/          # Utilities & helpers
-├── supabase/         # Database & Edge Functions
-└── package.json
-```
-
----
-
 ## 🔗 Links
 - **Live Site:** https://mploy.vercel.app
 - **GitHub:** https://github.com/T-code-bit/mploy

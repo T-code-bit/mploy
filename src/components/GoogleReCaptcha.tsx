@@ -2,10 +2,16 @@ import { useEffect, useRef, useState } from "react";
 
 const RECAPTCHA_SITE_KEY = "6LdDyZ4sAAAAALpayoNXABG7Y1CUV5tO53-1J1RE";
 
+type Grecaptcha = {
+  ready: (cb: () => void) => void;
+  render: (container: Element, parameters: Record<string, unknown>) => number;
+  reset: (optWidgetId?: number) => void;
+};
+
 declare global {
   interface Window {
-    grecaptcha: any;
-    __rcReady?: Promise<any>;
+    grecaptcha: Grecaptcha;
+    __rcReady?: Promise<Grecaptcha>;
   }
 }
 
@@ -15,7 +21,7 @@ interface GoogleReCaptchaProps {
   onError?: () => void;
 }
 
-function getRecaptchaReady(): Promise<any> {
+function getRecaptchaReady(): Promise<Grecaptcha> {
   if (!window.__rcReady) {
     window.__rcReady = new Promise((resolve, reject) => {
       if (window.grecaptcha?.render) {
@@ -61,7 +67,11 @@ const GoogleReCaptcha = ({ onVerify, onExpire, onError }: GoogleReCaptchaProps) 
         if (!el) return;
         // Already rendered — just reset
         if (widgetIdRef.current !== null) {
-          try { g.reset(widgetIdRef.current); } catch {}
+          try {
+            g.reset(widgetIdRef.current);
+          } catch {
+            // ignore
+          }
           return;
         }
         el.innerHTML = "";

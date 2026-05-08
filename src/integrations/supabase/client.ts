@@ -11,7 +11,6 @@ const SUPABASE_ANON_KEY =
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   // Fail loudly so auth doesn't "mysteriously" 401 later.
-  // eslint-disable-next-line no-console
   console.error(
     "[Supabase] Missing env vars. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY)."
   );

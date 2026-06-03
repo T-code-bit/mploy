@@ -24,6 +24,7 @@ import Reviews from "./pages/Reviews";
 import CookieConsent from "./components/CookieConsent";
 import BackToTop from "./components/BackToTop";
 import ScrollToTop from "./components/ScrollToTop";
+import CareerCoachChatbot from "./components/CareerCoachChatbot";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +66,7 @@ const App = () => (
           </Routes>
           <CookieConsent />
           <BackToTop />
+          <CareerCoachChatbot />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

@@ -22,12 +22,11 @@ const Auth = () => {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
-  const [signupRole, setSignupRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
+  const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
-  const [adminCode, setAdminCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
-  const [resetEmail, setResetEmail] = useState("");
-  const [resetSent, setResetSent] = useState(false);
+  const [adminLoginCode, setAdminLoginCode] = useState("");
+  const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
 
   const verifyCaptcha = async () => {
     if (!captchaToken) {
@@ -45,16 +44,12 @@ const Auth = () => {
     return true;
   };
 
-  const [adminLoginCode, setAdminLoginCode] = useState("");
-  const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Admin access-code login bypass
     if (loginRole === "admin") {
-      if (!(await verifyCaptcha())) { setLoading(false); return; }
+      // Admin path bypasses captcha for speed — code itself is the secret
       try {
         const { data, error } = await supabase.functions.invoke("admin-access-login", {
           body: { code: adminLoginCode },
@@ -119,10 +114,6 @@ const Auth = () => {
       toast.error("Invalid employer access code");
       return;
     }
-    if (signupRole === "admin" && adminCode !== "MPLOY-ADMIN-2026") {
-      toast.error("Invalid admin access code");
-      return;
-    }
     setLoading(true);
     if (!(await verifyCaptcha())) { setLoading(false); return; }
     const { error } = await supabase.auth.signUp({
@@ -143,7 +134,6 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Left panel */}
       <div className="hidden lg:flex lg:w-1/2 bg-hero items-center justify-center p-12 relative overflow-hidden">
         <div className="absolute top-1/4 -left-20 w-[400px] h-[400px] rounded-full bg-primary/8 blur-[120px]" />
         <div className="absolute bottom-1/4 right-0 w-[300px] h-[300px] rounded-full bg-secondary/6 blur-[100px]" />
@@ -160,23 +150,9 @@ const Auth = () => {
           <p className="text-primary-foreground/50 leading-relaxed">
             Access verified jobs, build ATS-optimized CVs, and earn industry-recognized badges — all in one platform.
           </p>
-
-          <div className="grid grid-cols-3 gap-4 mt-12">
-            {[
-              { value: "100%", label: "Verified" },
-              { value: "95%", label: "ATS Pass" },
-              { value: "50+", label: "Courses" },
-            ].map((s) => (
-              <div key={s.label} className="glass-dark rounded-xl p-4">
-                <p className="font-display text-2xl font-bold text-primary-foreground">{s.value}</p>
-                <p className="text-xs text-primary-foreground/50">{s.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
-      {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-6 bg-mesh">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -226,7 +202,7 @@ const Auth = () => {
                     <p className="text-xs text-muted-foreground">
                       {loginRole === "admin"
                         ? "Enter the admin access code to sign in."
-                        : "Sign in with the same email and password you used to register."}
+                        : "Sign in with your registered email and password."}
                     </p>
                   </div>
                   {loginRole === "admin" ? (
@@ -254,30 +230,38 @@ const Auth = () => {
                       </div>
                     </>
                   )}
-                  <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
-                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !captchaToken}>
+                  {loginRole !== "admin" && (
+                    <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
+                  )}
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold"
+                    disabled={loading || (loginRole !== "admin" && !captchaToken)}
+                  >
                     {loading ? "Signing in..." : "Sign In"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      if (!loginEmail) {
-                        toast.error("Enter your email address first");
-                        return;
-                      }
-                      setLoading(true);
-                      const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-                        redirectTo: `${window.location.origin}/reset-password`,
-                      });
-                      if (error) toast.error(error.message);
-                      else toast.success("Password reset link sent! Check your email.");
-                      setLoading(false);
-                    }}
-                    className="w-full text-center text-sm text-primary hover:underline pt-1"
-                  >
-                    Forgot your password?
-                  </button>
+                  {loginRole !== "admin" && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!loginEmail) {
+                          toast.error("Enter your email address first");
+                          return;
+                        }
+                        setLoading(true);
+                        const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+                          redirectTo: `${window.location.origin}/reset-password`,
+                        });
+                        if (error) toast.error(error.message);
+                        else toast.success("Password reset link sent! Check your email.");
+                        setLoading(false);
+                      }}
+                      className="w-full text-center text-sm text-primary hover:underline pt-1"
+                    >
+                      Forgot your password?
+                    </button>
+                  )}
                 </form>
               </TabsContent>
 
@@ -298,11 +282,10 @@ const Auth = () => {
 
                   <div className="space-y-2">
                     <Label>I am a...</Label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       {[
                         { role: "job_seeker" as const, icon: GraduationCap, label: "Job Seeker" },
                         { role: "employer" as const, icon: Briefcase, label: "Employer" },
-                        { role: "admin" as const, icon: Shield, label: "Admin" },
                       ].map((option) => (
                         <button
                           key={option.role}
@@ -336,22 +319,6 @@ const Auth = () => {
                         required
                       />
                       <p className="text-xs text-muted-foreground">Contact admin to get your employer access code.</p>
-                    </div>
-                  )}
-
-                  {signupRole === "admin" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-code">Admin Access Code</Label>
-                      <Input
-                        id="admin-code"
-                        type="password"
-                        placeholder="Enter admin code"
-                        className="rounded-xl h-11"
-                        value={adminCode}
-                        onChange={(e) => setAdminCode(e.target.value)}
-                        required
-                      />
-                      <p className="text-xs text-muted-foreground">Restricted — system administrators only.</p>
                     </div>
                   )}
 

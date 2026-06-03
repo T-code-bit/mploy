@@ -6,10 +6,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ADMIN_ACCESS_CODE = "mploy@6490";
+const ADMIN_ACCESS_CODE = "1044157372";
 const ADMIN_EMAIL = "admin@mploy.local";
-// Password is fixed and known only server-side; users never type it.
-const ADMIN_PASSWORD = "mploy@6490-internal-admin";
+const ADMIN_PASSWORD = "1044157372-internal-admin-secret";
+const ADMIN_NAME = "M-Ploy Administrator";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -29,7 +29,6 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
 
-    // Ensure the admin user exists
     const { data: list } = await admin.auth.admin.listUsers();
     let adminUser = list?.users?.find((u: any) => u.email === ADMIN_EMAIL);
 
@@ -38,27 +37,23 @@ serve(async (req) => {
         email: ADMIN_EMAIL,
         password: ADMIN_PASSWORD,
         email_confirm: true,
-        user_metadata: { full_name: "M-Ploy Administrator", role: "admin" },
+        user_metadata: { full_name: ADMIN_NAME, role: "admin" },
       });
       if (createErr) throw createErr;
       adminUser = created.user!;
     } else {
-      // Ensure password is current (in case it drifted)
       await admin.auth.admin.updateUserById(adminUser.id, { password: ADMIN_PASSWORD });
     }
 
-    // Ensure admin role row
     await admin.from("user_roles").upsert(
       { user_id: adminUser!.id, role: "admin" },
       { onConflict: "user_id,role" }
     );
-    // Ensure profile row
     await admin.from("profiles").upsert(
-      { user_id: adminUser!.id, full_name: "M-Ploy Administrator" },
+      { user_id: adminUser!.id, full_name: ADMIN_NAME },
       { onConflict: "user_id" }
     );
 
-    // Sign in to get a session for the client
     const anon = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",

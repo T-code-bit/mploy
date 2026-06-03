@@ -7,3 +7,5 @@ project_id = "ypqdeaarllhwnxyijshs"
     verify_jwt = true
   [functions.admin-access-login]
     verify_jwt = false
+  [functions.career-coach]
+    verify_jwt = false

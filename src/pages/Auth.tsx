@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Briefcase, GraduationCap, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import GoogleReCaptcha from "@/components/GoogleReCaptcha";
+
 import { motion } from "framer-motion";
 import mployLogo from "@/assets/mploy-logo.png";
 import usePageTitle from "@/hooks/usePageTitle";

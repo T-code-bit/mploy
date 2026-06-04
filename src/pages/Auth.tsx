@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Briefcase, GraduationCap, ArrowRight, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import GoogleReCaptcha from "@/components/GoogleReCaptcha";
+
 import { motion } from "framer-motion";
 import mployLogo from "@/assets/mploy-logo.png";
 import usePageTitle from "@/hooks/usePageTitle";
@@ -24,25 +24,8 @@ const Auth = () => {
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
-
-  const verifyCaptcha = async () => {
-    if (!captchaToken) {
-      toast.error("Please complete the security check");
-      return false;
-    }
-    const { data, error } = await supabase.functions.invoke("verify-recaptcha", {
-      body: { token: captchaToken },
-    });
-    if (error || !data?.success) {
-      toast.error("Security verification failed. Please try again.");
-      setCaptchaToken("");
-      return false;
-    }
-    return true;
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +60,6 @@ const Auth = () => {
       return;
     }
 
-    if (!(await verifyCaptcha())) { setLoading(false); return; }
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: loginPassword,
@@ -115,7 +97,7 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-    if (!(await verifyCaptcha())) { setLoading(false); return; }
+    
     const { error } = await supabase.auth.signUp({
       email: signupEmail,
       password: signupPassword,
@@ -230,13 +212,10 @@ const Auth = () => {
                       </div>
                     </>
                   )}
-                  {loginRole !== "admin" && (
-                    <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
-                  )}
                   <Button
                     type="submit"
                     className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold"
-                    disabled={loading || (loginRole !== "admin" && !captchaToken)}
+                    disabled={loading}
                   >
                     {loading ? "Signing in..." : "Sign In"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
@@ -322,8 +301,7 @@ const Auth = () => {
                     </div>
                   )}
 
-                  <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
-                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !captchaToken}>
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>

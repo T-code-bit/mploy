@@ -1,10 +1,38 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageCircle, X, Send, Loader2, Sparkles } from "lucide-react";
+import { X, Send, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+import mployLogo from "@/assets/mploy-logo.png";
+
+// Stylized robot head launcher with M-Ploy logo as the "face screen"
+const RobotHead = ({ open }: { open: boolean }) => (
+  <div className="relative h-14 w-14">
+    {/* Antenna */}
+    <div className="absolute left-1/2 -top-2 -translate-x-1/2 flex flex-col items-center">
+      <div className="h-2.5 w-2.5 rounded-full bg-secondary shadow-[0_0_8px_hsl(var(--secondary))] animate-pulse" />
+      <div className="h-2 w-0.5 bg-primary-foreground/70" />
+    </div>
+    {/* Head shell */}
+    <div className="absolute inset-0 rounded-[1.25rem] bg-gradient-primary shadow-lg border-2 border-primary-foreground/20 flex items-center justify-center overflow-hidden">
+      {/* Side "ears" */}
+      <div className="absolute -left-1 top-1/2 -translate-y-1/2 h-3 w-1.5 rounded-l-sm bg-primary-foreground/30" />
+      <div className="absolute -right-1 top-1/2 -translate-y-1/2 h-3 w-1.5 rounded-r-sm bg-primary-foreground/30" />
+      {/* Face screen showing logo */}
+      <div className="h-9 w-9 rounded-lg bg-background/95 flex items-center justify-center ring-2 ring-primary-foreground/30">
+        {open ? (
+          <X className="h-5 w-5 text-primary" />
+        ) : (
+          <img src={mployLogo} alt="M-Ploy" className="h-7 w-7 object-contain" />
+        )}
+      </div>
+      {/* Mouth */}
+      <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-5 rounded-full bg-primary-foreground/40" />
+    </div>
+  </div>
+);
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -126,11 +154,13 @@ const CareerCoachChatbot = () => {
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-[60] h-14 w-14 rounded-full bg-gradient-primary shadow-lg flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform"
-        aria-label="Open career coach chat"
+        className="fixed bottom-6 right-6 z-[60] flex items-center justify-center"
+        aria-label="Open M-Ploy Coach chat"
       >
-        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        <RobotHead open={open} />
       </motion.button>
 
       <AnimatePresence>
@@ -143,8 +173,8 @@ const CareerCoachChatbot = () => {
             className="fixed bottom-24 right-4 sm:right-6 z-[60] w-[calc(100vw-2rem)] sm:w-[400px] h-[70vh] sm:h-[560px] max-h-[600px] rounded-2xl bg-card border border-border shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="bg-gradient-primary text-primary-foreground p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/15 flex items-center justify-center">
-                <Sparkles className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-xl bg-background/95 flex items-center justify-center ring-2 ring-primary-foreground/30">
+                <img src={mployLogo} alt="M-Ploy" className="h-7 w-7 object-contain" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-sm">M-Ploy Coach</p>

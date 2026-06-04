@@ -2,19 +2,18 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-// Supabase calls this the "anon key". Some environments may have used a different name
-// (VITE_SUPABASE_PUBLISHABLE_KEY). Support both to avoid breaking existing deploys.
-const SUPABASE_ANON_KEY =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ??
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Public (publishable) values — safe to ship in client bundle.
+// Hardcoded as a fallback so the app never blanks out on hosting platforms
+// where build-time env vars are missing.
+const FALLBACK_SUPABASE_URL = "https://ypqdeaarllhwnxyijshs.supabase.co";
+const FALLBACK_SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwcWRlYWFybGxod254eWlqc2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNDg3MzQsImV4cCI6MjA4OTgyNDczNH0.HDcMDrab9YJSw1ii07iE9XPaZMpcO7t6-N1qpMteX1w";
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  // Fail loudly so auth doesn't "mysteriously" 401 later.
-  console.error(
-    "[Supabase] Missing env vars. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY (or VITE_SUPABASE_PUBLISHABLE_KEY)."
-  );
-}
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+const SUPABASE_ANON_KEY =
+  import.meta.env.VITE_SUPABASE_ANON_KEY ||
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  FALLBACK_SUPABASE_ANON_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -24,5 +23,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  }
+  },
 });

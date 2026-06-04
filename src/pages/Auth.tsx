@@ -24,25 +24,8 @@ const Auth = () => {
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [employerCode, setEmployerCode] = useState("");
-  const [captchaToken, setCaptchaToken] = useState("");
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
-
-  const verifyCaptcha = async () => {
-    if (!captchaToken) {
-      toast.error("Please complete the security check");
-      return false;
-    }
-    const { data, error } = await supabase.functions.invoke("verify-recaptcha", {
-      body: { token: captchaToken },
-    });
-    if (error || !data?.success) {
-      toast.error("Security verification failed. Please try again.");
-      setCaptchaToken("");
-      return false;
-    }
-    return true;
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

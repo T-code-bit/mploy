@@ -212,13 +212,10 @@ const Auth = () => {
                       </div>
                     </>
                   )}
-                  {loginRole !== "admin" && (
-                    <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
-                  )}
                   <Button
                     type="submit"
                     className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold"
-                    disabled={loading || (loginRole !== "admin" && !captchaToken)}
+                    disabled={loading}
                   >
                     {loading ? "Signing in..." : "Sign In"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}

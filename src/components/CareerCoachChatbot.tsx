@@ -4,11 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// Derive endpoint + key from the configured Supabase client so this works
+// even when build-time env vars are missing (uses the same fallbacks).
+// @ts-ignore - protectedish internals; stable across supabase-js v2.
+const SUPABASE_URL: string = (supabase as any).supabaseUrl;
+// @ts-ignore
+const SUPABASE_ANON_KEY: string = (supabase as any).supabaseKey;
 
 const CareerCoachChatbot = () => {
   const [open, setOpen] = useState(false);

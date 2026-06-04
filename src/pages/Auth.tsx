@@ -97,7 +97,7 @@ const Auth = () => {
       return;
     }
     setLoading(true);
-    if (!(await verifyCaptcha())) { setLoading(false); return; }
+    
     const { error } = await supabase.auth.signUp({
       email: signupEmail,
       password: signupPassword,

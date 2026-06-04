@@ -60,7 +60,6 @@ const Auth = () => {
       return;
     }
 
-    if (!(await verifyCaptcha())) { setLoading(false); return; }
     const { data: authData, error } = await supabase.auth.signInWithPassword({
       email: loginEmail,
       password: loginPassword,

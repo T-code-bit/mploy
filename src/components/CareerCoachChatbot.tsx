@@ -154,11 +154,13 @@ const CareerCoachChatbot = () => {
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 1, type: "spring", stiffness: 200 }}
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
         onClick={() => setOpen((o) => !o)}
-        className="fixed bottom-6 right-6 z-[60] h-14 w-14 rounded-full bg-gradient-primary shadow-lg flex items-center justify-center text-primary-foreground hover:scale-110 transition-transform"
-        aria-label="Open career coach chat"
+        className="fixed bottom-6 right-6 z-[60] flex items-center justify-center"
+        aria-label="Open M-Ploy Coach chat"
       >
-        {open ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
+        <RobotHead open={open} />
       </motion.button>
 
       <AnimatePresence>
@@ -171,8 +173,8 @@ const CareerCoachChatbot = () => {
             className="fixed bottom-24 right-4 sm:right-6 z-[60] w-[calc(100vw-2rem)] sm:w-[400px] h-[70vh] sm:h-[560px] max-h-[600px] rounded-2xl bg-card border border-border shadow-2xl flex flex-col overflow-hidden"
           >
             <div className="bg-gradient-primary text-primary-foreground p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/15 flex items-center justify-center">
-                <Sparkles className="h-5 w-5" />
+              <div className="h-10 w-10 rounded-xl bg-background/95 flex items-center justify-center ring-2 ring-primary-foreground/30">
+                <img src={mployLogo} alt="M-Ploy" className="h-7 w-7 object-contain" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-sm">M-Ploy Coach</p>

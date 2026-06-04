@@ -301,8 +301,7 @@ const Auth = () => {
                     </div>
                   )}
 
-                  <GoogleReCaptcha onVerify={setCaptchaToken} onExpire={() => setCaptchaToken("")} />
-                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading || !captchaToken}>
+                  <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>

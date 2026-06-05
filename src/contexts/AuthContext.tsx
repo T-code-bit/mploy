@@ -47,6 +47,22 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const fallbackProfile = (authUser: User): Profile => ({
+  id: authUser.id,
+  user_id: authUser.id,
+  full_name:
+    authUser.user_metadata?.full_name ||
+    authUser.user_metadata?.name ||
+    authUser.email?.split("@")[0] ||
+    "M-Ploy User",
+  avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+  bio: null,
+  about: null,
+  phone: null,
+  address: null,
+  role: "job_seeker",
+});
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -58,22 +74,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [subscriptionEnd, setSubscriptionEnd] = useState<string | null>(null);
   const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (authUser: User) => {
     setProfileLoading(true);
     try {
-      const { data } = await supabase
+      const fallback = fallbackProfile(authUser);
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("user_id", userId)
-        .single();
-      if (data) setProfile(data as Profile);
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+
+      if (data) {
+        setProfile(data as Profile);
+      } else {
+        setProfile(fallback);
+        if (!error) {
+          supabase
+            .from("profiles")
+            .upsert(
+              { user_id: authUser.id, full_name: fallback.full_name, avatar_url: fallback.avatar_url },
+              { onConflict: "user_id" }
+            )
+            .then(() => undefined);
+        }
+      }
 
       const { data: roleData } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", userId)
-        .single();
-      if (roleData) setUserRole(roleData.role as UserRole);
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+      setUserRole((roleData?.role as UserRole) || fallback.role);
+    } catch (err) {
+      console.error("Failed to load profile:", err);
+      const fallback = fallbackProfile(authUser);
+      setProfile(fallback);
+      setUserRole(fallback.role);
     } finally {
       setProfileLoading(false);
     }
@@ -81,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshProfile = useCallback(async () => {
     if (!user) return;
-    await fetchProfile(user.id);
+    await fetchProfile(user);
   }, [user]);
 
   const refreshSubscription = useCallback(async () => {
@@ -111,12 +147,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   useEffect(() => {
+    let initialSessionSeen = false;
+    const fallbackTimer = window.setTimeout(() => {
+      if (!initialSessionSeen) setLoading(false);
+    }, 3500);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        if (event === "INITIAL_SESSION") initialSessionSeen = true;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
-          setTimeout(() => fetchProfile(session.user.id), 0);
+          setTimeout(() => fetchProfile(session.user), 0);
         } else {
           setProfile(null);
           setUserRole(null);
@@ -127,16 +169,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(fallbackTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Check subscription on login and periodically

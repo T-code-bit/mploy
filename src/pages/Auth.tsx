@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, GraduationCap, ArrowRight, Shield } from "lucide-react";
+import { Briefcase, GraduationCap, ArrowRight, Shield, Chrome } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
@@ -26,6 +27,44 @@ const Auth = () => {
   const [employerCode, setEmployerCode] = useState("");
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
+
+  const getPostAuthRoute = async (userId: string) => {
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (roleRow?.role === "admin") return "/admin";
+    if (roleRow?.role === "employer") return "/employer";
+    return "/dashboard";
+  };
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+        extraParams: { prompt: "select_account" },
+      });
+
+      if (result.error) {
+        toast.error(result.error.message || "Google sign-in failed");
+        setLoading(false);
+        return;
+      }
+
+      if (result.redirected) return;
+
+      const { data } = await supabase.auth.getUser();
+      const displayName = data.user?.user_metadata?.full_name || data.user?.user_metadata?.name || "there";
+      toast.success(`Welcome, ${displayName}!`);
+      navigate(data.user ? await getPostAuthRoute(data.user.id) : "/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Google sign-in failed");
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,18 +106,11 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Welcome back!");
+      const displayName = authData.user?.user_metadata?.full_name || authData.user?.email?.split("@")[0] || "there";
+      toast.success(`Welcome, ${displayName}!`);
       const userId = authData.user?.id;
       if (userId) {
-        const { data: roleRow } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .maybeSingle();
-        const actualRole = roleRow?.role;
-        if (actualRole === "admin") navigate("/admin");
-        else if (actualRole === "employer") navigate("/employer");
-        else navigate("/dashboard");
+        navigate(await getPostAuthRoute(userId));
       } else {
         navigate("/dashboard");
       }
@@ -98,7 +130,7 @@ const Auth = () => {
     }
     setLoading(true);
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: signupEmail,
       password: signupPassword,
       options: {
@@ -109,7 +141,8 @@ const Auth = () => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success("Check your email to confirm your account!");
+      toast.success(`Welcome, ${signupName || "there"}! Your account is ready.`);
+      navigate(data.user ? await getPostAuthRoute(data.user.id) : "/dashboard");
     }
     setLoading(false);
   };
@@ -221,25 +254,41 @@ const Auth = () => {
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
                   {loginRole !== "admin" && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (!loginEmail) {
-                          toast.error("Enter your email address first");
-                          return;
-                        }
-                        setLoading(true);
-                        const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-                          redirectTo: `${window.location.origin}/reset-password`,
-                        });
-                        if (error) toast.error(error.message);
-                        else toast.success("Password reset link sent! Check your email.");
-                        setLoading(false);
-                      }}
-                      className="w-full text-center text-sm text-primary hover:underline pt-1"
-                    >
-                      Forgot your password?
-                    </button>
+                    <>
+                      <div className="relative py-1">
+                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="w-full rounded-xl h-11 font-semibold"
+                        disabled={loading}
+                        onClick={handleGoogleLogin}
+                      >
+                        <Chrome className="mr-2 h-4 w-4" />
+                        Continue with Google
+                      </Button>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          if (!loginEmail) {
+                            toast.error("Enter your email address first");
+                            return;
+                          }
+                          setLoading(true);
+                          const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+                            redirectTo: `${window.location.origin}/reset-password`,
+                          });
+                          if (error) toast.error(error.message);
+                          else toast.success("Password reset link sent! Check your email.");
+                          setLoading(false);
+                        }}
+                        className="w-full text-center text-sm text-primary hover:underline pt-1"
+                      >
+                        Forgot your password?
+                      </button>
+                    </>
                   )}
                 </form>
               </TabsContent>
@@ -304,6 +353,20 @@ const Auth = () => {
                   <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
+                  </Button>
+                  <div className="relative py-1">
+                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-xl h-11 font-semibold"
+                    disabled={loading}
+                    onClick={handleGoogleLogin}
+                  >
+                    <Chrome className="mr-2 h-4 w-4" />
+                    Continue with Google
                   </Button>
                 </form>
               </TabsContent>

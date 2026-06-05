@@ -16,7 +16,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user, userRole, profile, loading } = useAuth();
   const location = useLocation();
 
-  if (loading || (user && !profile)) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -26,6 +26,14 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
 
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  if (!userRole) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
   }
 
   // Admins bypass all profile and role checks

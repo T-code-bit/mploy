@@ -147,8 +147,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   useEffect(() => {
+    let initialSessionSeen = false;
+    const fallbackTimer = window.setTimeout(() => {
+      if (!initialSessionSeen) setLoading(false);
+    }, 3500);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
+        if (event === "INITIAL_SESSION") initialSessionSeen = true;
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -163,25 +169,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          fetchProfile(session.user);
-        }
-      })
-      .catch((err) => {
-        console.warn("Auth session restore failed; clearing stale session.", err);
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setUserRole(null);
-      })
-      .finally(() => setLoading(false));
-
-    return () => subscription.unsubscribe();
+    return () => {
+      window.clearTimeout(fallbackTimer);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Check subscription on login and periodically

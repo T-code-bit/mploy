@@ -184,6 +184,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return () => {
       window.clearTimeout(fallbackTimer);
+      window.removeEventListener("unhandledrejection", handleUnhandled);
       subscription.unsubscribe();
     };
   }, []);

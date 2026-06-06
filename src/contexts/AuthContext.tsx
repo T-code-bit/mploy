@@ -155,6 +155,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (event === "INITIAL_SESSION") initialSessionSeen = true;
+        // If token refresh failed repeatedly (preview proxy / network), purge the stale session
+        if (event === "TOKEN_REFRESHED" && !session) {
+          supabase.auth.signOut().catch(() => undefined);
+        }
         setSession(session);
         setUser(session?.user ?? null);
         if (session?.user) {
@@ -168,6 +172,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setLoading(false);
       }
     );
+
+    // Surface refresh-token failures so a corrupt session doesn't loop forever
+    const handleUnhandled = (e: PromiseRejectionEvent) => {
+      const msg = String(e.reason?.message || e.reason || "");
+      if (msg.includes("Failed to fetch") && msg.toLowerCase().includes("refresh")) {
+        supabase.auth.signOut().catch(() => undefined);
+      }
+    };
+    window.addEventListener("unhandledrejection", handleUnhandled);
 
     return () => {
       window.clearTimeout(fallbackTimer);

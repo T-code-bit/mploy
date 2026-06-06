@@ -28,6 +28,23 @@ const Auth = () => {
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
 
+  const routeForRole = (role?: string | null) => {
+    if (role === "admin") return "/admin";
+    if (role === "employer") return "/employer";
+    return "/dashboard";
+  };
+
+  const setAuthSession = async (payload: any) => {
+    if (!payload?.access_token || !payload?.refresh_token) {
+      throw new Error("Authentication did not return a valid session");
+    }
+    const { error } = await supabase.auth.setSession({
+      access_token: payload.access_token,
+      refresh_token: payload.refresh_token,
+    });
+    if (error) throw error;
+  };
+
   const getPostAuthRoute = async (userId: string) => {
     const { data: roleRow } = await supabase
       .from("user_roles")
@@ -99,21 +116,17 @@ const Auth = () => {
       return;
     }
 
-    const { data: authData, error } = await supabase.auth.signInWithPassword({
-      email: loginEmail,
-      password: loginPassword,
-    });
-    if (error) {
-      toast.error(error.message);
-    } else {
-      const displayName = authData.user?.user_metadata?.full_name || authData.user?.email?.split("@")[0] || "there";
+    try {
+      const { data, error } = await supabase.functions.invoke("account-auth", {
+        body: { action: "login", email: loginEmail, password: loginPassword },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Sign in failed");
+      await setAuthSession(data);
+      const displayName = data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0] || "there";
       toast.success(`Welcome, ${displayName}!`);
-      const userId = authData.user?.id;
-      if (userId) {
-        navigate(await getPostAuthRoute(userId));
-      } else {
-        navigate("/dashboard");
-      }
+      navigate(routeForRole(data.role));
+    } catch (err: any) {
+      toast.error(err.message || "Sign in failed");
     }
     setLoading(false);
   };
@@ -130,19 +143,23 @@ const Auth = () => {
     }
     setLoading(true);
     
-    const { data, error } = await supabase.auth.signUp({
-      email: signupEmail,
-      password: signupPassword,
-      options: {
-        data: { full_name: signupName, role: signupRole },
-        emailRedirectTo: window.location.origin,
-      },
-    });
-    if (error) {
-      toast.error(error.message);
-    } else {
+    try {
+      const { data, error } = await supabase.functions.invoke("account-auth", {
+        body: {
+          action: "signup",
+          email: signupEmail,
+          password: signupPassword,
+          fullName: signupName,
+          role: signupRole,
+          employerCode,
+        },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Account creation failed");
+      await setAuthSession(data);
       toast.success(`Welcome, ${signupName || "there"}! Your account is ready.`);
-      navigate(data.user ? await getPostAuthRoute(data.user.id) : "/dashboard");
+      navigate(routeForRole(data.role));
+    } catch (err: any) {
+      toast.error(err.message || "Account creation failed");
     }
     setLoading(false);
   };

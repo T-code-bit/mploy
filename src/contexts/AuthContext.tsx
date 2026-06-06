@@ -47,6 +47,11 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext);
 
+const metadataRole = (authUser: User): UserRole => {
+  const role = authUser.user_metadata?.role;
+  return role === "employer" || role === "admin" ? role : "job_seeker";
+};
+
 const fallbackProfile = (authUser: User): Profile => ({
   id: authUser.id,
   user_id: authUser.id,
@@ -60,7 +65,7 @@ const fallbackProfile = (authUser: User): Profile => ({
   about: null,
   phone: null,
   address: null,
-  role: "job_seeker",
+  role: metadataRole(authUser),
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

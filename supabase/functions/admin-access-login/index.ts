@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const ADMIN_ACCESS_CODE = "1044157372";
-const ADMIN_EMAIL = "admin@mploy.local";
+const ADMIN_EMAIL = "tribaltechnexus@gmail.com";
 const ADMIN_PASSWORD = "1044157372-internal-admin-secret";
 const ADMIN_NAME = "M-Ploy Administrator";
 

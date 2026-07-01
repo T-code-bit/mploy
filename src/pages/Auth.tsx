@@ -70,7 +70,11 @@ const Auth = () => {
     }
   };
 
-  const ensureProfile = async (authUser: User, preferredName?: string) => {
+  const ensureProfile = async (
+    authUser: User,
+    preferredName?: string,
+    preferredRole?: "job_seeker" | "employer" | "admin"
+  ) => {
     const fullName = displayNameFor(authUser, preferredName);
     const { error } = await supabase
       .from("profiles")
@@ -79,6 +83,7 @@ const Auth = () => {
           user_id: authUser.id,
           full_name: fullName,
           avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+          role: preferredRole || roleFromMetadata(authUser),
         },
         { onConflict: "user_id" }
       );
@@ -222,7 +227,7 @@ const Auth = () => {
         return;
       }
 
-      await ensureProfile(signedInUser, fullName);
+      await ensureProfile(signedInUser, fullName, signupRole);
       toast.success(`Welcome, ${displayNameFor(signedInUser, fullName)}! Your account is ready.`);
       navigate(await getPostAuthRoute(signedInUser, signupRole));
     } catch (err: any) {

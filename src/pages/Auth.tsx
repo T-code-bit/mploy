@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import usePageTitle from "@/hooks/usePageTitle";
 const Auth = () => {
   usePageTitle("Sign In");
   const navigate = useNavigate();
+  const { user, userRole, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -24,7 +26,6 @@ const Auth = () => {
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
-  const [employerCode, setEmployerCode] = useState("");
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
 
@@ -34,51 +35,95 @@ const Auth = () => {
     return "/dashboard";
   };
 
-  const setAuthSession = async (payload: any) => {
-    if (!payload?.access_token || !payload?.refresh_token) {
-      throw new Error("Authentication did not return a valid session");
-    }
-    const { error } = await supabase.auth.setSession({
-      access_token: payload.access_token,
-      refresh_token: payload.refresh_token,
-    });
-    if (error) throw error;
+  const cleanEmail = (email: string) => email.trim().toLowerCase();
+
+  const roleFromMetadata = (authUser?: User | null): "job_seeker" | "employer" | "admin" => {
+    const role = authUser?.user_metadata?.role;
+    return role === "employer" || role === "admin" ? role : "job_seeker";
   };
 
-  const getPostAuthRoute = async (userId: string) => {
+  const displayNameFor = (authUser?: User | null, fallback?: string) =>
+    authUser?.user_metadata?.full_name ||
+    authUser?.user_metadata?.name ||
+    fallback ||
+    authUser?.email?.split("@")[0] ||
+    "there";
+
+  const friendlyAuthError = (message?: string) => {
+    const msg = message || "Authentication failed";
+    const lower = msg.toLowerCase();
+    if (lower.includes("invalid login credentials")) return "Invalid email or password. Please check your details and try again.";
+    if (lower.includes("email not confirmed")) return "Please confirm your email first, then sign in.";
+    if (lower.includes("user already registered") || lower.includes("already registered")) return "This email already has an account. Please sign in instead.";
+    if (lower.includes("password")) return msg;
+    if (lower.includes("failed to fetch") || lower.includes("network")) return "Could not reach the login server. Check your internet connection and try again.";
+    return msg;
+  };
+
+  const clearLocalSupabaseSession = () => {
+    try {
+      Object.keys(localStorage)
+        .filter((key) => key.startsWith("sb-") && key.endsWith("-auth-token"))
+        .forEach((key) => localStorage.removeItem(key));
+    } catch {
+      // Ignore storage errors; auth can still continue.
+    }
+  };
+
+  const ensureProfile = async (
+    authUser: User,
+    preferredName?: string,
+    preferredRole?: "job_seeker" | "employer" | "admin"
+  ) => {
+    const fullName = displayNameFor(authUser, preferredName);
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(
+        {
+          user_id: authUser.id,
+          full_name: fullName,
+          avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+          role: preferredRole || roleFromMetadata(authUser),
+        },
+        { onConflict: "user_id" }
+      );
+
+    if (error) {
+      console.warn("Profile sync skipped:", error.message);
+    }
+  };
+
+  const getPostAuthRoute = async (authUser: User, preferredRole?: "job_seeker" | "employer" | "admin") => {
     const { data: roleRow } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", userId)
+      .eq("user_id", authUser.id)
       .maybeSingle();
 
-    if (roleRow?.role === "admin") return "/admin";
-    if (roleRow?.role === "employer") return "/employer";
-    return "/dashboard";
+    return routeForRole(roleRow?.role || preferredRole || roleFromMetadata(authUser));
   };
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(routeForRole(userRole || roleFromMetadata(user)), { replace: true });
+    }
+  }, [authLoading, navigate, user, userRole]);
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-        extraParams: { prompt: "select_account" },
+      clearLocalSupabaseSession();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          queryParams: { prompt: "select_account" },
+        },
       });
 
-      if (result.error) {
-        toast.error(result.error.message || "Google sign-in failed");
-        setLoading(false);
-        return;
-      }
-
-      if (result.redirected) return;
-
-      const { data } = await supabase.auth.getUser();
-      const displayName = data.user?.user_metadata?.full_name || data.user?.user_metadata?.name || "there";
-      toast.success(`Welcome, ${displayName}!`);
-      navigate(data.user ? await getPostAuthRoute(data.user.id) : "/dashboard");
+      if (error) throw error;
     } catch (err: any) {
-      toast.error(err.message || "Google sign-in failed");
+      toast.error(friendlyAuthError(err.message) || "Google sign-in failed");
       setLoading(false);
     }
   };
@@ -117,16 +162,20 @@ const Auth = () => {
     }
 
     try {
-      const { data, error } = await supabase.functions.invoke("account-auth", {
-        body: { action: "login", email: loginEmail, password: loginPassword },
+      clearLocalSupabaseSession();
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanEmail(loginEmail),
+        password: loginPassword,
       });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Sign in failed");
-      await setAuthSession(data);
-      const displayName = data.user?.user_metadata?.full_name || data.user?.email?.split("@")[0] || "there";
+      if (error) throw error;
+      if (!data.user || !data.session) throw new Error("Sign in did not return a valid session.");
+
+      await ensureProfile(data.user);
+      const displayName = displayNameFor(data.user);
       toast.success(`Welcome, ${displayName}!`);
-      navigate(routeForRole(data.role));
+      navigate(await getPostAuthRoute(data.user));
     } catch (err: any) {
-      toast.error(err.message || "Sign in failed");
+      toast.error(friendlyAuthError(err.message));
     }
     setLoading(false);
   };
@@ -137,29 +186,52 @@ const Auth = () => {
       toast.error("Password must be at least 6 characters");
       return;
     }
-    if (signupRole === "employer" && employerCode !== "6490") {
-      toast.error("Invalid employer access code");
-      return;
-    }
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke("account-auth", {
-        body: {
-          action: "signup",
-          email: signupEmail,
-          password: signupPassword,
-          fullName: signupName,
-          role: signupRole,
-          employerCode,
+      clearLocalSupabaseSession();
+      const email = cleanEmail(signupEmail);
+      const fullName = signupName.trim();
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password: signupPassword,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth`,
+          data: {
+            full_name: fullName,
+            name: fullName,
+            role: signupRole,
+          },
         },
       });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Account creation failed");
-      await setAuthSession(data);
-      toast.success(`Welcome, ${signupName || "there"}! Your account is ready.`);
-      navigate(routeForRole(data.role));
+      if (error) throw error;
+
+      if (data.user?.identities && data.user.identities.length === 0) {
+        throw new Error("This email already has an account. Please sign in instead.");
+      }
+
+      let signedInUser = data.user;
+      if (!data.session) {
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email,
+          password: signupPassword,
+        });
+        if (!loginError && loginData.user) {
+          signedInUser = loginData.user;
+        }
+      }
+
+      if (!signedInUser) {
+        toast.success("Account created. Please check your email to finish signing in.");
+        return;
+      }
+
+      await ensureProfile(signedInUser, fullName, signupRole);
+      toast.success(`Welcome, ${displayNameFor(signedInUser, fullName)}! Your account is ready.`);
+      navigate(await getPostAuthRoute(signedInUser, signupRole));
     } catch (err: any) {
-      toast.error(err.message || "Account creation failed");
+      toast.error(friendlyAuthError(err.message));
     }
     setLoading(false);
   };
@@ -350,22 +422,6 @@ const Auth = () => {
                       ))}
                     </div>
                   </div>
-
-                  {signupRole === "employer" && (
-                    <div className="space-y-2">
-                      <Label htmlFor="employer-code">Employer Access Code</Label>
-                      <Input
-                        id="employer-code"
-                        type="password"
-                        placeholder="Enter access code"
-                        className="rounded-xl h-11"
-                        value={employerCode}
-                        onChange={(e) => setEmployerCode(e.target.value)}
-                        required
-                      />
-                      <p className="text-xs text-muted-foreground">Contact admin to get your employer access code.</p>
-                    </div>
-                  )}
 
                   <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}

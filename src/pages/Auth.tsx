@@ -83,7 +83,6 @@ const Auth = () => {
           user_id: authUser.id,
           full_name: fullName,
           avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
-          role: preferredRole || roleFromMetadata(authUser),
         },
         { onConflict: "user_id" }
       );

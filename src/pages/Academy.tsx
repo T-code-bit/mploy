@@ -45,6 +45,49 @@ const Academy = () => {
       <Navbar />
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative max-w-5xl mx-auto"
+          >
+            <div className="rounded-3xl overflow-hidden border border-border shadow-xl relative">
+              <img
+                src={academyImg}
+                alt="Ready-to-Work Academy — coming soon"
+                className="w-full h-[420px] sm:h-[520px] object-cover blur-md scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/80 backdrop-blur-sm" />
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/15 border border-primary/30 backdrop-blur-md mb-6">
+                  <Award className="h-4 w-4 text-primary" />
+                  <span className="text-xs font-semibold text-primary uppercase tracking-wider">Ready-to-Work Academy</span>
+                </div>
+                <h1 className="font-display text-4xl sm:text-6xl font-bold text-foreground tracking-tight mb-4">
+                  Coming <span className="text-gradient-primary">Soon</span>
+                </h1>
+                <p className="text-muted-foreground text-base sm:text-lg max-w-xl leading-relaxed">
+                  We're crafting a world-class employability academy — self-paced courses, TrustBadges, and real skills that get you hired. Stay tuned.
+                </p>
+                <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-card/80 backdrop-blur-md border border-border shadow-sm">
+                  <Lock className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">Launching soon on M-Ploy</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+
+  // eslint-disable-next-line no-unreachable
+  return (
+    <div className="min-h-screen bg-background bg-mesh">
+      <Navbar />
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
           {/* Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

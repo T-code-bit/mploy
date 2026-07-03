@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -112,17 +113,14 @@ const Auth = () => {
     setLoading(true);
     try {
       clearLocalSupabaseSession();
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth`,
-          queryParams: { prompt: "select_account" },
-        },
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${window.location.origin}/auth`,
+        extraParams: { prompt: "select_account" },
       });
-
-      if (error) throw error;
+      if (result?.error) throw result.error;
+      // If redirected, browser navigates away; otherwise session is set and the auth effect will route.
     } catch (err: any) {
-      toast.error(friendlyAuthError(err.message) || "Google sign-in failed");
+      toast.error(friendlyAuthError(err?.message) || "Google sign-in failed");
       setLoading(false);
     }
   };

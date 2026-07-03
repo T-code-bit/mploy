@@ -3,6 +3,9 @@ import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
 import { ShieldCheck, Globe, Users, Target, Heart, Zap } from "lucide-react";
 import aboutTeamImg from "@/assets/about-team.jpg";
+import teamCavin from "@/assets/team-cavin.jpg";
+import teamPhinnaline from "@/assets/team-phinnaline.jpg";
+import teamBrian from "@/assets/team-brian.jpg";
 import usePageTitle from "@/hooks/usePageTitle";
 
 const values = [
@@ -15,11 +18,9 @@ const values = [
 ];
 
 const team = [
-  { name: "James Ochieng", role: "Founder & CEO, M-Ploy", bio: "Former recruiter turned entrepreneur. Passionate about making hiring fair and transparent across Kenya and East Africa." },
-  { name: "Cavin Apodo", role: "Founder & CEO, BTL (Be The Leader)", bio: "Visionary leader behind Be The Leader (BTL), our institutional partner powering youth leadership and employability programs across Kenya." },
-  { name: "Amina Wanjiku", role: "CTO", bio: "Experienced engineer with 12 years in AI/ML. Building the tech that powers smarter career matching for Kenyan talent." },
-  { name: "Peter Mwangi", role: "Head of Product", bio: "Product leader who's shipped tools used by thousands. Obsessed with user experience and accessibility." },
-  { name: "Fatima Hassan", role: "Head of Partnerships", bio: "Connects M-Ploy with employers across Kenya and the East African region. Background in international business development." },
+  { name: "Cavin Apodo", role: "Founder & CEO", bio: "Visionary founder leading M-Ploy's mission to bridge Kenyan talent with verified, life-changing career opportunities.", image: teamCavin },
+  { name: "Phinnaline Achieng", role: "Product Manager", bio: "Product leader shaping every M-Ploy experience — from job discovery to CV building — with a relentless focus on the user.", image: teamPhinnaline },
+  { name: "Brian O. Olela", role: "Chief Technology Officer & Lead Software Engineer", bio: "Architect of the M-Ploy platform. Builds the intelligent, scalable systems powering verified hiring across Kenya.", image: teamBrian },
 ];
 
 const About = () => {
@@ -135,11 +136,11 @@ const About = () => {
         {/* Team */}
         <div className="mb-20">
           <h2 className="font-display text-3xl font-bold text-foreground text-center mb-10 tracking-tight">Meet the Team</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {team.map((t, i) => (
-              <motion.div key={t.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-card rounded-2xl border border-border p-6 shadow-card text-center">
-                <div className="h-16 w-16 rounded-2xl bg-gradient-primary flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-primary-foreground">{t.name[0]}</span>
+              <motion.div key={t.name} initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08 }} className="bg-card rounded-2xl border border-border p-6 shadow-card text-center hover:shadow-lg transition-all hover:-translate-y-0.5">
+                <div className="h-28 w-28 rounded-2xl overflow-hidden mx-auto mb-4 ring-2 ring-primary/20 shadow-md">
+                  <img src={t.image} alt={t.name} className="w-full h-full object-cover" loading="lazy" />
                 </div>
                 <h4 className="font-display font-semibold text-card-foreground">{t.name}</h4>
                 <p className="text-xs text-primary font-semibold mb-2">{t.role}</p>

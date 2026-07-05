@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import {
 import {
   Trash2, Shield, Briefcase, Users, FileText, Mail, Loader2, Star, Check, X,
   Pencil, CreditCard, TrendingUp, UserCheck, BarChart3, DollarSign, Activity,
-  MessageSquare, UserCog, LayoutDashboard, LogOut, Home, Menu,
+  MessageSquare, UserCog, LayoutDashboard, LogOut, Home, Menu, Send, Megaphone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,7 +33,7 @@ const TIER_PRICE: Record<string, number> = { basic: 999, premium: 2499, free: 0 
 
 type View =
   | "overview" | "jobs" | "applications" | "users"
-  | "reviews" | "transactions" | "subscribers" | "messages";
+  | "reviews" | "transactions" | "subscribers" | "messages" | "broadcast";
 
 const NAV: { key: View; label: string; icon: any }[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
@@ -44,6 +44,7 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "transactions", label: "Transactions", icon: CreditCard },
   { key: "subscribers", label: "Newsletter", icon: Mail },
   { key: "messages", label: "Messages", icon: MessageSquare },
+  { key: "broadcast", label: "Broadcast", icon: Megaphone },
 ];
 
 const Admin = () => {

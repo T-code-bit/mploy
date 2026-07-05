@@ -55,6 +55,27 @@ const Admin = () => {
   const [editingJob, setEditingJob] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [broadcast, setBroadcast] = useState({ subject: "", body: "", audience: "all_users" as "all_users" | "active_subscribers" | "newsletter" });
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+
+  // Realtime — auto-refresh every admin table on any change
+  useEffect(() => {
+    const tables = ["jobs", "applications", "profiles", "user_roles", "paystack_subscribers", "reviews", "newsletter_subscribers", "contact_messages"];
+    const keyMap: Record<string, string> = {
+      jobs: "admin-jobs", applications: "admin-applications", profiles: "admin-profiles",
+      user_roles: "admin-roles", paystack_subscribers: "admin-paystack-subs",
+      reviews: "admin-reviews", newsletter_subscribers: "admin-subscribers",
+      contact_messages: "admin-messages",
+    };
+    const ch = supabase.channel("admin-live");
+    tables.forEach((t) => {
+      ch.on("postgres_changes", { event: "*", schema: "public", table: t }, () => {
+        qc.invalidateQueries({ queryKey: [keyMap[t]] });
+      });
+    });
+    ch.subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ["admin-jobs"],
@@ -138,11 +159,46 @@ const Admin = () => {
         jobs: "admin-jobs", applications: "admin-applications",
         newsletter_subscribers: "admin-subscribers", contact_messages: "admin-messages",
         reviews: "admin-reviews", profiles: "admin-profiles",
+        paystack_subscribers: "admin-paystack-subs",
       };
       qc.invalidateQueries({ queryKey: [keyMap[vars.table]] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const deleteUser = useMutation({
+    mutationFn: async (user_id: string) => {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", { body: { user_id } });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+    },
+    onSuccess: () => {
+      toast.success("User account deleted");
+      qc.invalidateQueries({ queryKey: ["admin-profiles"] });
+      qc.invalidateQueries({ queryKey: ["admin-roles"] });
+      qc.invalidateQueries({ queryKey: ["admin-paystack-subs"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const sendBroadcast = async () => {
+    if (!broadcast.subject.trim() || !broadcast.body.trim()) {
+      toast.error("Subject and message are required");
+      return;
+    }
+    setSendingBroadcast(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-broadcast", { body: broadcast });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`Broadcast queued to ${(data as any)?.total_recipients || 0} recipients`);
+      setBroadcast({ subject: "", body: "", audience: broadcast.audience });
+    } catch (e: any) {
+      toast.error(e.message || "Broadcast failed");
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
 
   const approveReview = useMutation({
     mutationFn: async ({ id, approved }: { id: string; approved: boolean }) => {

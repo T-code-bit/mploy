@@ -286,9 +286,10 @@ const EmployerPortal = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                         <TableHead>Title</TableHead>
+                        <TableHead>Title</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Type</TableHead>
+                        <TableHead>Applicants</TableHead>
                         <TableHead>Deadline</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead></TableHead>
@@ -300,6 +301,11 @@ const EmployerPortal = () => {
                           <TableCell className="font-semibold">{job.title}</TableCell>
                           <TableCell className="text-muted-foreground">{job.location}</TableCell>
                           <TableCell><Badge variant="secondary" className="rounded-lg">{job.type}</Badge></TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="rounded-lg gap-1">
+                              <Users className="h-3 w-3" /> {applicantCounts[job.id] || 0}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {job.deadline ? new Date(job.deadline).toLocaleDateString() : "No deadline"}
                           </TableCell>
@@ -341,9 +347,10 @@ const EmployerPortal = () => {
                       <TableRow>
                         <TableHead>Job</TableHead>
                         <TableHead>Applicant</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead>Applied</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Action</TableHead>
+                        <TableHead>Progress</TableHead>
+                        <TableHead></TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -352,29 +359,42 @@ const EmployerPortal = () => {
                           <TableCell className="font-semibold">{app.jobs?.title}</TableCell>
                           <TableCell>
                             <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary rounded-lg" onClick={() => { setViewingApplicant(app.applicant_id); setViewingApplicationId(app.id); setProfileDialogOpen(true); }}>
-                              <UserCircle className="h-3.5 w-3.5" /> View Profile
+                              <UserCircle className="h-3.5 w-3.5" /> View Full Profile
                             </Button>
+                          </TableCell>
+                          <TableCell>
+                            {app.applicant_email ? (
+                              <a href={`mailto:${app.applicant_email}`} className="text-xs text-primary hover:underline flex items-center gap-1">
+                                <Mail className="h-3 w-3" /> {app.applicant_email}
+                              </a>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
                             {new Date(app.created_at).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
+                            <Select value={app.status} onValueChange={(v) => updateApplicationStatus.mutate({ id: app.id, status: v })}>
+                              <SelectTrigger className="w-36 h-9 rounded-lg text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="pending">Pending</SelectItem>
+                                <SelectItem value="reviewing">Reviewing</SelectItem>
+                                <SelectItem value="shortlisted">Shortlisted</SelectItem>
+                                <SelectItem value="hired">Hired</SelectItem>
+                                <SelectItem value="rejected">Rejected</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
                             <Badge
-                              variant={app.status === "accepted" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}
-                              className="rounded-lg"
+                              variant={["hired", "accepted"].includes(app.status) ? "default" : app.status === "rejected" ? "destructive" : "secondary"}
+                              className="rounded-lg capitalize"
                             >
                               {app.status}
                             </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-1">
-                              <Button size="sm" variant="ghost" className="text-xs text-success rounded-lg" onClick={() => updateApplicationStatus.mutate({ id: app.id, status: "accepted" })}>
-                                Accept
-                              </Button>
-                              <Button size="sm" variant="ghost" className="text-xs text-destructive rounded-lg" onClick={() => updateApplicationStatus.mutate({ id: app.id, status: "rejected" })}>
-                                Reject
-                              </Button>
-                            </div>
                           </TableCell>
                         </TableRow>
                       ))}

@@ -509,8 +509,46 @@ const Admin = () => {
               )}
             </div>
           </div>
+          <ConfirmDelete label="subscription record" onConfirm={() => deleteMutation.mutate({ table: "paystack_subscribers", id: s.id })} />
         </Card>
       ))}
+    </div>
+  );
+
+  const Broadcast = () => (
+    <div className="space-y-4 max-w-2xl">
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Megaphone className="h-5 w-5 text-primary" />
+          <h2 className="font-display font-semibold text-lg">Send a Broadcast</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Send an email to your users or subscribers. Delivered via the M-Ploy email queue.
+        </p>
+        <div className="space-y-2">
+          <Label>Audience</Label>
+          <Select value={broadcast.audience} onValueChange={(v: any) => setBroadcast({ ...broadcast, audience: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all_users">All platform users ({profiles.length})</SelectItem>
+              <SelectItem value="active_subscribers">Active paid subscribers ({activeSubs})</SelectItem>
+              <SelectItem value="newsletter">Newsletter subscribers ({subscribers.length})</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Subject</Label>
+          <Input value={broadcast.subject} onChange={(e) => setBroadcast({ ...broadcast, subject: e.target.value })} placeholder="Subject line" />
+        </div>
+        <div className="space-y-2">
+          <Label>Message</Label>
+          <Textarea rows={8} value={broadcast.body} onChange={(e) => setBroadcast({ ...broadcast, body: e.target.value })} placeholder="Write your message here..." />
+        </div>
+        <Button onClick={sendBroadcast} disabled={sendingBroadcast} className="gap-2">
+          {sendingBroadcast ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          Send Broadcast
+        </Button>
+      </Card>
     </div>
   );
 
@@ -560,6 +598,7 @@ const Admin = () => {
       case "transactions": return <Transactions />;
       case "subscribers": return <Subscribers />;
       case "messages": return <Messages />;
+      case "broadcast": return <Broadcast />;
     }
   };
 

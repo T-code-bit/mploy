@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil, UserCircle } from "lucide-react";
+import { Plus, Briefcase, Users, Eye, Trash2, Building2, Pencil, UserCircle, Mail } from "lucide-react";
 import ApplicantProfileDialog from "@/components/ApplicantProfileDialog";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -52,7 +52,7 @@ const EmployerPortal = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("applications")
-        .select("*, jobs!inner(title, employer_id)")
+        .select("*, jobs!inner(id, title, employer_id)")
         .eq("jobs.employer_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -60,6 +60,27 @@ const EmployerPortal = () => {
     },
     enabled: !!user,
   });
+
+  // Live updates for jobs + applications
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`employer-live-${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "applications" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["employer-applications", user.id] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "jobs", filter: `employer_id=eq.${user.id}` }, () => {
+        queryClient.invalidateQueries({ queryKey: ["employer-jobs", user.id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user, queryClient]);
+
+  const applicantCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    applications.forEach((a: any) => { map[a.job_id] = (map[a.job_id] || 0) + 1; });
+    return map;
+  }, [applications]);
 
   const createJob = useMutation({
     mutationFn: async () => {

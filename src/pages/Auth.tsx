@@ -2,19 +2,20 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, GraduationCap, ArrowRight, Shield, Chrome } from "lucide-react";
+import { Briefcase, GraduationCap, ArrowRight, Shield, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
 import { motion } from "framer-motion";
 import mployLogo from "@/assets/mploy-logo.png";
 import usePageTitle from "@/hooks/usePageTitle";
+
+const EMPLOYER_CODE = "6490";
 
 const Auth = () => {
   usePageTitle("Sign In");
@@ -23,10 +24,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
+  const [loginEmployerCode, setLoginEmployerCode] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
+  const [signupEmployerCode, setSignupEmployerCode] = useState("");
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
 
@@ -83,13 +86,19 @@ const Auth = () => {
         {
           user_id: authUser.id,
           full_name: fullName,
-          avatar_url: authUser.user_metadata?.avatar_url || authUser.user_metadata?.picture || null,
+          avatar_url: authUser.user_metadata?.avatar_url || null,
         },
         { onConflict: "user_id" }
       );
 
     if (error) {
       console.warn("Profile sync skipped:", error.message);
+    }
+
+    if (preferredRole === "employer") {
+      await supabase
+        .from("user_roles")
+        .upsert({ user_id: authUser.id, role: "employer" }, { onConflict: "user_id,role" });
     }
   };
 
@@ -109,28 +118,11 @@ const Auth = () => {
     }
   }, [authLoading, navigate, user, userRole]);
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      clearLocalSupabaseSession();
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth`,
-        extraParams: { prompt: "select_account" },
-      });
-      if (result?.error) throw result.error;
-      // If redirected, browser navigates away; otherwise session is set and the auth effect will route.
-    } catch (err: any) {
-      toast.error(friendlyAuthError(err?.message) || "Google sign-in failed");
-      setLoading(false);
-    }
-  };
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     if (loginRole === "admin") {
-      // Admin path bypasses captcha for speed — code itself is the secret
       try {
         const { data, error } = await supabase.functions.invoke("admin-access-login", {
           body: { code: adminLoginCode },
@@ -158,6 +150,12 @@ const Auth = () => {
       return;
     }
 
+    if (loginRole === "employer" && loginEmployerCode.trim() !== EMPLOYER_CODE) {
+      toast.error("Invalid employer access code");
+      setLoading(false);
+      return;
+    }
+
     try {
       clearLocalSupabaseSession();
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -167,10 +165,10 @@ const Auth = () => {
       if (error) throw error;
       if (!data.user || !data.session) throw new Error("Sign in did not return a valid session.");
 
-      await ensureProfile(data.user);
+      await ensureProfile(data.user, undefined, loginRole);
       const displayName = displayNameFor(data.user);
       toast.success(`Welcome, ${displayName}!`);
-      navigate(await getPostAuthRoute(data.user));
+      navigate(await getPostAuthRoute(data.user, loginRole));
     } catch (err: any) {
       toast.error(friendlyAuthError(err.message));
     }
@@ -183,8 +181,12 @@ const Auth = () => {
       toast.error("Password must be at least 6 characters");
       return;
     }
+    if (signupRole === "employer" && signupEmployerCode.trim() !== EMPLOYER_CODE) {
+      toast.error("Invalid employer access code. Please contact M-Ploy support to obtain one.");
+      return;
+    }
     setLoading(true);
-    
+
     try {
       clearLocalSupabaseSession();
       const email = cleanEmail(signupEmail);
@@ -303,6 +305,8 @@ const Auth = () => {
                     <p className="text-xs text-muted-foreground">
                       {loginRole === "admin"
                         ? "Enter the admin access code to sign in."
+                        : loginRole === "employer"
+                        ? "Employers need the M-Ploy access code plus their email and password."
                         : "Sign in with your registered email and password."}
                     </p>
                   </div>
@@ -329,6 +333,22 @@ const Auth = () => {
                         <Label htmlFor="login-password">Password</Label>
                         <Input id="login-password" type="password" placeholder="••••••••" className="rounded-xl h-11" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required />
                       </div>
+                      {loginRole === "employer" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="login-employer-code" className="flex items-center gap-1.5">
+                            <KeyRound className="h-3.5 w-3.5" /> Employer Access Code
+                          </Label>
+                          <Input
+                            id="login-employer-code"
+                            type="password"
+                            placeholder="M-Ploy employer code"
+                            className="rounded-xl h-11"
+                            value={loginEmployerCode}
+                            onChange={(e) => setLoginEmployerCode(e.target.value)}
+                            required
+                          />
+                        </div>
+                      )}
                     </>
                   )}
                   <Button
@@ -340,41 +360,25 @@ const Auth = () => {
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
                   {loginRole !== "admin" && (
-                    <>
-                      <div className="relative py-1">
-                        <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                        <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full rounded-xl h-11 font-semibold"
-                        disabled={loading}
-                        onClick={handleGoogleLogin}
-                      >
-                        <Chrome className="mr-2 h-4 w-4" />
-                        Continue with Google
-                      </Button>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          if (!loginEmail) {
-                            toast.error("Enter your email address first");
-                            return;
-                          }
-                          setLoading(true);
-                          const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-                            redirectTo: `${window.location.origin}/reset-password`,
-                          });
-                          if (error) toast.error(error.message);
-                          else toast.success("Password reset link sent! Check your email.");
-                          setLoading(false);
-                        }}
-                        className="w-full text-center text-sm text-primary hover:underline pt-1"
-                      >
-                        Forgot your password?
-                      </button>
-                    </>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!loginEmail) {
+                          toast.error("Enter your email address first");
+                          return;
+                        }
+                        setLoading(true);
+                        const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
+                          redirectTo: `${window.location.origin}/reset-password`,
+                        });
+                        if (error) toast.error(error.message);
+                        else toast.success("Password reset link sent! Check your email.");
+                        setLoading(false);
+                      }}
+                      className="w-full text-center text-sm text-primary hover:underline pt-1"
+                    >
+                      Forgot your password?
+                    </button>
                   )}
                 </form>
               </TabsContent>
@@ -420,23 +424,29 @@ const Auth = () => {
                     </div>
                   </div>
 
+                  {signupRole === "employer" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-employer-code" className="flex items-center gap-1.5">
+                        <KeyRound className="h-3.5 w-3.5" /> Employer Access Code
+                      </Label>
+                      <Input
+                        id="signup-employer-code"
+                        type="password"
+                        placeholder="Enter M-Ploy employer code"
+                        className="rounded-xl h-11"
+                        value={signupEmployerCode}
+                        onChange={(e) => setSignupEmployerCode(e.target.value)}
+                        required
+                      />
+                      <p className="text-[11px] text-muted-foreground">
+                        Employer signups require a verified access code from M-Ploy to prevent fraudulent postings.
+                      </p>
+                    </div>
+                  )}
+
                   <Button type="submit" className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold" disabled={loading}>
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
-                  </Button>
-                  <div className="relative py-1">
-                    <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border" /></div>
-                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full rounded-xl h-11 font-semibold"
-                    disabled={loading}
-                    onClick={handleGoogleLogin}
-                  >
-                    <Chrome className="mr-2 h-4 w-4" />
-                    Continue with Google
                   </Button>
                 </form>
               </TabsContent>

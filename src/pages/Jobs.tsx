@@ -103,6 +103,7 @@ const Jobs = () => {
       const { error } = await supabase.from("applications").insert({
         job_id: selectedJob.id,
         applicant_id: user!.id,
+        applicant_email: user!.email || null,
         cover_letter: coverLetter || null,
         cv_url: cvPath,
         resume_url: coverLetterPath,
@@ -116,7 +117,7 @@ const Jobs = () => {
         gender: gender || null,
         county: county || null,
         date_of_birth: dateOfBirth || null,
-      });
+      } as any);
       if (error) throw error;
     },
     onSuccess: () => {

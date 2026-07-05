@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -13,15 +13,17 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import usePageTitle from "@/hooks/usePageTitle";
+import ApplicationProgress from "@/components/ApplicationProgress";
 import { toast } from "sonner";
 
 const Dashboard = () => {
   usePageTitle("Dashboard");
   const { user, profile, userRole, subscriptionTier, subscriptionEnd } = useAuth();
+  const queryClient = useQueryClient();
   const [portalLoading, setPortalLoading] = useState(false);
   const currentPlan = SUBSCRIPTION_TIERS[subscriptionTier];
 
@@ -53,11 +55,27 @@ const Dashboard = () => {
     enabled: !!user && userRole !== "employer",
   });
 
+  // Live updates: refresh applications when status changes
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`dashboard-apps-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "applications", filter: `applicant_id=eq.${user.id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["dashboard-applications", user.id] })
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user, queryClient]);
+
   const stats = useMemo(() => {
     const total = applications.length;
-    const pending = applications.filter((a: any) => a.status === "pending").length;
-    const accepted = applications.filter((a: any) => a.status === "accepted").length;
-    return { total, pending, accepted };
+    const pending = applications.filter((a: any) => ["pending", "reviewing"].includes(a.status)).length;
+    const shortlisted = applications.filter((a: any) => a.status === "shortlisted").length;
+    const hired = applications.filter((a: any) => ["hired", "accepted"].includes(a.status)).length;
+    const rejected = applications.filter((a: any) => a.status === "rejected").length;
+    return { total, pending, shortlisted, hired, rejected, accepted: hired };
   }, [applications]);
 
   // Redirect admins to their console and employers to their portal
@@ -114,10 +132,10 @@ const Dashboard = () => {
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {[
-              { icon: Send, label: "Applications Sent", value: stats.total.toString(), change: `${stats.pending} pending`, color: "text-primary", bg: "bg-primary/10" },
-              { icon: Eye, label: "Accepted", value: stats.accepted.toString(), change: "Offers received", color: "text-success", bg: "bg-success/10" },
-              { icon: FileCheck, label: "CV Builder", value: "Ready", change: "Build your CV", color: "text-warning", bg: "bg-warning/10" },
-              { icon: Award, label: "Academy", value: "50+", change: "Courses available", color: "text-secondary", bg: "bg-secondary/10" },
+              { icon: Send, label: "Applications", value: stats.total.toString(), change: `${stats.pending} in review`, color: "text-primary", bg: "bg-primary/10" },
+              { icon: Eye, label: "Shortlisted", value: stats.shortlisted.toString(), change: "Great progress!", color: "text-warning", bg: "bg-warning/10" },
+              { icon: Award, label: "Hired", value: stats.hired.toString(), change: "Offers received", color: "text-success", bg: "bg-success/10" },
+              { icon: FileCheck, label: "CV Builder", value: "Ready", change: "Build your CV", color: "text-secondary", bg: "bg-secondary/10" },
             ].map((stat, i) => (
               <motion.div
                 key={stat.label}
@@ -167,26 +185,25 @@ const Dashboard = () => {
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {applications.slice(0, 8).map((app: any) => (
                     <div key={app.id} className="p-4 rounded-xl bg-background/80 border border-border hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center">
+                      <div className="flex items-center justify-between gap-3 mb-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0">
                             <Briefcase className="h-4 w-4 text-primary-foreground" />
                           </div>
-                          <div>
-                            <p className="text-sm font-semibold text-foreground">{app.jobs?.title || "Unknown Job"}</p>
-                            <p className="text-xs text-muted-foreground">{app.jobs?.company || "Unknown Company"}</p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-foreground truncate">{app.jobs?.title || "Unknown Job"}</p>
+                            <p className="text-xs text-muted-foreground truncate">{app.jobs?.company || "Unknown Company"}</p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <Badge variant="outline" className={`text-[10px] rounded-lg ${statusColor(app.status)}`}>
-                            {app.status}
-                          </Badge>
-                          <p className="text-[11px] text-muted-foreground mt-1">{timeAgo(app.created_at)}</p>
-                        </div>
+                        <p className="text-[11px] text-muted-foreground shrink-0">{timeAgo(app.created_at)}</p>
                       </div>
+
+                      {/* Live progress timeline */}
+                      <ApplicationProgress status={app.status} />
+
                       {/* Employer Feedback */}
                       {(app.employer_feedback || app.employer_contact_info) && (
                         <div className="mt-3 pt-3 border-t border-border/60 space-y-1.5">
@@ -287,9 +304,10 @@ const Dashboard = () => {
                 <h3 className="font-display font-semibold text-card-foreground mb-4">Application Stats</h3>
                 <div className="space-y-3">
                   {[
-                    { label: "Pending", value: stats.pending, total: stats.total || 1 },
-                    { label: "Accepted", value: stats.accepted, total: stats.total || 1 },
-                    { label: "Total", value: stats.total, total: Math.max(stats.total, 1) },
+                    { label: "In Review", value: stats.pending, total: stats.total || 1 },
+                    { label: "Shortlisted", value: stats.shortlisted, total: stats.total || 1 },
+                    { label: "Hired", value: stats.hired, total: stats.total || 1 },
+                    { label: "Rejected", value: stats.rejected, total: stats.total || 1 },
                   ].map((item) => (
                     <div key={item.label}>
                       <div className="flex justify-between text-xs mb-1.5">

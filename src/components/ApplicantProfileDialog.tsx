@@ -42,6 +42,7 @@ interface ApplicationData {
   education_level: string | null;
   employer_feedback: string | null;
   employer_contact_info: string | null;
+  applicant_email: string | null;
   status: string;
   created_at: string;
 }
@@ -167,6 +168,14 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
 
               {/* Contact Info */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {application?.applicant_email && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    <a href={`mailto:${application.applicant_email}`} className="text-primary hover:underline break-all">
+                      {application.applicant_email}
+                    </a>
+                  </div>
+                )}
                 {(application?.phone || profile.phone) && (
                   <div className="flex items-center gap-3 text-sm">
                     <Phone className="h-4 w-4 text-muted-foreground" />

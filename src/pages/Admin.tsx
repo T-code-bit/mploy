@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import {
 import {
   Trash2, Shield, Briefcase, Users, FileText, Mail, Loader2, Star, Check, X,
   Pencil, CreditCard, TrendingUp, UserCheck, BarChart3, DollarSign, Activity,
-  MessageSquare, UserCog, LayoutDashboard, LogOut, Home, Menu,
+  MessageSquare, UserCog, LayoutDashboard, LogOut, Home, Menu, Send, Megaphone,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,7 +33,7 @@ const TIER_PRICE: Record<string, number> = { basic: 999, premium: 2499, free: 0 
 
 type View =
   | "overview" | "jobs" | "applications" | "users"
-  | "reviews" | "transactions" | "subscribers" | "messages";
+  | "reviews" | "transactions" | "subscribers" | "messages" | "broadcast";
 
 const NAV: { key: View; label: string; icon: any }[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
@@ -44,6 +44,7 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "transactions", label: "Transactions", icon: CreditCard },
   { key: "subscribers", label: "Newsletter", icon: Mail },
   { key: "messages", label: "Messages", icon: MessageSquare },
+  { key: "broadcast", label: "Broadcast", icon: Megaphone },
 ];
 
 const Admin = () => {
@@ -54,6 +55,27 @@ const Admin = () => {
   const [editingJob, setEditingJob] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [broadcast, setBroadcast] = useState({ subject: "", body: "", audience: "all_users" as "all_users" | "active_subscribers" | "newsletter" });
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+
+  // Realtime — auto-refresh every admin table on any change
+  useEffect(() => {
+    const tables = ["jobs", "applications", "profiles", "user_roles", "paystack_subscribers", "reviews", "newsletter_subscribers", "contact_messages"];
+    const keyMap: Record<string, string> = {
+      jobs: "admin-jobs", applications: "admin-applications", profiles: "admin-profiles",
+      user_roles: "admin-roles", paystack_subscribers: "admin-paystack-subs",
+      reviews: "admin-reviews", newsletter_subscribers: "admin-subscribers",
+      contact_messages: "admin-messages",
+    };
+    const ch = supabase.channel("admin-live");
+    tables.forEach((t) => {
+      ch.on("postgres_changes", { event: "*", schema: "public", table: t }, () => {
+        qc.invalidateQueries({ queryKey: [keyMap[t]] });
+      });
+    });
+    ch.subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [qc]);
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ["admin-jobs"],
@@ -137,11 +159,46 @@ const Admin = () => {
         jobs: "admin-jobs", applications: "admin-applications",
         newsletter_subscribers: "admin-subscribers", contact_messages: "admin-messages",
         reviews: "admin-reviews", profiles: "admin-profiles",
+        paystack_subscribers: "admin-paystack-subs",
       };
       qc.invalidateQueries({ queryKey: [keyMap[vars.table]] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
+
+  const deleteUser = useMutation({
+    mutationFn: async (user_id: string) => {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", { body: { user_id } });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+    },
+    onSuccess: () => {
+      toast.success("User account deleted");
+      qc.invalidateQueries({ queryKey: ["admin-profiles"] });
+      qc.invalidateQueries({ queryKey: ["admin-roles"] });
+      qc.invalidateQueries({ queryKey: ["admin-paystack-subs"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const sendBroadcast = async () => {
+    if (!broadcast.subject.trim() || !broadcast.body.trim()) {
+      toast.error("Subject and message are required");
+      return;
+    }
+    setSendingBroadcast(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-broadcast", { body: broadcast });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`Broadcast queued to ${(data as any)?.total_recipients || 0} recipients`);
+      setBroadcast({ subject: "", body: "", audience: broadcast.audience });
+    } catch (e: any) {
+      toast.error(e.message || "Broadcast failed");
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
 
   const approveReview = useMutation({
     mutationFn: async ({ id, approved }: { id: string; approved: boolean }) => {
@@ -380,7 +437,7 @@ const Admin = () => {
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
-              <ConfirmDelete label="user profile" onConfirm={() => deleteMutation.mutate({ table: "profiles", id: p.id })} />
+              <ConfirmDelete label="user account (auth, profile, roles)" onConfirm={() => deleteUser.mutate(p.user_id)} />
             </div>
           </Card>
         );
@@ -452,8 +509,46 @@ const Admin = () => {
               )}
             </div>
           </div>
+          <ConfirmDelete label="subscription record" onConfirm={() => deleteMutation.mutate({ table: "paystack_subscribers", id: s.id })} />
         </Card>
       ))}
+    </div>
+  );
+
+  const Broadcast = () => (
+    <div className="space-y-4 max-w-2xl">
+      <Card className="p-6 space-y-4">
+        <div className="flex items-center gap-2">
+          <Megaphone className="h-5 w-5 text-primary" />
+          <h2 className="font-display font-semibold text-lg">Send a Broadcast</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Send an email to your users or subscribers. Delivered via the M-Ploy email queue.
+        </p>
+        <div className="space-y-2">
+          <Label>Audience</Label>
+          <Select value={broadcast.audience} onValueChange={(v: any) => setBroadcast({ ...broadcast, audience: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all_users">All platform users ({profiles.length})</SelectItem>
+              <SelectItem value="active_subscribers">Active paid subscribers ({activeSubs})</SelectItem>
+              <SelectItem value="newsletter">Newsletter subscribers ({subscribers.length})</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Subject</Label>
+          <Input value={broadcast.subject} onChange={(e) => setBroadcast({ ...broadcast, subject: e.target.value })} placeholder="Subject line" />
+        </div>
+        <div className="space-y-2">
+          <Label>Message</Label>
+          <Textarea rows={8} value={broadcast.body} onChange={(e) => setBroadcast({ ...broadcast, body: e.target.value })} placeholder="Write your message here..." />
+        </div>
+        <Button onClick={sendBroadcast} disabled={sendingBroadcast} className="gap-2">
+          {sendingBroadcast ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          Send Broadcast
+        </Button>
+      </Card>
     </div>
   );
 
@@ -503,6 +598,7 @@ const Admin = () => {
       case "transactions": return <Transactions />;
       case "subscribers": return <Subscribers />;
       case "messages": return <Messages />;
+      case "broadcast": return <Broadcast />;
     }
   };
 

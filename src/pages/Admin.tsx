@@ -437,7 +437,7 @@ const Admin = () => {
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
-              <ConfirmDelete label="user profile" onConfirm={() => deleteMutation.mutate({ table: "profiles", id: p.id })} />
+              <ConfirmDelete label="user account (auth, profile, roles)" onConfirm={() => deleteUser.mutate(p.user_id)} />
             </div>
           </Card>
         );

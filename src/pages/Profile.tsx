@@ -81,23 +81,39 @@ const Profile = () => {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB");
+      return;
+    }
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/avatar.${ext}`;
+      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("application-documents")
-        .upload(path, file, { upsert: true });
+        .upload(path, file, { upsert: true, contentType: file.type });
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
+      // Bucket is private — use a long-lived signed URL so the avatar renders everywhere
+      const { data: signed, error: signErr } = await supabase.storage
         .from("application-documents")
-        .getPublicUrl(path);
+        .createSignedUrl(path, 60 * 60 * 24 * 365 * 5); // 5 years
+      if (signErr) throw signErr;
+      const url = signed?.signedUrl;
+      if (!url) throw new Error("Failed to generate image URL");
 
-      setForm((prev) => ({ ...prev, avatar_url: publicUrl }));
-      toast.success("Photo uploaded! Click Save to apply.");
+      // Persist immediately so the avatar sticks even if the user forgets to press Save
+      const { error: updErr } = await supabase
+        .from("profiles")
+        .update({ avatar_url: url })
+        .eq("user_id", user.id);
+      if (updErr) throw updErr;
+
+      setForm((prev) => ({ ...prev, avatar_url: url }));
+      await refreshProfile();
+      toast.success("Profile photo updated!");
     } catch (e: any) {
-      toast.error(e.message);
+      toast.error(e.message || "Upload failed");
     } finally {
       setUploading(false);
     }

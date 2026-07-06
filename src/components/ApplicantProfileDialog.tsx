@@ -121,21 +121,32 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
     }
   };
 
-  const getDocumentUrl = (path: string | null) => {
-    if (!path) return null;
-    const { data } = supabase.storage.from("application-documents").getPublicUrl(path);
-    return data?.publicUrl;
+  const openDocument = async (path: string) => {
+    // Support both stored paths and legacy full URLs
+    if (/^https?:\/\//.test(path)) {
+      window.open(path, "_blank", "noopener,noreferrer");
+      return;
+    }
+    const { data, error } = await supabase.storage
+      .from("application-documents")
+      .createSignedUrl(path, 60 * 60); // 1 hour
+    if (error || !data?.signedUrl) {
+      toast.error("Unable to open document");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
   };
 
   const DocumentLink = ({ url, label }: { url: string | null; label: string }) => {
     if (!url) return null;
-    const fullUrl = getDocumentUrl(url);
-    if (!fullUrl) return null;
     return (
-      <a href={fullUrl} target="_blank" rel="noopener noreferrer"
-        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors text-sm text-primary font-medium">
+      <button
+        type="button"
+        onClick={() => openDocument(url)}
+        className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors text-sm text-primary font-medium"
+      >
         <Download className="h-4 w-4" /> {label}
-      </a>
+      </button>
     );
   };
 

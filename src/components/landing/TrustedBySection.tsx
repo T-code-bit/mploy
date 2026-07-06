@@ -34,13 +34,13 @@ const TrustedBySection = () => (
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1, duration: 0.5 }}
-            className="flex flex-col items-center gap-3 p-6 rounded-2xl hover:bg-muted/50 transition-all duration-300 group"
+            className="flex flex-col items-center gap-3 p-3 sm:p-6 rounded-2xl hover:bg-muted/50 transition-all duration-300 group"
           >
-            <div className="h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56 flex items-center justify-center">
+            <div className="aspect-square w-full max-w-[180px] sm:max-w-[220px] md:max-w-[260px] flex items-center justify-center">
               <img
                 src={partner.logo}
                 alt={`${partner.name} logo`}
-                className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
               />
             </div>

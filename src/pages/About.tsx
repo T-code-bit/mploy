@@ -40,7 +40,7 @@ const About = () => {
             The Trusted Bridge Between <span className="text-gradient-primary">Talent & Opportunity</span>
           </h1>
           <p className="text-muted-foreground text-lg leading-relaxed">
-            Founded in Nairobi in 2024, M-Ploy was born from a simple frustration: Kenyan job seekers deserved better. Too many fake listings, too many rejection black holes, too little support. We built the platform we wished existed — verified jobs, ATS-optimized CVs, and employability training, all in one place.
+            Founded in Nairobi in 2026, M-Ploy was born from a simple frustration: Kenyan job seekers deserved better. Too many fake listings, too many rejection black holes, too little support. We built the platform we wished existed — verified jobs, ATS-optimized CVs, and employability training, all in one place.
           </p>
         </motion.div>
 

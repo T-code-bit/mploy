@@ -55,6 +55,18 @@ const sessionResponse = (session: { access_token?: string; refresh_token?: strin
   return json({ access_token: session.access_token, refresh_token: session.refresh_token, role: "admin" });
 };
 
+const withTimeout = async <T,>(promise: Promise<T>, label: string, ms = 8000): Promise<T> => {
+  let timer: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`${label} timed out`)), ms);
+  });
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -67,43 +79,64 @@ serve(async (req) => {
     const anon = createAnonClient();
 
     // Fast path: the managed admin account already exists, so avoid expensive user listing.
-    const { data: existingSignIn } = await anon.auth.signInWithPassword({
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-    });
-    if (existingSignIn.session?.access_token) {
-      runInBackground(syncAdminAccount(createAdminClient(), existingSignIn.user.id));
-      return sessionResponse(existingSignIn.session);
+    const { data: link, error: linkError } = await withTimeout(
+      createAdminClient().auth.admin.generateLink({
+        type: "magiclink",
+        email: ADMIN_EMAIL,
+        options: { data: { full_name: ADMIN_NAME, role: "admin" } },
+      }),
+      "Admin session"
+    );
+
+    const emailOtp = link?.properties?.email_otp;
+    if (!linkError && emailOtp) {
+      const { data: verified, error: verifyError } = await withTimeout(
+        anon.auth.verifyOtp({ email: ADMIN_EMAIL, token: emailOtp, type: "email" }),
+        "Admin verification"
+      );
+      if (!verifyError && verified.session?.access_token) {
+        runInBackground(syncAdminAccount(createAdminClient(), verified.user.id));
+        return sessionResponse(verified.session);
+      }
     }
 
     const admin = createAdminClient();
     let adminUser: any = null;
 
-    const { data: created, error: createErr } = await admin.auth.admin.createUser({
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-      email_confirm: true,
-      user_metadata: { full_name: ADMIN_NAME, role: "admin" },
-    });
+    const { data: created, error: createErr } = await withTimeout(
+      admin.auth.admin.createUser({
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+        email_confirm: true,
+        user_metadata: { full_name: ADMIN_NAME, role: "admin" },
+      }),
+      "Admin setup"
+    );
 
     if (created.user) {
       adminUser = created.user!;
     } else if (createErr?.message?.toLowerCase().includes("already")) {
-      const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const { data: list, error: listErr } = await withTimeout(
+        admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+        "Admin lookup"
+      );
       if (listErr) throw listErr;
       adminUser = list?.users?.find((u: any) => u.email === ADMIN_EMAIL);
       if (!adminUser) throw new Error("Admin user exists but could not be loaded");
-      await admin.auth.admin.updateUserById(adminUser.id, { password: ADMIN_PASSWORD });
+      await withTimeout(admin.auth.admin.updateUserById(adminUser.id, { password: ADMIN_PASSWORD }), "Admin update");
     } else if (createErr) {
       throw createErr;
     }
 
     await syncAdminAccount(admin, adminUser!.id);
 
-    const { data: signIn, error: signErr } = await anon.auth.signInWithPassword({
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
-    });
+    const { data: signIn, error: signErr } = await withTimeout(
+      anon.auth.signInWithPassword({
+        email: ADMIN_EMAIL,
+        password: ADMIN_PASSWORD,
+      }),
+      "Admin sign in"
+    );
     if (signErr) throw signErr;
 
     return sessionResponse(signIn.session);

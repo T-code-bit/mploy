@@ -74,42 +74,15 @@ const Auth = () => {
     }
   };
 
-  const ensureProfile = async (
-    authUser: User,
-    preferredName?: string,
-    preferredRole?: "job_seeker" | "employer" | "admin"
-  ) => {
-    const fullName = displayNameFor(authUser, preferredName);
-    const { error } = await supabase
-      .from("profiles")
-      .upsert(
-        {
-          user_id: authUser.id,
-          full_name: fullName,
-          avatar_url: authUser.user_metadata?.avatar_url || null,
-        },
-        { onConflict: "user_id" }
-      );
-
-    if (error) {
-      console.warn("Profile sync skipped:", error.message);
+  const setSessionFromResponse = async (data: any) => {
+    if (!data?.access_token || !data?.refresh_token) {
+      throw new Error(data?.error || "Sign in did not return a valid session.");
     }
-
-    if (preferredRole === "employer") {
-      await supabase
-        .from("user_roles")
-        .upsert({ user_id: authUser.id, role: "employer" }, { onConflict: "user_id,role" });
-    }
-  };
-
-  const getPostAuthRoute = async (authUser: User, preferredRole?: "job_seeker" | "employer" | "admin") => {
-    const { data: roleRow } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", authUser.id)
-      .maybeSingle();
-
-    return routeForRole(roleRow?.role || preferredRole || roleFromMetadata(authUser));
+    const { error } = await supabase.auth.setSession({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+    });
+    if (error) throw error;
   };
 
   useEffect(() => {
@@ -128,19 +101,11 @@ const Auth = () => {
           body: { code: adminLoginCode },
         });
         if (error || !data?.access_token) {
-          toast.error("Invalid admin access code");
+          toast.error(data?.error || "Invalid admin access code");
           setLoading(false);
           return;
         }
-        const { error: setErr } = await supabase.auth.setSession({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        });
-        if (setErr) {
-          toast.error(setErr.message);
-          setLoading(false);
-          return;
-        }
+        await setSessionFromResponse(data);
         toast.success("Welcome, Administrator");
         navigate("/admin");
       } catch (err: any) {
@@ -158,17 +123,21 @@ const Auth = () => {
 
     try {
       clearLocalSupabaseSession();
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.functions.invoke("account-auth", {
+        body: {
+          action: "login",
+          role: loginRole,
+          employerCode: loginEmployerCode,
         email: cleanEmail(loginEmail),
         password: loginPassword,
+        },
       });
-      if (error) throw error;
-      if (!data.user || !data.session) throw new Error("Sign in did not return a valid session.");
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Unable to sign in");
 
-      await ensureProfile(data.user, undefined, loginRole);
+      await setSessionFromResponse(data);
       const displayName = displayNameFor(data.user);
       toast.success(`Welcome, ${displayName}!`);
-      navigate(await getPostAuthRoute(data.user, loginRole));
+      navigate(routeForRole(data.role || loginRole));
     } catch (err: any) {
       toast.error(friendlyAuthError(err.message));
     }
@@ -192,43 +161,21 @@ const Auth = () => {
       const email = cleanEmail(signupEmail);
       const fullName = signupName.trim();
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password: signupPassword,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth`,
-          data: {
-            full_name: fullName,
-            name: fullName,
-            role: signupRole,
-          },
-        },
-      });
-      if (error) throw error;
-
-      if (data.user?.identities && data.user.identities.length === 0) {
-        throw new Error("This email already has an account. Please sign in instead.");
-      }
-
-      let signedInUser = data.user;
-      if (!data.session) {
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.functions.invoke("account-auth", {
+        body: {
+          action: "signup",
           email,
           password: signupPassword,
-        });
-        if (!loginError && loginData.user) {
-          signedInUser = loginData.user;
-        }
-      }
+          fullName,
+          role: signupRole,
+          employerCode: signupEmployerCode,
+        },
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message || "Unable to create account");
 
-      if (!signedInUser) {
-        toast.success("Account created. Please check your email to finish signing in.");
-        return;
-      }
-
-      await ensureProfile(signedInUser, fullName, signupRole);
-      toast.success(`Welcome, ${displayNameFor(signedInUser, fullName)}! Your account is ready.`);
-      navigate(await getPostAuthRoute(signedInUser, signupRole));
+      await setSessionFromResponse(data);
+      toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+      navigate(routeForRole(data.role || signupRole));
     } catch (err: any) {
       toast.error(friendlyAuthError(err.message));
     }

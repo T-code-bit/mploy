@@ -83,11 +83,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setProfileLoading(true);
     try {
       const fallback = fallbackProfile(authUser);
-      const { data, error } = await supabase
+      setProfile(fallback);
+      setUserRole(metadataRole(authUser));
+
+      const profileRequest = supabase
         .from("profiles")
         .select("*")
         .eq("user_id", authUser.id)
         .maybeSingle();
+
+      const roleRequest = supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", authUser.id)
+        .maybeSingle();
+
+      const [{ data, error }, { data: roleData }] = await Promise.all([profileRequest, roleRequest]);
 
       if (data) {
         setProfile(data as Profile);
@@ -104,11 +115,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
-      const { data: roleData } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", authUser.id)
-        .maybeSingle();
       setUserRole((roleData?.role as UserRole) || fallback.role);
     } catch (err) {
       console.error("Failed to load profile:", err);

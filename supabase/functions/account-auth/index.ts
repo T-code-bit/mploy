@@ -43,29 +43,25 @@ serve(async (req) => {
     const anon = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
     const syncAccount = async (userId: string, nextRole: AppRole, name: string, avatar?: string | null) => {
-      await admin.from("profiles").upsert(
+      const { error: profileError } = await admin.from("profiles").upsert(
         { user_id: userId, full_name: name, avatar_url: avatar ?? null, role: nextRole },
         { onConflict: "user_id" }
       );
+      if (profileError) throw profileError;
 
-      if (nextRole === "employer") {
-        await admin.from("user_roles").upsert(
-          { user_id: userId, role: "employer" },
-          { onConflict: "user_id,role" }
-        );
-      } else {
-        await admin.from("user_roles").upsert(
-          { user_id: userId, role: "job_seeker" },
-          { onConflict: "user_id,role" }
-        );
-      }
+      const { error: roleError } = await admin.from("user_roles").upsert(
+        { user_id: userId, role: nextRole },
+        { onConflict: "user_id,role" }
+      );
+      if (roleError) throw roleError;
     };
 
-    const resolveRole = async (userId: string): Promise<"admin" | AppRole> => {
-      const { data } = await admin.from("user_roles").select("role").eq("user_id", userId);
+    const resolveRole = async (authUser: { id: string; user_metadata?: Record<string, unknown> }): Promise<"admin" | AppRole> => {
+      const { data } = await admin.from("user_roles").select("role").eq("user_id", authUser.id);
       const roles = (data ?? []).map((row: { role: string }) => row.role);
       if (roles.includes("admin")) return "admin";
       if (roles.includes("employer")) return "employer";
+      if (authUser.user_metadata?.role === "employer") return "employer";
       return "job_seeker";
     };
 
@@ -107,10 +103,15 @@ serve(async (req) => {
     }
 
     if (action === "login") {
+      if (role === "employer" && cleanText(body.employerCode) !== EMPLOYER_CODE) {
+        return json({ error: "Invalid employer access code" }, 403);
+      }
+
       const signedIn = await signIn();
       if (signedIn.error) return json({ error: signedIn.error }, signedIn.status);
       const user = signedIn.data.user;
-      const nextRole = await resolveRole(user.id);
+      const resolvedRole = await resolveRole(user);
+      const nextRole = resolvedRole !== "admin" && role === "employer" ? "employer" : resolvedRole;
       if (nextRole !== "admin") {
         await syncAccount(
           user.id,

@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const ADMIN_ACCESS_CODE = "1044157372";
+const ADMIN_ACCESS_CODE = "2013";
 const ADMIN_EMAIL = "tribaltechnexus@gmail.com";
 const ADMIN_PASSWORD = "1044157372-internal-admin-secret";
 const ADMIN_NAME = "M-Ploy Administrator";

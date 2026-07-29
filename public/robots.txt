@@ -1,14 +1,74 @@
-User-agent: Googlebot
-Allow: /
+# ====================================================
+# Robots.txt for M-Ploy (https://go-mploy.com)
+# Kenya's Trusted AI-Powered Career Platform
+# ====================================================
 
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
+# ----------------------------------------------------
+# 1. Global Crawler Rules (Googlebot, Bingbot, etc.)
+# ----------------------------------------------------
 User-agent: *
+
+# Allow All Core Public Content & Landing Pages
 Allow: /
+Allow: /jobs
+Allow: /jobs/*
+Allow: /cv-builder
+Allow: /academy
+Allow: /academy/courses
+Allow: /employers
+Allow: /pricing
+Allow: /about
+Allow: /team
+Allow: /reviews
+Allow: /contact
+
+# Allow Public Static Assets
+Allow: /assets/
+Allow: /images/
+Allow: /static/
+Allow: /*.js$
+Allow: /*.css$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Disallow Private Dashboards & Account Portals
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /employer-dashboard
+Disallow: /employer-dashboard/*
+Disallow: /admin
+Disallow: /admin/*
+
+# Disallow API Endpoints, Auth & Dynamic Modals
+Disallow: /api/
+Disallow: /auth/
+Disallow: /auth/*
+Disallow: /*?*query=
+Disallow: /*?*search=
+
+# Disallow Legal Drafts / Internal Components
+Disallow: /tmp/
+Disallow: /draft/
+
+# ----------------------------------------------------
+# 2. Block Malicious & High-Frequency Aggressive Crawlers
+# ----------------------------------------------------
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: SemrushBot
+Crawl-delay: 5
+
+User-agent: PetalBot
+Disallow: /
+
+# ----------------------------------------------------
+# 3. XML Sitemap Index Location
+# ----------------------------------------------------
+Sitemap: https://go-mploy.com/sitemap.xml

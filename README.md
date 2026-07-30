@@ -1,6 +1,6 @@
 # M-Ploy: Employability Platform
 
-[![Live Site](https://img.shields.io/badge/Live-go-mploy.com-blue?style=for-the-badge)](https://go-mploy.com)
+[![Live Site](https://img.shields.io/badge/Live-gomploy.com-blue?style=for-the-badge)](https://go-mploy.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=for-the-badge)](https://reactjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white&style=for-the-badge)](https://supabase.com/)

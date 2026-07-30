@@ -1,6 +1,6 @@
 # M-Ploy: Employability Platform
 
-[![Live Site](https://img.shields.io/badge/Live-mploy.vercel.app-blue?style=for-the-badge)](https://mploy.vercel.app)
+[![Live Site](https://img.shields.io/badge/Live-go-mploy.com-blue?style=for-the-badge)](https://go-mploy.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white&style=for-the-badge)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB&style=for-the-badge)](https://reactjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white&style=for-the-badge)](https://supabase.com/)
@@ -68,7 +68,7 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 ---
 
 ## 🔗 Quick Links
-- **Mploy Live Site:** [Tap Here](https://mploy.vercel.app)
+- **Mploy Live Site:** [Tap Here](https://go-mploy.com)
 - **Mploy GitHub Repository:** [Tap Here for Github Repository](https://github.com/T-code-bit/mploy)
 - **Topics:** Employment • Job Search • Youth Empowerment • Web Development
 
@@ -78,7 +78,7 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 
 ### 🚀 Ready to transform your career?
 
-[Visit M-Ploy](https://mploy.vercel.app) | [Explore Code](https://github.com/T-code-bit/mploy)
+[Visit M-Ploy](https://go-mploy.com) | [Explore Code](https://github.com/T-code-bit/mploy)
 
 **Made to empower job seekers worldwide** 🌍
 

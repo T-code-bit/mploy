@@ -150,9 +150,6 @@ export const EmailFooter = ({ recipient }: { recipient?: string }) => (
             <Img src={`${ASSETS}/partner-btl.png`} alt="BTL" width="40" height="40" style={{ borderRadius: '6px' }} />
           </td>
           <td style={{ padding: '0 10px' }}>
-            <Img src={`${ASSETS}/partner-btl.png`} alt="BTL" width="40" height="40" style={{ borderRadius: '6px' }} />
-          </td>
-          <td style={{ padding: '0 10px' }}>
             <Img src={`${ASSETS}/partner-kenya-seal.png`} alt="Republic of Kenya" width="40" height="40" style={{ borderRadius: '6px' }} />
           </td>
           <td style={{ padding: '0 10px' }}>

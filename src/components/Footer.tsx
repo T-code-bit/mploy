@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, Loader2, MapPin, Phone, Mail } from "lucide-react";
 import mployLogo from "@/assets/mploy-logo.png";
-import usEmbassyLogo from "@/assets/partner-us-embassy.png";
+import btlLogo from "@/assets/partner-btl.png";
 import btlLogo from "@/assets/partner-btl.png";
 import kenyaSealLogo from "@/assets/partner-kenya-seal.png";
 import { Button } from "@/components/ui/button";

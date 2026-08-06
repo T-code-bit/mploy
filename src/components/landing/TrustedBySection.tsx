@@ -1,10 +1,8 @@
 import { motion } from "framer-motion";
-import usEmbassyLogo from "@/assets/partner-us-embassy.png";
 import btlLogo from "@/assets/partner-btl.png";
 import kenyaSealLogo from "@/assets/partner-kenya-seal.png";
 
 const partners = [
-  { name: "US Embassy", logo: usEmbassyLogo },
   { name: "Republic of Kenya", logo: kenyaSealLogo },
   { name: "BTL (Be The Leader)", logo: btlLogo },
 ];

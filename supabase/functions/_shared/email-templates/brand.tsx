@@ -147,7 +147,7 @@ export const EmailFooter = ({ recipient }: { recipient?: string }) => (
       <table cellPadding="0" cellSpacing="0" role="presentation" style={{ margin: '0 auto' }}>
         <tr>
           <td style={{ padding: '0 10px' }}>
-            <Img src={`${ASSETS}/partner-us-embassy.png`} alt="U.S. Embassy" width="40" height="40" style={{ borderRadius: '6px' }} />
+            <Img src={`${ASSETS}/partner-btl.png`} alt="BTL" width="40" height="40" style={{ borderRadius: '6px' }} />
           </td>
           <td style={{ padding: '0 10px' }}>
             <Img src={`${ASSETS}/partner-btl.png`} alt="BTL" width="40" height="40" style={{ borderRadius: '6px' }} />

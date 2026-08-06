@@ -120,7 +120,7 @@ export const EmailFooter = ({ recipient }: { recipient?: string }) => (
         {' · '}
         <Link href="https://www.instagram.com/betheleader_org/" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Instagram</Link>
         {' · '}
-        <Link href="https://www.tiktok.com/@usaembassyinnairobikenya" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>TikTok</Link>
+        
       </Text>
     </Section>
 
@@ -146,9 +146,6 @@ export const EmailFooter = ({ recipient }: { recipient?: string }) => (
       </Text>
       <table cellPadding="0" cellSpacing="0" role="presentation" style={{ margin: '0 auto' }}>
         <tr>
-          <td style={{ padding: '0 10px' }}>
-            <Img src={`${ASSETS}/partner-us-embassy.png`} alt="U.S. Embassy" width="40" height="40" style={{ borderRadius: '6px' }} />
-          </td>
           <td style={{ padding: '0 10px' }}>
             <Img src={`${ASSETS}/partner-btl.png`} alt="BTL" width="40" height="40" style={{ borderRadius: '6px' }} />
           </td>

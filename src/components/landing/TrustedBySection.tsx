@@ -1,10 +1,8 @@
 import { motion } from "framer-motion";
-import usEmbassyLogo from "@/assets/partner-us-embassy.png";
 import btlLogo from "@/assets/partner-btl.png";
 import kenyaSealLogo from "@/assets/partner-kenya-seal.png";
 
 const partners = [
-  { name: "US Embassy", logo: usEmbassyLogo },
   { name: "Republic of Kenya", logo: kenyaSealLogo },
   { name: "BTL (Be The Leader)", logo: btlLogo },
 ];
@@ -26,7 +24,7 @@ const TrustedBySection = () => (
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-3 gap-8 items-center max-w-4xl mx-auto">
+      <div className="grid grid-cols-2 gap-8 items-center max-w-2xl mx-auto">
         {partners.map((partner, i) => (
           <motion.div
             key={partner.name}

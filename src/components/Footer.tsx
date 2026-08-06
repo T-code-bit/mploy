@@ -188,8 +188,6 @@ const Footer = () => {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
             <a href="https://www.president.go.ke/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity">
-
-            <a href="https://www.president.go.ke/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 opacity-80 hover:opacity-100 transition-opacity">
               <img src={kenyaSealLogo} alt="Republic of Kenya" className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 object-contain" />
               <div className="hidden sm:block">
                 <span className="block text-sm font-semibold text-foreground leading-tight">Republic of Kenya</span>

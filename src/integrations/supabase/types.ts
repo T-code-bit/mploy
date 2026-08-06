@@ -14,8 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_broadcasts: {
+        Row: {
+          audience: string
+          body: string
+          created_at: string
+          id: string
+          recipient_count: number
+          sender_id: string | null
+          subject: string
+        }
+        Insert: {
+          audience: string
+          body: string
+          created_at?: string
+          id?: string
+          recipient_count?: number
+          sender_id?: string | null
+          subject: string
+        }
+        Update: {
+          audience?: string
+          body?: string
+          created_at?: string
+          id?: string
+          recipient_count?: number
+          sender_id?: string | null
+          subject?: string
+        }
+        Relationships: []
+      }
       applications: {
         Row: {
+          applicant_email: string | null
           applicant_id: string
           availability: string | null
           county: string | null
@@ -40,6 +71,7 @@ export type Database = {
           years_of_experience: string | null
         }
         Insert: {
+          applicant_email?: string | null
           applicant_id: string
           availability?: string | null
           county?: string | null
@@ -64,6 +96,7 @@ export type Database = {
           years_of_experience?: string | null
         }
         Update: {
+          applicant_email?: string | null
           applicant_id?: string
           availability?: string | null
           county?: string | null

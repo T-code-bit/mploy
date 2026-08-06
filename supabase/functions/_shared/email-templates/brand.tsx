@@ -120,7 +120,7 @@ export const EmailFooter = ({ recipient }: { recipient?: string }) => (
         {' · '}
         <Link href="https://www.instagram.com/betheleader_org/" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>Instagram</Link>
         {' · '}
-        <Link href="https://www.tiktok.com/@usaembassyinnairobikenya" style={{ ...linkStyle, margin: '0 8px', fontSize: '13px' }}>TikTok</Link>
+        
       </Text>
     </Section>
 

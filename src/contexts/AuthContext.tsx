@@ -196,12 +196,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [session, refreshSubscription]);
 
   const signOut = async () => {
+    await clerk.signOut().catch(() => undefined);
     await supabase.auth.signOut();
     setProfile(null);
     setUserRole(null);
     setSubscriptionTier("free");
     setSubscriptionEnd(null);
   };
+
 
   return (
     <AuthContext.Provider value={{

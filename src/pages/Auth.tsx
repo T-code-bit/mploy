@@ -353,24 +353,13 @@ const Auth = () => {
                   {loginRole !== "admin" && (
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (!loginEmail) {
-                          toast.error("Enter your email address first");
-                          return;
-                        }
-                        setLoading(true);
-                        const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-                          redirectTo: `${window.location.origin}/reset-password`,
-                        });
-                        if (error) toast.error(error.message);
-                        else toast.success("Password reset link sent! Check your email.");
-                        setLoading(false);
-                      }}
+                      onClick={handleForgotPassword}
                       className="w-full text-center text-sm text-primary hover:underline pt-1"
                     >
                       Forgot your password?
                     </button>
                   )}
+
                 </form>
               </TabsContent>
 

@@ -307,7 +307,65 @@ const Auth = () => {
           </div>
 
           <div className="bg-card rounded-2xl border border-border p-8 shadow-md">
+            {pendingVerification || resetPending ? (
+              <form onSubmit={resetPending ? handleResetPassword : handleVerifyCode} className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-display text-xl font-bold text-foreground">
+                    {resetPending ? "Reset your password" : "Verify your email"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Enter the 6-digit code we sent to{" "}
+                    {resetPending ? cleanEmail(loginEmail) : cleanEmail(signupEmail)}.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="verify-code">Verification Code</Label>
+                  <Input
+                    id="verify-code"
+                    inputMode="numeric"
+                    placeholder="123456"
+                    className="rounded-xl h-11 tracking-[0.4em] text-center"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    required
+                  />
+                </div>
+                {resetPending && (
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      placeholder="••••••••"
+                      className="rounded-xl h-11"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold"
+                  disabled={loading}
+                >
+                  {loading ? "Please wait..." : resetPending ? "Update Password" : "Verify & Continue"}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingVerification(false);
+                    setResetPending(false);
+                    setVerificationCode("");
+                  }}
+                  className="w-full text-center text-sm text-muted-foreground hover:underline"
+                >
+                  Back to sign in
+                </button>
+              </form>
+            ) : (
             <Tabs defaultValue="login" className="space-y-6">
+
               <TabsList className="grid grid-cols-2 w-full rounded-xl h-11">
                 <TabsTrigger value="login" className="rounded-lg">Sign In</TabsTrigger>
                 <TabsTrigger value="signup" className="rounded-lg">Sign Up</TabsTrigger>

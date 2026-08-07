@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
+import { useSignIn, useSignUp, useClerk } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import mployLogo from "@/assets/mploy-logo.png";
 import usePageTitle from "@/hooks/usePageTitle";
 
 const EMPLOYER_CODE = "6490";
+
 
 const Auth = () => {
   usePageTitle("Sign In");

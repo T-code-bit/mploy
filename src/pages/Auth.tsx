@@ -23,6 +23,11 @@ const Auth = () => {
   usePageTitle("Sign In");
   const navigate = useNavigate();
   const { user, userRole, loading: authLoading } = useAuth();
+  const clerk = useClerk();
+  const { isLoaded: signInLoaded, signIn, setActive: setSignInActive } = useSignIn();
+  const { isLoaded: signUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");

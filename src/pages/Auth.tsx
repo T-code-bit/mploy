@@ -225,6 +225,51 @@ const Auth = () => {
     setLoading(false);
   };
 
+  const handleForgotPassword = async () => {
+    if (!loginEmail) {
+      toast.error("Enter your email address first");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!signInLoaded || !signIn) throw new Error("Sign in is still loading.");
+      await signIn.create({ strategy: "reset_password_email_code", identifier: cleanEmail(loginEmail) });
+      setResetPending(true);
+      toast.success("We sent a password reset code to your email.");
+    } catch (err: any) {
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
+    }
+    setLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!signInLoaded || !signIn) throw new Error("Sign in is still loading.");
+      const attempt = await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code: verificationCode.trim(),
+        password: newPassword,
+      });
+      if (attempt.status !== "complete") throw new Error("Could not reset your password. Please try again.");
+      await setSignInActive({ session: attempt.createdSessionId });
+      const data = await bridgeClerkSession({});
+      setResetPending(false);
+      setVerificationCode("");
+      setNewPassword("");
+      toast.success("Password updated. You are signed in.");
+      navigate(routeForRole(data.role));
+    } catch (err: any) {
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
+    }
+    setLoading(false);
+  };
+
 
   return (
     <div className="min-h-screen bg-background flex">

@@ -93,6 +93,18 @@ const Auth = () => {
     }
   }, [authLoading, navigate, user, userRole]);
 
+  // Exchange a verified Clerk session for a platform session
+  const bridgeClerkSession = async (opts?: { fullName?: string; role?: string }) => {
+    const token = await clerk.session?.getToken();
+    if (!token) throw new Error("Could not read your Clerk session. Please try again.");
+    const { data, error } = await supabase.functions.invoke("clerk-session", {
+      body: { token, fullName: opts?.fullName, role: opts?.role },
+    });
+    if (error || data?.error) throw new Error(data?.error || error?.message || "Could not link your account");
+    await setSessionFromResponse(data);
+    return data;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -124,32 +136,32 @@ const Auth = () => {
     }
 
     try {
+      if (!signInLoaded || !signIn) throw new Error("Sign in is still loading, please wait a moment.");
       clearLocalSupabaseSession();
-      const { data, error } = await supabase.functions.invoke("account-auth", {
-        body: {
-          action: "login",
-          role: loginRole,
-          employerCode: loginEmployerCode,
-        email: cleanEmail(loginEmail),
-        password: loginPassword,
-        },
-      });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Unable to sign in");
+      await clerk.signOut().catch(() => undefined);
 
-      await setSessionFromResponse(data);
-      const displayName = displayNameFor(data.user);
-      toast.success(`Welcome, ${displayName}!`);
+      const attempt = await signIn.create({
+        identifier: cleanEmail(loginEmail),
+        password: loginPassword,
+      });
+      if (attempt.status !== "complete") {
+        throw new Error("Additional verification is required. Please check your email.");
+      }
+      await setSignInActive({ session: attempt.createdSessionId });
+
+      const data = await bridgeClerkSession({ role: loginRole });
+      toast.success(`Welcome, ${displayNameFor(data.user)}!`);
       navigate(routeForRole(data.role || loginRole));
     } catch (err: any) {
-      toast.error(friendlyAuthError(err.message));
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
     }
     setLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signupPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (signupPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
     if (signupRole === "employer" && signupEmployerCode.trim() !== EMPLOYER_CODE) {
@@ -159,30 +171,55 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      if (!signUpLoaded || !signUp) throw new Error("Sign up is still loading, please wait a moment.");
       clearLocalSupabaseSession();
-      const email = cleanEmail(signupEmail);
+      await clerk.signOut().catch(() => undefined);
+
       const fullName = signupName.trim();
+      const [firstName, ...rest] = fullName.split(" ");
 
-      const { data, error } = await supabase.functions.invoke("account-auth", {
-        body: {
-          action: "signup",
-          email,
-          password: signupPassword,
-          fullName,
-          role: signupRole,
-          employerCode: signupEmployerCode,
-        },
+      const attempt = await signUp.create({
+        emailAddress: cleanEmail(signupEmail),
+        password: signupPassword,
+        firstName: firstName || undefined,
+        lastName: rest.join(" ") || undefined,
       });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Unable to create account");
 
-      await setSessionFromResponse(data);
-      toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
-      navigate(routeForRole(data.role || signupRole));
+      if (attempt.status === "complete") {
+        await setSignUpActive({ session: attempt.createdSessionId });
+        const data = await bridgeClerkSession({ fullName, role: signupRole });
+        toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+        navigate(routeForRole(data.role || signupRole));
+      } else {
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        setPendingVerification(true);
+        toast.success("We sent a verification code to your email.");
+      }
     } catch (err: any) {
-      toast.error(friendlyAuthError(err.message));
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
     }
     setLoading(false);
   };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (!signUpLoaded || !signUp) throw new Error("Sign up is still loading.");
+      const attempt = await signUp.attemptEmailAddressVerification({ code: verificationCode.trim() });
+      if (attempt.status !== "complete") throw new Error("That code was not accepted. Please try again.");
+      await setSignUpActive({ session: attempt.createdSessionId });
+      const fullName = signupName.trim();
+      const data = await bridgeClerkSession({ fullName, role: signupRole });
+      setPendingVerification(false);
+      toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+      navigate(routeForRole(data.role || signupRole));
+    } catch (err: any) {
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
+    }
+    setLoading(false);
+  };
+
 
   return (
     <div className="min-h-screen bg-background flex">

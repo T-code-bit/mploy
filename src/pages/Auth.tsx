@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
+import { useSignIn, useSignUp, useClerk } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -17,10 +18,18 @@ import usePageTitle from "@/hooks/usePageTitle";
 
 const EMPLOYER_CODE = "6490";
 
+
 const Auth = () => {
   usePageTitle("Sign In");
   const navigate = useNavigate();
   const { user, userRole, loading: authLoading } = useAuth();
+  const clerk = useClerk();
+  const { isLoaded: signInLoaded, signIn, setActive: setSignInActive } = useSignIn();
+  const { isLoaded: signUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [resetPending, setResetPending] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
@@ -91,6 +100,18 @@ const Auth = () => {
     }
   }, [authLoading, navigate, user, userRole]);
 
+  // Exchange a verified Clerk session for a platform session
+  const bridgeClerkSession = async (opts?: { fullName?: string; role?: string }) => {
+    const token = await clerk.session?.getToken();
+    if (!token) throw new Error("Could not read your Clerk session. Please try again.");
+    const { data, error } = await supabase.functions.invoke("clerk-session", {
+      body: { token, fullName: opts?.fullName, role: opts?.role },
+    });
+    if (error || data?.error) throw new Error(data?.error || error?.message || "Could not link your account");
+    await setSessionFromResponse(data);
+    return data;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -122,32 +143,32 @@ const Auth = () => {
     }
 
     try {
+      if (!signInLoaded || !signIn) throw new Error("Sign in is still loading, please wait a moment.");
       clearLocalSupabaseSession();
-      const { data, error } = await supabase.functions.invoke("account-auth", {
-        body: {
-          action: "login",
-          role: loginRole,
-          employerCode: loginEmployerCode,
-        email: cleanEmail(loginEmail),
-        password: loginPassword,
-        },
-      });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Unable to sign in");
+      await clerk.signOut().catch(() => undefined);
 
-      await setSessionFromResponse(data);
-      const displayName = displayNameFor(data.user);
-      toast.success(`Welcome, ${displayName}!`);
+      const attempt = await signIn.create({
+        identifier: cleanEmail(loginEmail),
+        password: loginPassword,
+      });
+      if (attempt.status !== "complete") {
+        throw new Error("Additional verification is required. Please check your email.");
+      }
+      await setSignInActive({ session: attempt.createdSessionId });
+
+      const data = await bridgeClerkSession({ role: loginRole });
+      toast.success(`Welcome, ${displayNameFor(data.user)}!`);
       navigate(routeForRole(data.role || loginRole));
     } catch (err: any) {
-      toast.error(friendlyAuthError(err.message));
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
     }
     setLoading(false);
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (signupPassword.length < 6) {
-      toast.error("Password must be at least 6 characters");
+    if (signupPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
       return;
     }
     if (signupRole === "employer" && signupEmployerCode.trim() !== EMPLOYER_CODE) {
@@ -157,30 +178,100 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      if (!signUpLoaded || !signUp) throw new Error("Sign up is still loading, please wait a moment.");
       clearLocalSupabaseSession();
-      const email = cleanEmail(signupEmail);
+      await clerk.signOut().catch(() => undefined);
+
       const fullName = signupName.trim();
+      const [firstName, ...rest] = fullName.split(" ");
 
-      const { data, error } = await supabase.functions.invoke("account-auth", {
-        body: {
-          action: "signup",
-          email,
-          password: signupPassword,
-          fullName,
-          role: signupRole,
-          employerCode: signupEmployerCode,
-        },
+      const attempt = await signUp.create({
+        emailAddress: cleanEmail(signupEmail),
+        password: signupPassword,
+        firstName: firstName || undefined,
+        lastName: rest.join(" ") || undefined,
       });
-      if (error || data?.error) throw new Error(data?.error || error?.message || "Unable to create account");
 
-      await setSessionFromResponse(data);
-      toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
-      navigate(routeForRole(data.role || signupRole));
+      if (attempt.status === "complete") {
+        await setSignUpActive({ session: attempt.createdSessionId });
+        const data = await bridgeClerkSession({ fullName, role: signupRole });
+        toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+        navigate(routeForRole(data.role || signupRole));
+      } else {
+        await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+        setPendingVerification(true);
+        toast.success("We sent a verification code to your email.");
+      }
     } catch (err: any) {
-      toast.error(friendlyAuthError(err.message));
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
     }
     setLoading(false);
   };
+
+  const handleVerifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      if (!signUpLoaded || !signUp) throw new Error("Sign up is still loading.");
+      const attempt = await signUp.attemptEmailAddressVerification({ code: verificationCode.trim() });
+      if (attempt.status !== "complete") throw new Error("That code was not accepted. Please try again.");
+      await setSignUpActive({ session: attempt.createdSessionId });
+      const fullName = signupName.trim();
+      const data = await bridgeClerkSession({ fullName, role: signupRole });
+      setPendingVerification(false);
+      toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+      navigate(routeForRole(data.role || signupRole));
+    } catch (err: any) {
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
+    }
+    setLoading(false);
+  };
+
+  const handleForgotPassword = async () => {
+    if (!loginEmail) {
+      toast.error("Enter your email address first");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!signInLoaded || !signIn) throw new Error("Sign in is still loading.");
+      await signIn.create({ strategy: "reset_password_email_code", identifier: cleanEmail(loginEmail) });
+      setResetPending(true);
+      toast.success("We sent a password reset code to your email.");
+    } catch (err: any) {
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
+    }
+    setLoading(false);
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+    setLoading(true);
+    try {
+      if (!signInLoaded || !signIn) throw new Error("Sign in is still loading.");
+      const attempt = await signIn.attemptFirstFactor({
+        strategy: "reset_password_email_code",
+        code: verificationCode.trim(),
+        password: newPassword,
+      });
+      if (attempt.status !== "complete") throw new Error("Could not reset your password. Please try again.");
+      await setSignInActive({ session: attempt.createdSessionId });
+      const data = await bridgeClerkSession({});
+      setResetPending(false);
+      setVerificationCode("");
+      setNewPassword("");
+      toast.success("Password updated. You are signed in.");
+      navigate(routeForRole(data.role));
+    } catch (err: any) {
+      toast.error(friendlyAuthError(err?.errors?.[0]?.longMessage || err?.message));
+    }
+    setLoading(false);
+  };
+
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -216,7 +307,65 @@ const Auth = () => {
           </div>
 
           <div className="bg-card rounded-2xl border border-border p-8 shadow-md">
+            {pendingVerification || resetPending ? (
+              <form onSubmit={resetPending ? handleResetPassword : handleVerifyCode} className="space-y-4">
+                <div className="space-y-1">
+                  <h3 className="font-display text-xl font-bold text-foreground">
+                    {resetPending ? "Reset your password" : "Verify your email"}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Enter the 6-digit code we sent to{" "}
+                    {resetPending ? cleanEmail(loginEmail) : cleanEmail(signupEmail)}.
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="verify-code">Verification Code</Label>
+                  <Input
+                    id="verify-code"
+                    inputMode="numeric"
+                    placeholder="123456"
+                    className="rounded-xl h-11 tracking-[0.4em] text-center"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    required
+                  />
+                </div>
+                {resetPending && (
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">New Password</Label>
+                    <Input
+                      id="new-password"
+                      type="password"
+                      placeholder="••••••••"
+                      className="rounded-xl h-11"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                )}
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold"
+                  disabled={loading}
+                >
+                  {loading ? "Please wait..." : resetPending ? "Update Password" : "Verify & Continue"}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPendingVerification(false);
+                    setResetPending(false);
+                    setVerificationCode("");
+                  }}
+                  className="w-full text-center text-sm text-muted-foreground hover:underline"
+                >
+                  Back to sign in
+                </button>
+              </form>
+            ) : (
             <Tabs defaultValue="login" className="space-y-6">
+
               <TabsList className="grid grid-cols-2 w-full rounded-xl h-11">
                 <TabsTrigger value="login" className="rounded-lg">Sign In</TabsTrigger>
                 <TabsTrigger value="signup" className="rounded-lg">Sign Up</TabsTrigger>
@@ -309,24 +458,13 @@ const Auth = () => {
                   {loginRole !== "admin" && (
                     <button
                       type="button"
-                      onClick={async () => {
-                        if (!loginEmail) {
-                          toast.error("Enter your email address first");
-                          return;
-                        }
-                        setLoading(true);
-                        const { error } = await supabase.auth.resetPasswordForEmail(loginEmail, {
-                          redirectTo: `${window.location.origin}/reset-password`,
-                        });
-                        if (error) toast.error(error.message);
-                        else toast.success("Password reset link sent! Check your email.");
-                        setLoading(false);
-                      }}
+                      onClick={handleForgotPassword}
                       className="w-full text-center text-sm text-primary hover:underline pt-1"
                     >
                       Forgot your password?
                     </button>
                   )}
+
                 </form>
               </TabsContent>
 
@@ -398,7 +536,9 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
+            )}
           </div>
+
         </motion.div>
       </div>
     </div>

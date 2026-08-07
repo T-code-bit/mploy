@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from "react";
 import { User, Session } from "@supabase/supabase-js";
+import { useClerk } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionTier } from "@/lib/subscription";
 
@@ -69,6 +70,7 @@ const fallbackProfile = (authUser: User): Profile => ({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const clerk = useClerk();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -196,12 +198,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [session, refreshSubscription]);
 
   const signOut = async () => {
+    await clerk.signOut().catch(() => undefined);
     await supabase.auth.signOut();
     setProfile(null);
     setUserRole(null);
     setSubscriptionTier("free");
     setSubscriptionEnd(null);
   };
+
 
   return (
     <AuthContext.Provider value={{

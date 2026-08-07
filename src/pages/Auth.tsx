@@ -27,6 +27,8 @@ const Auth = () => {
   const { isLoaded: signInLoaded, signIn, setActive: setSignInActive } = useSignIn();
   const { isLoaded: signUpLoaded, signUp, setActive: setSignUpActive } = useSignUp();
   const [pendingVerification, setPendingVerification] = useState(false);
+  const [resetPending, setResetPending] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState("");

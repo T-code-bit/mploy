@@ -167,33 +167,8 @@ const Auth = () => {
       return;
     }
 
-    if (!clerkEnabled) {
-      try {
-        clearLocalSupabaseSession();
-        const fullName = signupName.trim();
-        const { data, error } = await supabase.auth.signUp({
-          email: cleanEmail(signupEmail),
-          password: signupPassword,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName, role: signupRole },
-          },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          toast.success("Account created. Check your email to confirm, then sign in.");
-        } else {
-          toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
-          navigate(routeForRole(signupRole));
-        }
-      } catch (err: any) {
-        toast.error(friendlyAuthError(err?.message));
-      }
-      setLoading(false);
-      return;
-    }
-
     try {
+
 
 
       if (!signInLoaded || !signIn) throw new Error("Sign in is still loading, please wait a moment.");

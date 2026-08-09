@@ -18,6 +18,13 @@ import usePageTitle from "@/hooks/usePageTitle";
 
 const EMPLOYER_CODE = "6490";
 
+// The Clerk production key is locked to the go-mploy.com domain. Everywhere else
+// (preview, lovable.app, local) we fall back to native platform auth so sign in
+// and sign up always work.
+const clerkEnabled =
+  typeof window !== "undefined" && /(^|\.)go-mploy\.com$/.test(window.location.hostname);
+
+
 
 const Auth = () => {
   usePageTitle("Sign In");
@@ -142,7 +149,28 @@ const Auth = () => {
       return;
     }
 
+    if (!clerkEnabled) {
+      try {
+        clearLocalSupabaseSession();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail(loginEmail),
+          password: loginPassword,
+        });
+        if (error) throw error;
+        const role = roleFromMetadata(data.user);
+        toast.success(`Welcome, ${displayNameFor(data.user)}!`);
+        navigate(routeForRole(role));
+      } catch (err: any) {
+        toast.error(friendlyAuthError(err?.message));
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
+
+
+
       if (!signInLoaded || !signIn) throw new Error("Sign in is still loading, please wait a moment.");
       clearLocalSupabaseSession();
       await clerk.signOut().catch(() => undefined);
@@ -177,7 +205,34 @@ const Auth = () => {
     }
     setLoading(true);
 
+    if (!clerkEnabled) {
+      try {
+        clearLocalSupabaseSession();
+        const fullName = signupName.trim();
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail(signupEmail),
+          password: signupPassword,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: { full_name: fullName, role: signupRole },
+          },
+        });
+        if (error) throw error;
+        if (!data.session) {
+          toast.success("Account created. Check your email to confirm, then sign in.");
+        } else {
+          toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+          navigate(routeForRole(signupRole));
+        }
+      } catch (err: any) {
+        toast.error(friendlyAuthError(err?.message));
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
+
       if (!signUpLoaded || !signUp) throw new Error("Sign up is still loading, please wait a moment.");
       clearLocalSupabaseSession();
       await clerk.signOut().catch(() => undefined);
@@ -233,7 +288,23 @@ const Auth = () => {
       return;
     }
     setLoading(true);
+
+    if (!clerkEnabled) {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail(loginEmail), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Password reset link sent. Check your email.");
+      } catch (err: any) {
+        toast.error(friendlyAuthError(err?.message));
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
+
       if (!signInLoaded || !signIn) throw new Error("Sign in is still loading.");
       await signIn.create({ strategy: "reset_password_email_code", identifier: cleanEmail(loginEmail) });
       setResetPending(true);

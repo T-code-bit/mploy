@@ -8,8 +8,8 @@ const corsHeaders = {
 
 // Tier → amount in KES kobo (Paystack uses subunits)
 const TIERS: Record<string, { name: string; amount: number; interval: "monthly" }> = {
-  basic: { name: "M-Ploy Basic", amount: 99900, interval: "monthly" },     // KES 999
-  premium: { name: "M-Ploy Premium", amount: 249900, interval: "monthly" }, // KES 2,499
+  basic: { name: "M-Ploy Basic", amount: 1000, interval: "monthly" },   // KES 10
+  premium: { name: "M-Ploy Premium", amount: 1500, interval: "monthly" }, // KES 15
 };
 
 serve(async (req) => {
@@ -39,7 +39,7 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://mploy.lovable.app";
 
     // Find or create plan on Paystack (plan_code is required for recurring monthly)
-    const planKey = `mploy_${tier}_monthly`;
+    const planKey = `mploy_${tier}_monthly_${t.amount}`;
     let planCode: string | null = null;
 
     const plansRes = await fetch(`https://api.paystack.co/plan?per_page=100`, {

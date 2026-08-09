@@ -288,7 +288,23 @@ const Auth = () => {
       return;
     }
     setLoading(true);
+
+    if (!clerkEnabled) {
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail(loginEmail), {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast.success("Password reset link sent. Check your email.");
+      } catch (err: any) {
+        toast.error(friendlyAuthError(err?.message));
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
+
       if (!signInLoaded || !signIn) throw new Error("Sign in is still loading.");
       await signIn.create({ strategy: "reset_password_email_code", identifier: cleanEmail(loginEmail) });
       setResetPending(true);

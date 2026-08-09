@@ -29,7 +29,7 @@ import usePageTitle from "@/hooks/usePageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import mployLogo from "@/assets/mploy-logo.png";
 
-const TIER_PRICE: Record<string, number> = { basic: 999, premium: 2499, free: 0 };
+const TIER_PRICE: Record<string, number> = { basic: 10, premium: 15, free: 0 };
 
 type View =
   | "overview" | "jobs" | "applications" | "users"

@@ -39,7 +39,7 @@ serve(async (req) => {
     const origin = req.headers.get("origin") || "https://mploy.lovable.app";
 
     // Find or create plan on Paystack (plan_code is required for recurring monthly)
-    const planKey = `mploy_${tier}_monthly`;
+    const planKey = `mploy_${tier}_monthly_${t.amount}`;
     let planCode: string | null = null;
 
     const plansRes = await fetch(`https://api.paystack.co/plan?per_page=100`, {

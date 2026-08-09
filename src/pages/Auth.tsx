@@ -18,6 +18,13 @@ import usePageTitle from "@/hooks/usePageTitle";
 
 const EMPLOYER_CODE = "6490";
 
+// The Clerk production key is locked to the go-mploy.com domain. Everywhere else
+// (preview, lovable.app, local) we fall back to native platform auth so sign in
+// and sign up always work.
+const clerkEnabled =
+  typeof window !== "undefined" && /(^|\.)go-mploy\.com$/.test(window.location.hostname);
+
+
 
 const Auth = () => {
   usePageTitle("Sign In");

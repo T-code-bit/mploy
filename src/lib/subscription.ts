@@ -23,7 +23,7 @@ export const SUBSCRIPTION_TIERS = {
   },
   basic: {
     name: "Basic",
-    price: "KES 999",
+    price: "KES 10",
     period: "/month",
     description: "Full access for active job seekers",
     features: [
@@ -45,7 +45,7 @@ export const SUBSCRIPTION_TIERS = {
   },
   premium: {
     name: "Premium",
-    price: "KES 2,499",
+    price: "KES 15",
     period: "/month",
     description: "Full power for serious job seekers",
     features: [

@@ -8,8 +8,8 @@ const corsHeaders = {
 
 // Tier → amount in KES kobo (Paystack uses subunits)
 const TIERS: Record<string, { name: string; amount: number; interval: "monthly" }> = {
-  basic: { name: "M-Ploy Basic", amount: 99900, interval: "monthly" },     // KES 999
-  premium: { name: "M-Ploy Premium", amount: 249900, interval: "monthly" }, // KES 2,499
+  basic: { name: "M-Ploy Basic", amount: 1000, interval: "monthly" },   // KES 10
+  premium: { name: "M-Ploy Premium", amount: 1500, interval: "monthly" }, // KES 15
 };
 
 serve(async (req) => {

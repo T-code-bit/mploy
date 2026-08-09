@@ -581,6 +581,7 @@ const Auth = () => {
                     </button>
                   )}
 
+                  {loginRole !== "admin" && <GoogleButton label="Continue with Google" />}
                 </form>
               </TabsContent>
 
@@ -649,6 +650,8 @@ const Auth = () => {
                     {loading ? "Creating account..." : "Create Account"}
                     {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
                   </Button>
+
+                  {signupRole !== "employer" && <GoogleButton label="Sign up with Google" />}
                 </form>
               </TabsContent>
             </Tabs>

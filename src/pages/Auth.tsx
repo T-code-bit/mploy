@@ -149,7 +149,26 @@ const Auth = () => {
       return;
     }
 
+    if (!clerkEnabled) {
+      try {
+        clearLocalSupabaseSession();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: cleanEmail(loginEmail),
+          password: loginPassword,
+        });
+        if (error) throw error;
+        const role = roleFromMetadata(data.user);
+        toast.success(`Welcome, ${displayNameFor(data.user)}!`);
+        navigate(routeForRole(role));
+      } catch (err: any) {
+        toast.error(friendlyAuthError(err?.message));
+      }
+      setLoading(false);
+      return;
+    }
+
     try {
+
       if (!signInLoaded || !signIn) throw new Error("Sign in is still loading, please wait a moment.");
       clearLocalSupabaseSession();
       await clerk.signOut().catch(() => undefined);

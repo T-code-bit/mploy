@@ -9,7 +9,8 @@ import summitPoster from "@/assets/aes-summit-2026.jpg";
 export const AES_END = new Date("2026-10-03T23:59:59+03:00");
 export const AES_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfWUxhefGqrCHMOwMrHQHgS2KLgdDP-HBccjv7_Rm_biHTXNQ/viewform";
-export const BOOK_PHONE = "0793264418";
+export const BOOK_PHONE = "+254 717 627632";
+export const BOOK_TEL = "+254717627632";
 
 const isSummitLive = () => Date.now() <= AES_END.getTime();
 

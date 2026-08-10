@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { X, Send, Loader2 } from "lucide-react";
+import { X, Send, Loader2, Paperclip, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,7 +34,29 @@ const RobotHead = ({ open }: { open: boolean }) => (
   </div>
 );
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Attachment = { name: string; mime: string; dataUrl: string };
+type Msg = { role: "user" | "assistant"; content: string; attachments?: Attachment[] };
+
+const toApiContent = (m: Msg) => {
+  if (!m.attachments?.length) return m.content;
+  const blocks: any[] = [{ type: "text", text: m.content || "Please review the attached file(s)." }];
+  for (const a of m.attachments) {
+    if (a.mime.startsWith("image/")) {
+      blocks.push({ type: "image_url", image_url: { url: a.dataUrl } });
+    } else {
+      blocks.push({ type: "file", file: { filename: a.name, file_data: a.dataUrl } });
+    }
+  }
+  return blocks;
+};
+
+const readFile = (file: File) =>
+  new Promise<Attachment>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({ name: file.name, mime: file.type || "application/octet-stream", dataUrl: String(reader.result) });
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 
 // Derive endpoint + key from the configured Supabase client so this works
 // even when build-time env vars are missing (uses the same fallbacks).
@@ -56,6 +78,8 @@ const CareerCoachChatbot = () => {
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -67,10 +91,11 @@ const CareerCoachChatbot = () => {
 
   const send = async () => {
     const text = input.trim();
-    if (!text || loading) return;
-    const next = [...messages, { role: "user" as const, content: text }];
+    if ((!text && attachments.length === 0) || loading) return;
+    const next = [...messages, { role: "user" as const, content: text, attachments }];
     setMessages(next);
     setInput("");
+    setAttachments([]);
     setLoading(true);
 
     try {
@@ -82,7 +107,7 @@ const CareerCoachChatbot = () => {
           Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
-          messages: next.map((m) => ({ role: m.role, content: m.content })),
+          messages: next.map((m) => ({ role: m.role, content: toApiContent(m) })),
         }),
       });
 
@@ -200,7 +225,18 @@ const CareerCoachChatbot = () => {
                         <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
                       </div>
                     ) : (
-                      m.content
+                      <div className="space-y-2">
+                        {m.attachments?.map((a, ai) =>
+                          a.mime.startsWith("image/") ? (
+                            <img key={ai} src={a.dataUrl} alt={a.name} className="rounded-lg max-h-40 object-cover" />
+                          ) : (
+                            <div key={ai} className="flex items-center gap-1.5 text-xs opacity-90">
+                              <FileText className="h-3.5 w-3.5" /> {a.name}
+                            </div>
+                          )
+                        )}
+                        {m.content && <div className="whitespace-pre-wrap">{m.content}</div>}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -219,13 +255,55 @@ const CareerCoachChatbot = () => {
                 e.preventDefault();
                 send();
               }}
-              className="p-3 border-t border-border bg-card flex gap-2"
+              className="p-3 border-t border-border bg-card flex flex-col gap-2"
             >
+              {attachments.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {attachments.map((a, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 text-[11px] bg-muted rounded-full px-2 py-1">
+                      <FileText className="h-3 w-3" />
+                      <span className="max-w-[120px] truncate">{a.name}</span>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${a.name}`}
+                        onClick={() => setAttachments((prev) => prev.filter((_, idx) => idx !== i))}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx,.txt"
+                className="hidden"
+                onChange={async (e) => {
+                  const files = Array.from(e.target.files || []);
+                  const parsed = await Promise.all(files.map(readFile));
+                  setAttachments((prev) => [...prev, ...parsed]);
+                  e.target.value = "";
+                }}
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                className="rounded-full shrink-0"
+                aria-label="Attach image or document"
+                onClick={() => fileRef.current?.click()}
+                disabled={loading}
+              >
+                <Paperclip className="h-4 w-4" />
+              </Button>
               <Input
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me anything…"
+                placeholder="Ask me anything or attach a CV…"
                 className="rounded-full"
                 disabled={loading}
               />
@@ -233,10 +311,11 @@ const CareerCoachChatbot = () => {
                 type="submit"
                 size="icon"
                 className="rounded-full bg-gradient-primary text-primary-foreground shrink-0"
-                disabled={loading || !input.trim()}
+                disabled={loading || (!input.trim() && attachments.length === 0)}
               >
                 <Send className="h-4 w-4" />
               </Button>
+              </div>
             </form>
           </motion.div>
         )}

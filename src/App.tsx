@@ -25,6 +25,7 @@ import CookieConsent from "./components/CookieConsent";
 import BackToTop from "./components/BackToTop";
 import ScrollToTop from "./components/ScrollToTop";
 import CareerCoachChatbot from "./components/CareerCoachChatbot";
+import PromoBanners from "./components/PromoBanners";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
           <CookieConsent />
           <BackToTop />
           <CareerCoachChatbot />
+          <PromoBanners />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>

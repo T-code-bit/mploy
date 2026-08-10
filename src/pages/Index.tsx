@@ -12,6 +12,7 @@ import TestimonialsSection from "@/components/landing/TestimonialsSection";
 import PricingSection from "@/components/landing/PricingSection";
 import ContactSection from "@/components/landing/ContactSection";
 import CTASection from "@/components/landing/CTASection";
+import { BookStrip } from "@/components/PromoBanners";
 import usePageTitle from "@/hooks/usePageTitle";
 
 const Index = () => {
@@ -21,6 +22,7 @@ const Index = () => {
     <Navbar />
     <HeroSection />
     <TrustedBySection />
+    <BookStrip />
     <ProblemSection />
     <FeaturesSection />
     <VideoShowcaseSection />

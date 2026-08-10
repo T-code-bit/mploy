@@ -1,147 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
-
-  <!-- Core Landing Page -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://go-mploy.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
-
-  <!-- Verified Vault / Job Openings (Checked Daily) -->
   <url>
     <loc>https://go-mploy.com/jobs</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://go-mploy.com/jobs/categories</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- CV Builder & ATS Architect Tools -->
-  <url>
     <loc>https://go-mploy.com/cv-builder</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://go-mploy.com/cv-builder/templates</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/cv-builder/ats-check</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- Ready-to-Work Academy & Courses -->
-  <url>
     <loc>https://go-mploy.com/academy</loc>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/academy/courses</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/academy/verify</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Employer Services & Talent Pool -->
-  <url>
-    <loc>https://go-mploy.com/employers</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/employers/post-job</loc>
-    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
-  <url>
-    <loc>https://go-mploy.com/employers/talent-pool</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Pricing, Plans & Subscriptions -->
-  <url>
-    <loc>https://go-mploy.com/pricing</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <!-- Authentication Flows -->
-  <url>
-    <loc>https://go-mploy.com/auth/login</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/auth/register</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/auth/forgot-password</loc>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <!-- Job Seeker User Account & Dashboards -->
-  <url>
-    <loc>https://go-mploy.com/dashboard</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/dashboard/applications</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/dashboard/saved-jobs</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/dashboard/profile</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-
-  <!-- Admin & Management Console -->
-  <url>
-    <loc>https://go-mploy.com/admin</loc>
-    <changefreq>daily</changefreq>
-    <priority>0.4</priority>
-  </url>
-
-  <!-- Company, Team & Leadership -->
   <url>
     <loc>https://go-mploy.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/team</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://go-mploy.com/team/leadership</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://go-mploy.com/reviews</loc>
@@ -149,12 +31,10 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://go-mploy.com/contact</loc>
+    <loc>https://go-mploy.com/auth</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
-
-  <!-- Legal & Policy Pages -->
   <url>
     <loc>https://go-mploy.com/privacy</loc>
     <changefreq>yearly</changefreq>
@@ -170,5 +50,4 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
-
 </urlset>

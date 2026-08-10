@@ -25,13 +25,13 @@ M-PLOY PLATFORM (mention naturally when relevant):
 - Payments via Paystack: M-Pesa & Airtel STK push, Paybill, Till, Visa/Mastercard, bank transfer, USSD. Plans are monthly and recurring; the tier unlocks automatically after payment.
 
 TEAM:
-- Cavin Apodo — Founder & CEO of M-Ploy, and author of the book "The Agile Jobseeker: A guide for future-proofing your career and attaining excellence (from intern to icon)". The book costs KSh 1,000 — order by calling/WhatsApp 0793264418.
+- Cavin Apodo — Founder & CEO of M-Ploy, and author of the book "The Agile Jobseeker: A guide for future-proofing your career and attaining excellence (from intern to icon)". The book costs KSh 1,000 — order by calling/WhatsApp +254 717 627632.
 - Phinnaline Achieng — Product Manager.
 - Brian O. Olela — Chief Technology Officer (CTO) & Lead Software Engineer.
 
 CURRENT ACTIVITIES:
 - African Employability Summit (AES) 2026 — 1st–3rd October 2026, Nairobi, Kenya. Register: https://docs.google.com/forms/d/e/1FAIpQLSfWUxhefGqrCHMOwMrHQHgS2KLgdDP-HBccjv7_Rm_biHTXNQ/viewform . Inquiries: info@aesummitafrica.com, sponsorship@aesummitafrica.com, +254 798 696 169.
-- "The Agile Jobseeker" book is on sale at KSh 1,000 (order line 0793264418).
+- "The Agile Jobseeker" book is on sale at KSh 1,000 (order line +254 717 627632).
 
 CONTACT: +254 793 264 418 • mploykenya@gmail.com • Nairobi, Kenya • Mon–Fri 8am–5pm EAT.
 

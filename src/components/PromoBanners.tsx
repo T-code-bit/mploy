@@ -72,7 +72,7 @@ const PromoBanners = () => {
                 </p>
                 <p className="mt-3 text-xl font-extrabold text-primary">KSh 1,000</p>
                 <Button asChild className="mt-3 w-full rounded-full bg-gradient-primary text-primary-foreground">
-                  <a href={`tel:+254${BOOK_PHONE.slice(1)}`}>
+                  <a href={`tel:${BOOK_TEL}`}>
                     <Phone className="h-4 w-4" /> Order: {BOOK_PHONE}
                   </a>
                 </Button>
@@ -124,7 +124,7 @@ const PromoBanners = () => {
 export const BookStrip = () => (
   <div className="w-full bg-gradient-primary text-primary-foreground text-center text-xs sm:text-sm py-2 px-3">
     <span className="font-semibold">📘 "The Agile Jobseeker" by Cavin O. Apodo — KSh 1,000.</span>{" "}
-    <a href={`tel:+254${BOOK_PHONE.slice(1)}`} className="underline underline-offset-2 font-semibold">
+    <a href={`tel:${BOOK_TEL}`} className="underline underline-offset-2 font-semibold">
       Order on {BOOK_PHONE}
     </a>
   </div>

@@ -347,12 +347,30 @@ const Auth = () => {
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
-      const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: window.location.origin,
-        extraParams: { prompt: "select_account" },
-      });
-      if (result.error) throw result.error;
-      if (result.redirected) return;
+      // The Lovable OAuth broker (/~oauth/*) only exists on Lovable-served origins.
+      // On externally hosted domains it 404s, so fall back to direct Supabase OAuth.
+      const host = window.location.hostname;
+      const brokerAvailable = host.endsWith(".lovable.app") || host === "localhost" || host === "127.0.0.1";
+
+      if (brokerAvailable) {
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+          extraParams: { prompt: "select_account" },
+        });
+        if (result.error) throw result.error;
+        if (result.redirected) return;
+      } else {
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: "google",
+          options: {
+            redirectTo: `${window.location.origin}/auth`,
+            queryParams: { prompt: "select_account" },
+          },
+        });
+        if (error) throw error;
+        return; // full-page redirect to Google
+      }
+
       const { data } = await supabase.auth.getUser();
       toast.success(`Welcome, ${displayNameFor(data.user)}!`);
       navigate(routeForRole(roleFromMetadata(data.user)));

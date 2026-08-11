@@ -590,15 +590,15 @@ const Admin = () => {
 
   const renderView = () => {
     switch (view) {
-      case "overview": return <Overview />;
-      case "jobs": return <Jobs />;
-      case "applications": return <Applications />;
-      case "users": return <Users />;
-      case "reviews": return <Reviews />;
-      case "transactions": return <Transactions />;
-      case "subscribers": return <Subscribers />;
-      case "messages": return <Messages />;
-      case "broadcast": return <Broadcast />;
+      case "overview": return Overview();
+      case "jobs": return Jobs();
+      case "applications": return Applications();
+      case "users": return Users();
+      case "reviews": return Reviews();
+      case "transactions": return Transactions();
+      case "subscribers": return Subscribers();
+      case "messages": return Messages();
+      case "broadcast": return Broadcast();
     }
   };
 

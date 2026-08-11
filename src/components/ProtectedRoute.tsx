@@ -41,10 +41,7 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
     return <>{children}</>;
   }
 
-  // Force profile completion before accessing any protected page (except /profile itself)
-  if (location.pathname !== "/profile" && !isProfileComplete(profile)) {
-    return <Navigate to="/profile" replace />;
-  }
+  // Profile completion is optional — users are reminded in-app, never blocked.
 
   // Employers can access all sections (including job seeker routes)
   if (requiredRole && userRole !== requiredRole && userRole !== "employer") {

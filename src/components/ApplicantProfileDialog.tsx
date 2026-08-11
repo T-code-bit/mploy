@@ -89,15 +89,20 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
     }
   };
 
-  const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen && applicantId) {
+  // Load whenever the dialog is opened by the parent (props-driven), not just via onOpenChange
+  useEffect(() => {
+    if (open && applicantId) {
       fetchData(applicantId, applicationId);
-    } else {
+    }
+    if (!open) {
       setProfile(null);
       setApplication(null);
       setFeedback("");
       setContactInfo("");
     }
+  }, [open, applicantId, applicationId]);
+
+  const handleOpenChange = (isOpen: boolean) => {
     onOpenChange(isOpen);
   };
 

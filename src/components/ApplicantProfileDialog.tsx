@@ -69,8 +69,10 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
         .from("profiles")
         .select("full_name, avatar_url, bio, about, phone, address")
         .eq("user_id", userId)
-        .single();
-      setProfile(profileData as ApplicantProfile);
+        .maybeSingle();
+      setProfile((profileData as ApplicantProfile) ?? {
+        full_name: "", avatar_url: null, bio: null, about: null, phone: null, address: null,
+      });
 
       if (appId) {
         const { data: appData } = await supabase

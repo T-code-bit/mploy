@@ -141,6 +141,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     setSubscriptionLoading(true);
+    try {
       const { data, error } = await supabase.functions.invoke("paystack-check-subscription");
       if (error) throw error;
       if (data) {
@@ -153,7 +154,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setSubscriptionLoading(false);
     }
-  }, [session]);
+  }, [session, userRole]);
 
   // Admins always have unrestricted (premium) access
   useEffect(() => {

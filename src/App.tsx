@@ -19,6 +19,7 @@ import Cookies from "./pages/Cookies";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
+import SsoCallback from "./pages/SsoCallback";
 import Admin from "./pages/Admin";
 import Reviews from "./pages/Reviews";
 import CookieConsent from "./components/CookieConsent";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/sso-callback" element={<SsoCallback />} />
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>
             } />

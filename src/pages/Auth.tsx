@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import { useSignIn, useSignUp, useClerk } from "@clerk/clerk-react";
@@ -49,6 +49,7 @@ const Auth = () => {
   const [signupEmployerCode, setSignupEmployerCode] = useState("");
   const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
+  const clerkBridgeStarted = useRef(false);
 
   const routeForRole = (role?: string | null) => {
     if (role === "admin") return "/admin";
@@ -119,6 +120,20 @@ const Auth = () => {
     await setSessionFromResponse(data);
     return data;
   };
+
+  useEffect(() => {
+    if (!clerkEnabled || user || !clerk.loaded || !clerk.session || clerkBridgeStarted.current) return;
+    clerkBridgeStarted.current = true;
+    bridgeClerkSession({ role: loginRole })
+      .then((data) => {
+        toast.success(`Welcome, ${displayNameFor(data.user)}!`);
+        navigate(routeForRole(data.role || loginRole), { replace: true });
+      })
+      .catch((error) => {
+        clerkBridgeStarted.current = false;
+        toast.error(friendlyAuthError(error instanceof Error ? error.message : String(error)));
+      });
+  }, [clerk.loaded, clerk.session, loginRole, navigate, user]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -347,6 +362,16 @@ const Auth = () => {
   const handleGoogleAuth = async () => {
     setLoading(true);
     try {
+      if (clerkEnabled) {
+        if (!signInLoaded || !signIn) throw new Error("Google sign in is still loading. Please try again.");
+        await signIn.authenticateWithRedirect({
+          strategy: "oauth_google",
+          redirectUrl: "/sso-callback",
+          redirectUrlComplete: "/auth",
+        });
+        return;
+      }
+
       // The Lovable OAuth broker (/~oauth/*) only exists on Lovable-served origins.
       // On externally hosted domains it 404s, so fall back to direct Supabase OAuth.
       const host = window.location.hostname;

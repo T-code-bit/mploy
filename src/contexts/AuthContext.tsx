@@ -135,8 +135,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshSubscription = useCallback(async () => {
     if (!session) return;
+    // Admins always hold unrestricted premium access — never downgrade them.
+    if (userRole === "admin") {
+      setSubscriptionTier("premium");
+      return;
+    }
     setSubscriptionLoading(true);
-    try {
       const { data, error } = await supabase.functions.invoke("paystack-check-subscription");
       if (error) throw error;
       if (data) {

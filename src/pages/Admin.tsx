@@ -47,6 +47,26 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "broadcast", label: "Broadcast", icon: Megaphone },
 ];
 
+const ConfirmDeleteButton = ({ onConfirm, label }: { onConfirm: () => void; label: string }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
+        <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm} className="bg-destructive">Delete</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 const Admin = () => {
   usePageTitle("Admin Console");
   const qc = useQueryClient();

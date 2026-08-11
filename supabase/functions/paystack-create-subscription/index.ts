@@ -79,7 +79,7 @@ serve(async (req) => {
         // mobile_money => M-Pesa / Airtel Money STK push prompt on the customer's phone,
         // plus Paybill/Till collection. Cards: Visa/Mastercard/Amex/Verve.
         channels: ["mobile_money", "card", "bank", "bank_transfer", "ussd", "qr", "eft", "apple_pay"],
-        callback_url: `${origin}/dashboard?paystack=success`,
+        callback_url: `${origin}/dashboard?paystack=success&tier=${tier}`,
         metadata: { user_id: user.id, tier },
       }),
     });

@@ -69,8 +69,10 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
         .from("profiles")
         .select("full_name, avatar_url, bio, about, phone, address")
         .eq("user_id", userId)
-        .single();
-      setProfile(profileData as ApplicantProfile);
+        .maybeSingle();
+      setProfile((profileData as ApplicantProfile) ?? {
+        full_name: "", avatar_url: null, bio: null, about: null, phone: null, address: null,
+      });
 
       if (appId) {
         const { data: appData } = await supabase
@@ -89,15 +91,20 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
     }
   };
 
-  const handleOpenChange = (isOpen: boolean) => {
-    if (isOpen && applicantId) {
+  // Load whenever the dialog is opened by the parent (props-driven), not just via onOpenChange
+  useEffect(() => {
+    if (open && applicantId) {
       fetchData(applicantId, applicationId);
-    } else {
+    }
+    if (!open) {
       setProfile(null);
       setApplication(null);
       setFeedback("");
       setContactInfo("");
     }
+  }, [open, applicantId, applicationId]);
+
+  const handleOpenChange = (isOpen: boolean) => {
     onOpenChange(isOpen);
   };
 

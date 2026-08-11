@@ -22,7 +22,7 @@ import { toast } from "sonner";
 
 const Dashboard = () => {
   usePageTitle("Dashboard");
-  const { user, profile, userRole, subscriptionTier, subscriptionEnd } = useAuth();
+  const { user, profile, userRole, subscriptionTier, subscriptionEnd, refreshSubscription } = useAuth();
   const queryClient = useQueryClient();
   const [portalLoading, setPortalLoading] = useState(false);
   const currentPlan = SUBSCRIPTION_TIERS[subscriptionTier];
@@ -40,6 +40,19 @@ const Dashboard = () => {
       setPortalLoading(false);
     }
   };
+
+  // After returning from Paystack, refresh entitlement immediately so the paid tier unlocks
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("paystack") === "success") {
+      const paidTier = params.get("tier");
+      refreshSubscription();
+      const t = setTimeout(refreshSubscription, 4000);
+      toast.success(paidTier ? `Payment received — ${paidTier} plan unlocked!` : "Payment received!");
+      window.history.replaceState({}, "", "/dashboard");
+      return () => clearTimeout(t);
+    }
+  }, []);
 
   const { data: applications = [], isLoading } = useQuery({
     queryKey: ["dashboard-applications", user?.id],

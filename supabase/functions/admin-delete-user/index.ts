@@ -41,6 +41,12 @@ serve(async (req) => {
     if (!targetId) return json({ error: "user_id is required" }, 400);
     if (targetId === userData.user.id) return json({ error: "You cannot delete your own account" }, 400);
 
+    // Wipe app-side records first so nothing is left behind
+    await admin.from("paystack_subscribers").delete().eq("user_id", targetId);
+    await admin.from("applications").delete().eq("applicant_id", targetId);
+    await admin.from("user_roles").delete().eq("user_id", targetId);
+    await admin.from("profiles").delete().eq("user_id", targetId);
+
     const { error } = await admin.auth.admin.deleteUser(targetId);
     if (error) return json({ error: error.message }, 400);
 

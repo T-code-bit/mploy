@@ -47,6 +47,26 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "broadcast", label: "Broadcast", icon: Megaphone },
 ];
 
+const ConfirmDeleteButton = ({ onConfirm, label }: { onConfirm: () => void; label: string }) => (
+  <AlertDialog>
+    <AlertDialogTrigger asChild>
+      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </AlertDialogTrigger>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
+        <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm} className="bg-destructive">Delete</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
+
 const Admin = () => {
   usePageTitle("Admin Console");
   const qc = useQueryClient();
@@ -252,25 +272,7 @@ const Admin = () => {
     },
   });
 
-  const ConfirmDelete = ({ onConfirm, label }: { onConfirm: () => void; label: string }) => (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete {label}?</AlertDialogTitle>
-          <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm} className="bg-destructive">Delete</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
-  );
+  const ConfirmDelete = ConfirmDeleteButton;
 
   const KPI = ({ icon: Icon, label, value, sub, tone }: any) => (
     <Card className="p-5 relative overflow-hidden">
@@ -590,15 +592,15 @@ const Admin = () => {
 
   const renderView = () => {
     switch (view) {
-      case "overview": return <Overview />;
-      case "jobs": return <Jobs />;
-      case "applications": return <Applications />;
-      case "users": return <Users />;
-      case "reviews": return <Reviews />;
-      case "transactions": return <Transactions />;
-      case "subscribers": return <Subscribers />;
-      case "messages": return <Messages />;
-      case "broadcast": return <Broadcast />;
+      case "overview": return Overview();
+      case "jobs": return Jobs();
+      case "applications": return Applications();
+      case "users": return Users();
+      case "reviews": return Reviews();
+      case "transactions": return Transactions();
+      case "subscribers": return Subscribers();
+      case "messages": return Messages();
+      case "broadcast": return Broadcast();
     }
   };
 

@@ -75,10 +75,10 @@ serve(async (req) => {
         amount: t.amount,
         plan: planCode,
         currency: "KES",
-        // Explicitly enable all payment channels available on the Paystack account.
-        // mobile_money => M-Pesa / Airtel Money STK push prompt on the customer's phone,
-        // plus Paybill/Till collection. Cards: Visa/Mastercard/Amex/Verve.
-        channels: ["mobile_money", "card", "bank", "bank_transfer", "ussd", "qr", "eft", "apple_pay"],
+        // No `channels` override: Paystack then renders EVERY channel enabled on
+        // the account (M-Pesa STK, M-Pesa Till/Paybill, Airtel Money, Visa /
+        // Mastercard / Amex / Verve cards, bank transfer, USSD, QR, Apple Pay).
+        // Hard-coding the list hides any channel not yet activated.
         callback_url: `${origin}/dashboard?paystack=success&tier=${tier}`,
         metadata: { user_id: user.id, tier },
       }),

@@ -7,7 +7,7 @@ import type { Database } from './types';
 // where build-time env vars are missing.
 const FALLBACK_SUPABASE_URL = "https://nlfokrpapmzgazcwfgcp.supabase.co";
 const FALLBACK_SUPABASE_ANON_KEY =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwcWRlYWFybGxod254eWlqc2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNDg3MzQsImV4cCI6MjA4OTgyNDczNH0.HDcMDrab9YJSw1ii07iE9XPaZMpcO7t6-N1qpMteX1w";
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZm9rcnBhcG16Z2F6Y3dmZ2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1OTQ4MDAsImV4cCI6MjA5NzE3MDgwMH0.VQKuWSWAjWNIqNv8c1Tcf9Ue9fa38knzhRTmA9rKjno";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
 const SUPABASE_ANON_KEY =

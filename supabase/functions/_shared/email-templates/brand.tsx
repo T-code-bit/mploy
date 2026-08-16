@@ -12,7 +12,7 @@ import {
   Text,
 } from 'npm:@react-email/components@0.0.22'
 
-const ASSETS = 'https://ypqdeaarllhwnxyijshs.supabase.co/storage/v1/object/public/email-assets'
+const ASSETS = 'https://nlfokrpapmzgazcwfgcp.supabase.co/storage/v1/object/public/email-assets'
 
 export const SITE_NAME = 'M-Ploy'
 export const SITE_URL = 'https://mploy.lovable.app'

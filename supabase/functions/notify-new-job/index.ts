@@ -26,7 +26,7 @@ const buildEmailHtml = (jobTitle: string, company: string, location?: string, ty
 <body style="font-family: Arial, sans-serif; background-color: #f4f4f7; margin: 0; padding: 0;">
   <div style="max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
     <div style="background: linear-gradient(135deg, #1a365d, #2563eb); padding: 32px 24px; text-align: center;">
-      <img src="https://ypqdeaarllhwnxyijshs.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="M-Ploy" style="height: 40px; margin-bottom: 12px;" />
+      <img src="https://nlfokrpapmzgazcwfgcp.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="M-Ploy" style="height: 40px; margin-bottom: 12px;" />
       <h1 style="color: #ffffff; margin: 0; font-size: 22px;">🚀 New Job Opportunity!</h1>
     </div>
     <div style="padding: 32px 24px;">

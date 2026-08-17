@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
   // If the client sends credentials, replace "*" with the exact origin, e.g. "https://www.go-mploy.com"
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://www.go-mploy.com",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Credentials": "true",

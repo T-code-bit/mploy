@@ -2,8 +2,12 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
+  // If the client sends credentials, replace "*" with the exact origin, e.g. "https://www.go-mploy.com"
   "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Credentials": "true",
+  "Access-Control-Max-Age": "600",
 };
 
 const ADMIN_ACCESS_CODE = "2013";
@@ -68,7 +72,10 @@ const withTimeout = async <T,>(promise: Promise<T>, label: string, ms = 8000): P
 };
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  // Respond to preflight with 204 and the CORS headers
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers: corsHeaders, status: 204 });
+  }
 
   try {
     const { code } = await req.json().catch(() => ({}));

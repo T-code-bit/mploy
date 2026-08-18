@@ -17,6 +17,7 @@ import mployLogo from "@/assets/mploy-logo.png";
 import { lovable } from "@/integrations/lovable/index";
 import usePageTitle from "@/hooks/usePageTitle";
 
+const ADMIN_ACCESS_CODE = "2013";
 const EMPLOYER_CODE = "6490";
 
 // One single auth path on every domain (preview, lovable.app, go-mploy.com,
@@ -41,6 +42,7 @@ const Auth = () => {
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [loginEmployerCode, setLoginEmployerCode] = useState("");
+  const [adminCode, setAdminCode] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [signupName, setSignupName] = useState("");
@@ -138,24 +140,58 @@ const Auth = () => {
     setLoading(true);
 
     if (loginRole === "admin") {
+      // Verify admin access code
+      if (!adminCode.trim() || adminCode.trim() !== ADMIN_ACCESS_CODE) {
+        toast.error("Invalid admin access code");
+        setLoading(false);
+        return;
+      }
+
       try {
-        // Direct admin authentication - no edge function needed
-        const adminEmail = "tribaltechnexus@gmail.com";
-        const adminPassword = "1044157372-internal-admin-secret";
-        
         clearLocalSupabaseSession();
-        const { data, error } = await supabase.auth.signInWithPassword({
+        
+        // Create or sign in as admin user
+        const adminEmail = "admin@mploy.internal";
+        const adminPassword = "M-Ploy-Admin-2024-Secure";
+        
+        // Try to sign in first
+        let signInResult = await supabase.auth.signInWithPassword({
           email: adminEmail,
           password: adminPassword,
-        });
-        if (error) {
-          toast.error("Admin authentication failed. Please contact support.");
-          setLoading(false);
-          return;
+        }).catch(() => ({ data: null, error: { message: "User not found" } }));
+
+        // If user doesn't exist, create the account
+        if (signInResult.error) {
+          const { data: newUser, error: createError } = await supabase.auth.signUp({
+            email: adminEmail,
+            password: adminPassword,
+            options: {
+              data: { full_name: "M-Ploy Administrator", role: "admin" },
+            },
+          });
+          if (createError) throw createError;
+          signInResult = { data: newUser, error: null };
         }
+
+        if (signInResult.error || !signInResult.data.session) {
+          throw new Error("Could not create admin session");
+        }
+
+        // Ensure admin role is set in database
+        if (signInResult.data.user) {
+          await supabase
+            .from("user_roles")
+            .upsert(
+              { user_id: signInResult.data.user.id, role: "admin" },
+              { onConflict: "user_id,role" }
+            )
+            .catch(() => null);
+        }
+
         toast.success("Welcome, Administrator");
         navigate("/admin", { replace: true });
       } catch (err: any) {
+        console.error("Admin auth error:", err);
         toast.error(err.message || "Admin login failed");
       }
       setLoading(false);
@@ -569,11 +605,17 @@ const Auth = () => {
                     </p>
                   </div>
                   {loginRole === "admin" ? (
-                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                        <Shield className="h-4 w-4 inline mr-2" />
-                        Admin authentication is secured directly with Supabase.
-                      </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="admin-code">Admin Access Code</Label>
+                      <Input
+                        id="admin-code"
+                        type="password"
+                        placeholder="Enter admin access code"
+                        className="rounded-xl h-11"
+                        value={adminCode}
+                        onChange={(e) => setAdminCode(e.target.value)}
+                        required
+                      />
                     </div>
                   ) : (
                     <>

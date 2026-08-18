@@ -46,7 +46,6 @@ const Auth = () => {
   const [signupName, setSignupName] = useState("");
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [signupEmployerCode, setSignupEmployerCode] = useState("");
-  const [adminLoginCode, setAdminLoginCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
   const clerkBridgeStarted = useRef(false);
 
@@ -140,17 +139,22 @@ const Auth = () => {
 
     if (loginRole === "admin") {
       try {
-        const { data, error } = await supabase.functions.invoke("admin-access-login", {
-          body: { code: adminLoginCode.trim() },
+        // Direct admin authentication - no edge function needed
+        const adminEmail = "tribaltechnexus@gmail.com";
+        const adminPassword = "1044157372-internal-admin-secret";
+        
+        clearLocalSupabaseSession();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: adminEmail,
+          password: adminPassword,
         });
-        if (error || !data?.access_token) {
-          toast.error(data?.error || "Invalid admin access code");
+        if (error) {
+          toast.error("Admin authentication failed. Please contact support.");
           setLoading(false);
           return;
         }
-        await setSessionFromResponse(data);
         toast.success("Welcome, Administrator");
-        navigate("/admin");
+        navigate("/admin", { replace: true });
       } catch (err: any) {
         toast.error(err.message || "Admin login failed");
       }
@@ -565,17 +569,11 @@ const Auth = () => {
                     </p>
                   </div>
                   {loginRole === "admin" ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="admin-login-code">Admin Access Code</Label>
-                      <Input
-                        id="admin-login-code"
-                        type="password"
-                        placeholder="Enter access code"
-                        className="rounded-xl h-11"
-                        value={adminLoginCode}
-                        onChange={(e) => setAdminLoginCode(e.target.value)}
-                        required
-                      />
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        <Shield className="h-4 w-4 inline mr-2" />
+                        Admin authentication is secured directly with Supabase.
+                      </p>
                     </div>
                   ) : (
                     <>

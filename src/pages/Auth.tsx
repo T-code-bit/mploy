@@ -141,7 +141,7 @@ const Auth = () => {
     if (loginRole === "admin") {
       try {
         const { data, error } = await supabase.functions.invoke("admin-access-login", {
-          body: { code: adminLoginCode },
+          body: { code: adminLoginCode.trim() },
         });
         if (error || !data?.access_token) {
           toast.error(data?.error || "Invalid admin access code");

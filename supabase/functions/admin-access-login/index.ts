@@ -79,7 +79,8 @@ serve(async (req) => {
 
   try {
     const { code } = await req.json().catch(() => ({}));
-    if (code !== ADMIN_ACCESS_CODE) {
+    const trimmedCode = String(code || "").trim();
+    if (trimmedCode !== ADMIN_ACCESS_CODE) {
       return json({ error: "Invalid access code" }, 401);
     }
 

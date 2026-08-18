@@ -104,8 +104,8 @@ const EmployerPortal = () => {
         });
         if (error) throw error;
 
-        // Notify subscribers about new job
-        await supabase.functions.invoke("notify-new-job", {
+        // Notify subscribers about new job (optional - don't fail if this doesn't work)
+        supabase.functions.invoke("notify-new-job", {
           body: {
             jobTitle: jobForm.title,
             company: jobForm.company,
@@ -113,6 +113,9 @@ const EmployerPortal = () => {
             type: jobForm.type,
             deadline: jobForm.deadline || null,
           },
+        }).catch((err) => {
+          console.error("Failed to send job notification:", err);
+          // Don't throw - this is not critical
         });
       }
     },

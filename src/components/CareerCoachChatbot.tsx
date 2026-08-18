@@ -113,16 +113,23 @@ const CareerCoachChatbot = () => {
 
       if (!res.ok || !res.body) {
         const errText = await res.text().catch(() => "");
+        let errorMsg = "Sorry, I hit an error. Please try again.";
+        
+        if (res.status === 429) {
+          errorMsg = "I'm getting too many requests right now — try again in a moment.";
+        } else if (res.status === 402) {
+          errorMsg = "AI usage limit reached. Please contact admin.";
+        } else if (res.status === 404) {
+          errorMsg = "The AI service is currently unavailable. Please try again later or contact support.";
+        } else if (res.status >= 500) {
+          errorMsg = "Server error. Our team has been notified. Please try again later.";
+        }
+        
         setMessages((m) => [
           ...m,
           {
             role: "assistant",
-            content:
-              res.status === 429
-                ? "I'm getting too many requests right now — try again in a moment."
-                : res.status === 402
-                ? "AI usage limit reached. Please contact admin."
-                : "Sorry, I hit an error. Please try again." + (errText ? `\n\n_${errText.slice(0, 200)}_` : ""),
+            content: errorMsg + (errText ? `\n\n_Debug: ${errText.slice(0, 100)}_` : ""),
           },
         ]);
         setLoading(false);
@@ -163,9 +170,11 @@ const CareerCoachChatbot = () => {
         }
       }
     } catch (err) {
+      console.error("Chatbot error:", err);
+      const errorMessage = err instanceof Error ? err.message : String(err);
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: "Connection problem. Please check your network and try again." },
+        { role: "assistant", content: `Connection problem: ${errorMessage}. Please check your network and try again.` },
       ]);
     } finally {
       setLoading(false);

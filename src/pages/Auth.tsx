@@ -150,67 +150,93 @@ const Auth = () => {
       try {
         clearLocalSupabaseSession();
         
-        // Use proper admin email
+        // Admin credentials - hardcoded for security
         const adminEmail = "admin@go-mploy.com";
         const adminPassword = "M-Ploy-Admin-2024-Secure-Prod";
         
-        // Try to sign in first (this is the fast path for existing admin)
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: adminEmail,
-          password: adminPassword,
+        let session = null;
+        
+        // Try to sign in first
+        console.log("Attempting admin sign in...");
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: adminEmail,
+            password: adminPassword,
+          });
+          
+          if (!error && data?.session) {
+            session = data.session;
+            console.log("Admin sign in successful");
+          } else {
+            console.log("Admin sign in failed, attempting signup:", error?.message);
+          }
+        } catch (signInErr) {
+          console.log("Admin sign in threw error:", signInErr);
+        }
+
+        // If sign in failed, try to create the account
+        if (!session) {
+          console.log("Creating admin account...");
+          const { data, error } = await supabase.auth.signUp({
+            email: adminEmail,
+            password: adminPassword,
+            options: {
+              data: { full_name: "M-Ploy Administrator", role: "admin" },
+              emailRedirectTo: `${window.location.origin}/admin`,
+            },
+          });
+          
+          if (error) {
+            console.error("Admin signup error:", error);
+            // If account already exists, try sign in again
+            if (error.message?.includes("already")) {
+              console.log("Account exists, trying sign in again...");
+              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+                email: adminEmail,
+                password: adminPassword,
+              });
+              if (signInError) throw signInError;
+              session = signInData.session;
+            } else {
+              throw error;
+            }
+          } else {
+            session = data?.session;
+          }
+        }
+
+        if (!session) {
+          throw new Error("Failed to establish admin session");
+        }
+
+        // Set the session manually
+        await supabase.auth.setSession({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
         });
 
-        // If sign in succeeds, we're done
-        if (!signInError && signInData.session) {
-          // Ensure admin role is set in database
-          if (signInData.user) {
+        // Ensure admin role is set in database
+        try {
+          const { data: user } = await supabase.auth.getUser();
+          if (user?.user) {
             await supabase
               .from("user_roles")
               .upsert(
-                { user_id: signInData.user.id, role: "admin" },
+                { user_id: user.user.id, role: "admin" },
                 { onConflict: "user_id,role" }
               )
               .catch(() => null);
           }
-          toast.success("Welcome, Administrator");
-          navigate("/admin", { replace: true });
-          setLoading(false);
-          return;
+        } catch (e) {
+          console.error("Failed to set admin role:", e);
         }
-
-        // If user doesn't exist, create the account
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email: adminEmail,
-          password: adminPassword,
-          options: {
-            data: { full_name: "M-Ploy Administrator", role: "admin" },
-          },
-        });
-
-        if (signUpError) {
-          console.error("Admin signup error:", signUpError);
-          throw signUpError;
-        }
-
-        if (!signUpData.user) {
-          throw new Error("Failed to create admin account");
-        }
-
-        // Set admin role in database
-        await supabase
-          .from("user_roles")
-          .upsert(
-            { user_id: signUpData.user.id, role: "admin" },
-            { onConflict: "user_id,role" }
-          )
-          .catch(() => null);
 
         toast.success("Welcome, Administrator");
         navigate("/admin", { replace: true });
       } catch (err: any) {
         console.error("Admin auth error:", err);
-        const errorMsg = err.message || "Admin login failed";
-        toast.error(errorMsg);
+        const errorMsg = err?.message || err || "Admin login failed";
+        toast.error(String(errorMsg));
       }
       setLoading(false);
       return;

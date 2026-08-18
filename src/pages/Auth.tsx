@@ -150,9 +150,9 @@ const Auth = () => {
       try {
         clearLocalSupabaseSession();
         
-        // Admin credentials - hardcoded for security
-        const adminEmail = "admin@go-mploy.com";
-        const adminPassword = "M-Ploy-Admin-2024-Secure-Prod";
+        // Use the official admin email
+        const adminEmail = "tribaltechnexus@gmail.com";
+        const adminPassword = "1044157372-internal-admin-secret";
         
         let session = null;
         

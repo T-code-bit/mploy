@@ -2,22 +2,24 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
 const corsHeaders = {
-  // If the client sends credentials, replace "*" with the exact origin, e.g. "https://www.go-mploy.com"
-  "Access-Control-Allow-Origin": "https://www.go-mploy.com",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Credentials": "true",
   "Access-Control-Max-Age": "600",
 };
+const allowedOrigins = new Set(["https://go-mploy.com", "https://www.go-mploy.com"]);
+const corsHeadersFor = (origin?: string | null) => ({
+  ...corsHeaders,
+  "Access-Control-Allow-Origin": origin && allowedOrigins.has(origin) ? origin : "https://go-mploy.com",
+});
 
-const ADMIN_ACCESS_CODE = "2013";
-const ADMIN_EMAIL = "tribaltechnexus@gmail.com";
-const ADMIN_PASSWORD = "1044157372-internal-admin-secret";
-const ADMIN_NAME = "M-Ploy Administrator";
+const ADMIN_ACCESS_CODE = Deno.env.get("ADMIN_ACCESS_CODE");
+const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL");
+const ADMIN_PASSWORD = Deno.env.get("ADMIN_PASSWORD");
+const ADMIN_NAME = Deno.env.get("ADMIN_NAME") ?? "M-Ploy Administrator";
 
-const json = (body: unknown, status = 200) =>
+const json = (body: unknown, status = 200, origin?: string | null) =>
   new Response(JSON.stringify(body), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeadersFor(origin), "Content-Type": "application/json" },
     status,
   });
 
@@ -52,11 +54,11 @@ const runInBackground = (task: Promise<unknown>) => {
   else task.catch((err) => console.error("Admin sync failed", err));
 };
 
-const sessionResponse = (session: { access_token?: string; refresh_token?: string } | null | undefined) => {
+const sessionResponse = (session: { access_token?: string; refresh_token?: string } | null | undefined, origin?: string | null) => {
   if (!session?.access_token || !session?.refresh_token) {
-    return json({ error: "Unable to start admin session" }, 500);
+    return json({ error: "Unable to start admin session" }, 500, origin);
   }
-  return json({ access_token: session.access_token, refresh_token: session.refresh_token, role: "admin" });
+  return json({ access_token: session.access_token, refresh_token: session.refresh_token, role: "admin" }, 200, origin);
 };
 
 const withTimeout = async <T,>(promise: Promise<T>, label: string, ms = 8000): Promise<T> => {
@@ -72,16 +74,22 @@ const withTimeout = async <T,>(promise: Promise<T>, label: string, ms = 8000): P
 };
 
 serve(async (req) => {
+  const origin = req.headers.get("origin");
   // Respond to preflight with 204 and the CORS headers
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders, status: 204 });
+    return new Response(null, { headers: corsHeadersFor(origin), status: 204 });
   }
 
   try {
+    if (!ADMIN_ACCESS_CODE || !ADMIN_EMAIL || !ADMIN_PASSWORD) {
+      console.error("Admin authentication is missing required configuration");
+      return json({ error: "Admin authentication is not configured" }, 503, origin);
+    }
+
     const { code } = await req.json().catch(() => ({}));
     const trimmedCode = String(code || "").trim();
     if (trimmedCode !== ADMIN_ACCESS_CODE) {
-      return json({ error: "Invalid access code" }, 401);
+      return json({ error: "Invalid access code" }, 401, origin);
     }
 
     const anon = createAnonClient();
@@ -102,9 +110,9 @@ serve(async (req) => {
         anon.auth.verifyOtp({ email: ADMIN_EMAIL, token: emailOtp, type: "email" }),
         "Admin verification"
       );
-      if (!verifyError && verified.session?.access_token) {
+      if (!verifyError && verified.session?.access_token && verified.user) {
         runInBackground(syncAdminAccount(createAdminClient(), verified.user.id));
-        return sessionResponse(verified.session);
+        return sessionResponse(verified.session, origin);
       }
     }
 
@@ -147,9 +155,9 @@ serve(async (req) => {
     );
     if (signErr) throw signErr;
 
-    return sessionResponse(signIn.session);
+    return sessionResponse(signIn.session, origin);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    return json({ error: msg }, 500);
+    return json({ error: msg }, 500, origin);
   }
 });

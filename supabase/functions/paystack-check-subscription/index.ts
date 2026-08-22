@@ -23,12 +23,13 @@ serve(async (req) => {
     if (!authHeader) throw new Error("No authorization header");
     const token = authHeader.replace("Bearer ", "");
     const { data: userData, error: userErr } = await supabase.auth.getUser(token);
-    if (userErr || !userData.user?.email) throw new Error("Not authenticated");
     const user = userData.user;
+    if (userErr || !user || !user.email) throw new Error("Not authenticated");
+    const email: string = user.email;
 
     // Look up Paystack customer by email
     const custRes = await fetch(
-      `https://api.paystack.co/customer/${encodeURIComponent(user.email)}`,
+      `https://api.paystack.co/customer/${encodeURIComponent(email)}`,
       { headers: { Authorization: `Bearer ${paystackKey}` } }
     );
     const custJson = await custRes.json();

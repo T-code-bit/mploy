@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { supabase } from "@/integrations/supabase/client";
+import { supabaseAnonKey, supabaseUrl } from "@/integrations/supabase/client";
 import mployLogo from "@/assets/mploy-logo.png";
 
 // Stylized robot head launcher with M-Ploy logo as the "face screen"
@@ -58,13 +58,6 @@ const readFile = (file: File) =>
     reader.readAsDataURL(file);
   });
 
-// Derive endpoint + key from the configured Supabase client so this works
-// even when build-time env vars are missing (uses the same fallbacks).
-// @ts-ignore - protectedish internals; stable across supabase-js v2.
-const SUPABASE_URL: string = (supabase as any).supabaseUrl;
-// @ts-ignore
-const SUPABASE_ANON_KEY: string = (supabase as any).supabaseKey;
-
 const CareerCoachChatbot = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -99,12 +92,12 @@ const CareerCoachChatbot = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/career-coach`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/career-coach`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
           messages: next.map((m) => ({ role: m.role, content: toApiContent(m) })),

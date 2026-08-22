@@ -9,8 +9,8 @@ const FALLBACK_SUPABASE_URL = "https://nlfokrpapmzgazcwfgcp.supabase.co";
 const FALLBACK_SUPABASE_ANON_KEY =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5sZm9rcnBhcG16Z2F6Y3dmZ2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE1OTQ4MDAsImV4cCI6MjA5NzE3MDgwMH0.VQKuWSWAjWNIqNv8c1Tcf9Ue9fa38knzhRTmA9rKjno";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
-const SUPABASE_ANON_KEY =
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL;
+export const supabaseAnonKey =
   import.meta.env.VITE_SUPABASE_ANON_KEY ||
   import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
   FALLBACK_SUPABASE_ANON_KEY;
@@ -18,7 +18,7 @@ const SUPABASE_ANON_KEY =
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: localStorage,
     persistSession: true,

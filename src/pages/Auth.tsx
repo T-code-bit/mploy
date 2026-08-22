@@ -14,15 +14,11 @@ import { Link } from "react-router-dom";
 
 import { motion } from "framer-motion";
 import mployLogo from "@/assets/mploy-logo.png";
-import { lovable } from "@/integrations/lovable/index";
 import usePageTitle from "@/hooks/usePageTitle";
 
-const ADMIN_ACCESS_CODE = "2013";
-const EMPLOYER_CODE = "6490";
-
-// One single auth path on every domain (preview, lovable.app, go-mploy.com,
-// local): native platform auth. Clerk is kept imported for the legacy callback
-// route but is no longer used for sign in / sign up anywhere.
+// One single auth path on every deployment domain: native Supabase auth.
+// Clerk is kept imported for the legacy callback route but is no longer used
+// for sign in or sign up.
 const clerkEnabled = false;
 
 
@@ -140,97 +136,13 @@ const Auth = () => {
     setLoading(true);
 
     if (loginRole === "admin") {
-      // Verify admin access code
-      if (!adminCode.trim() || adminCode.trim() !== ADMIN_ACCESS_CODE) {
-        toast.error("Invalid admin access code");
-        setLoading(false);
-        return;
-      }
-
       try {
         clearLocalSupabaseSession();
-        
-        // Use the official admin email
-        const adminEmail = "tribaltechnexus@gmail.com";
-        const adminPassword = "1044157372-internal-admin-secret";
-        
-        let session = null;
-        
-        // Try to sign in first
-        console.log("Attempting admin sign in...");
-        try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: adminEmail,
-            password: adminPassword,
-          });
-          
-          if (!error && data?.session) {
-            session = data.session;
-            console.log("Admin sign in successful");
-          } else {
-            console.log("Admin sign in failed, attempting signup:", error?.message);
-          }
-        } catch (signInErr) {
-          console.log("Admin sign in threw error:", signInErr);
-        }
-
-        // If sign in failed, try to create the account
-        if (!session) {
-          console.log("Creating admin account...");
-          const { data, error } = await supabase.auth.signUp({
-            email: adminEmail,
-            password: adminPassword,
-            options: {
-              data: { full_name: "M-Ploy Administrator", role: "admin" },
-              emailRedirectTo: `${window.location.origin}/admin`,
-            },
-          });
-          
-          if (error) {
-            console.error("Admin signup error:", error);
-            // If account already exists, try sign in again
-            if (error.message?.includes("already")) {
-              console.log("Account exists, trying sign in again...");
-              const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                email: adminEmail,
-                password: adminPassword,
-              });
-              if (signInError) throw signInError;
-              session = signInData.session;
-            } else {
-              throw error;
-            }
-          } else {
-            session = data?.session;
-          }
-        }
-
-        if (!session) {
-          throw new Error("Failed to establish admin session");
-        }
-
-        // Set the session manually
-        await supabase.auth.setSession({
-          access_token: session.access_token,
-          refresh_token: session.refresh_token,
+        const { data, error } = await supabase.functions.invoke("admin-access-login", {
+          body: { code: adminCode.trim() },
         });
-
-        // Ensure admin role is set in database
-        try {
-          const { data: user } = await supabase.auth.getUser();
-          if (user?.user) {
-            await supabase
-              .from("user_roles")
-              .upsert(
-                { user_id: user.user.id, role: "admin" },
-                { onConflict: "user_id,role" }
-              )
-              .catch(() => null);
-          }
-        } catch (e) {
-          console.error("Failed to set admin role:", e);
-        }
-
+        if (error || data?.error) throw new Error(data?.error || error?.message || "Admin login failed");
+        await setSessionFromResponse(data);
         toast.success("Welcome, Administrator");
         navigate("/admin", { replace: true });
       } catch (err: any) {
@@ -242,15 +154,20 @@ const Auth = () => {
       return;
     }
 
-    if (loginRole === "employer" && loginEmployerCode.trim() !== EMPLOYER_CODE) {
-      toast.error("Invalid employer access code");
-      setLoading(false);
-      return;
-    }
-
     if (!clerkEnabled) {
       try {
         clearLocalSupabaseSession();
+        if (loginRole === "employer") {
+          const { data, error } = await supabase.functions.invoke("account-auth", {
+            body: { action: "login", email: cleanEmail(loginEmail), password: loginPassword, role: "employer", employerCode: loginEmployerCode },
+          });
+          if (error || data?.error) throw new Error(data?.error || error?.message || "Employer login failed");
+          await setSessionFromResponse(data);
+          toast.success(`Welcome, ${displayNameFor(data.user)}!`);
+          navigate(routeForRole(data.role));
+          setLoading(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signInWithPassword({
           email: cleanEmail(loginEmail),
           password: loginPassword,
@@ -298,16 +215,23 @@ const Auth = () => {
       toast.error("Password must be at least 8 characters");
       return;
     }
-    if (signupRole === "employer" && signupEmployerCode.trim() !== EMPLOYER_CODE) {
-      toast.error("Invalid employer access code. Please contact M-Ploy support to obtain one.");
-      return;
-    }
     setLoading(true);
 
     if (!clerkEnabled) {
       try {
         clearLocalSupabaseSession();
         const fullName = signupName.trim();
+        if (signupRole === "employer") {
+          const { data, error } = await supabase.functions.invoke("account-auth", {
+            body: { action: "signup", email: cleanEmail(signupEmail), password: signupPassword, fullName, role: "employer", employerCode: signupEmployerCode },
+          });
+          if (error || data?.error) throw new Error(data?.error || error?.message || "Employer sign-up failed");
+          await setSessionFromResponse(data);
+          toast.success(`Welcome, ${displayNameFor(data.user, fullName)}! Your account is ready.`);
+          navigate("/employer");
+          setLoading(false);
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email: cleanEmail(signupEmail),
           password: signupPassword,
@@ -455,33 +379,12 @@ const Auth = () => {
         return;
       }
 
-      // The Lovable OAuth broker (/~oauth/*) only exists on Lovable-served origins.
-      // On externally hosted domains it 404s, so fall back to direct Supabase OAuth.
-      const host = window.location.hostname;
-      const brokerAvailable = host.endsWith(".lovable.app") || host === "localhost" || host === "127.0.0.1";
-
-      if (brokerAvailable) {
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: window.location.origin,
-          extraParams: { prompt: "select_account" },
-        });
-        if (result.error) throw result.error;
-        if (result.redirected) return;
-      } else {
-        const { error } = await supabase.auth.signInWithOAuth({
-          provider: "google",
-          options: {
-            redirectTo: `${window.location.origin}/auth`,
-            queryParams: { prompt: "select_account" },
-          },
-        });
-        if (error) throw error;
-        return; // full-page redirect to Google
-      }
-
-      const { data } = await supabase.auth.getUser();
-      toast.success(`Welcome, ${displayNameFor(data.user)}!`);
-      navigate(routeForRole(roleFromMetadata(data.user)));
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth`, queryParams: { prompt: "select_account" } },
+      });
+      if (error) throw error;
+      return;
     } catch (err: any) {
       toast.error(friendlyAuthError(err?.message));
     }

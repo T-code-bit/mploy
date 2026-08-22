@@ -32,4 +32,6 @@ deployment-secrets.json
 *.sw?
 
 .env
+supabase/.temp/
+deno.lock
 

@@ -8,7 +8,7 @@ const corsHeaders = {
 
 type AppRole = "job_seeker" | "employer";
 
-const EMPLOYER_CODE = "6490";
+const EMPLOYER_ACCESS_CODE = Deno.env.get("EMPLOYER_ACCESS_CODE");
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -74,7 +74,10 @@ serve(async (req) => {
     };
 
     if (action === "signup") {
-      if (role === "employer" && cleanText(body.employerCode) !== EMPLOYER_CODE) {
+      if (role !== "employer") {
+        return json({ error: "Job seeker sign-up must use Supabase Auth directly" }, 400);
+      }
+      if (role === "employer" && (!EMPLOYER_ACCESS_CODE || cleanText(body.employerCode) !== EMPLOYER_ACCESS_CODE)) {
         return json({ error: "Invalid employer access code" }, 403);
       }
 
@@ -91,25 +94,29 @@ serve(async (req) => {
 
       const signedIn = await signIn();
       if (signedIn.error) return json({ error: signedIn.error }, signedIn.status);
+      if (!signedIn.data) return json({ error: "Unable to sign in" }, 401);
+      const sessionData = signedIn.data;
 
-      await syncAccount(signedIn.data.user.id, role, fullName, signedIn.data.user.user_metadata?.avatar_url);
+      await syncAccount(sessionData.user.id, role, fullName, sessionData.user.user_metadata?.avatar_url);
       return json({
-        access_token: signedIn.data.session.access_token,
-        refresh_token: signedIn.data.session.refresh_token,
-        user: signedIn.data.user,
+        access_token: sessionData.session.access_token,
+        refresh_token: sessionData.session.refresh_token,
+        user: sessionData.user,
         role,
         created: !createError && !!created.user,
       });
     }
 
     if (action === "login") {
-      if (role === "employer" && cleanText(body.employerCode) !== EMPLOYER_CODE) {
+      if (role === "employer" && (!EMPLOYER_ACCESS_CODE || cleanText(body.employerCode) !== EMPLOYER_ACCESS_CODE)) {
         return json({ error: "Invalid employer access code" }, 403);
       }
 
       const signedIn = await signIn();
       if (signedIn.error) return json({ error: signedIn.error }, signedIn.status);
-      const user = signedIn.data.user;
+      if (!signedIn.data) return json({ error: "Unable to sign in" }, 401);
+      const sessionData = signedIn.data;
+      const user = sessionData.user;
       const resolvedRole = await resolveRole(user);
       const nextRole = resolvedRole !== "admin" && role === "employer" ? "employer" : resolvedRole;
       if (nextRole !== "admin") {
@@ -121,8 +128,8 @@ serve(async (req) => {
         );
       }
       return json({
-        access_token: signedIn.data.session.access_token,
-        refresh_token: signedIn.data.session.refresh_token,
+        access_token: sessionData.session.access_token,
+        refresh_token: sessionData.session.refresh_token,
         user,
         role: nextRole,
       });

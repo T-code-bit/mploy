@@ -20,8 +20,8 @@ M-PLOY PLATFORM (mention naturally when relevant):
 - Verified Job Vault → /jobs — hand-verified Kenyan job openings, apply with documents, live application tracking (pending → reviewing → shortlisted → hired/rejected).
 - ATS-Optimized CV Builder → /cv-builder — 6 industry templates plus a 100-point ATS scoring engine.
 - Ready-to-Work Academy → /academy — employability courses & certification (Coming Soon).
-- Dashboard → /dashboard (job seekers), Employer Portal → /employer (employer access code 6490), Reviews → /reviews (admin-moderated public reviews), Plans/Pricing on the landing page.
-- Sign in / sign up at /auth (email + password or Google). Employers use code 6490.
+- Dashboard → /dashboard (job seekers), Employer Portal → /employer (verified employer access), Reviews → /reviews (admin-moderated public reviews), Plans/Pricing on the landing page.
+- Sign in / sign up at /auth (email + password or Google). Employer access is verified securely during sign-in and sign-up.
 - Payments via Paystack: M-Pesa & Airtel STK push, Paybill, Till, Visa/Mastercard, bank transfer, USSD. Plans are monthly and recurring; the tier unlocks automatically after payment.
 
 TEAM:

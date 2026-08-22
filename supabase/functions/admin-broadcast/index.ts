@@ -83,7 +83,7 @@ serve(async (req) => {
                  <h2 style="color:#0f766e;">${subject}</h2>
                  <div style="line-height:1.6;color:#333;white-space:pre-line;">${messageBody.replace(/</g, "&lt;")}</div>
                  <hr style="border:none;border-top:1px solid #eee;margin:24px 0;" />
-                 <p style="font-size:12px;color:#888;">Sent by M-Ploy Kenya · <a href="https://mploy.lovable.app">mploy.lovable.app</a></p>
+                  <p style="font-size:12px;color:#888;">Sent by M-Ploy Kenya · <a href="https://go-mploy.com">go-mploy.com</a></p>
                </div>`,
         text: messageBody,
         template_name: "admin_broadcast",

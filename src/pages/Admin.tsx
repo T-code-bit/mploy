@@ -17,6 +17,7 @@ import {
   Trash2, Shield, Briefcase, Users, FileText, Mail, Loader2, Star, Check, X,
   Pencil, CreditCard, TrendingUp, UserCheck, BarChart3, DollarSign, Activity,
   MessageSquare, UserCog, LayoutDashboard, LogOut, Home, Menu, Send, Megaphone,
+  Settings,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,7 +34,7 @@ const TIER_PRICE: Record<string, number> = { basic: 10, premium: 15, free: 0 };
 
 type View =
   | "overview" | "jobs" | "applications" | "users"
-  | "reviews" | "transactions" | "subscribers" | "messages" | "broadcast";
+  | "reviews" | "transactions" | "subscribers" | "messages" | "broadcast" | "settings";
 
 const NAV: { key: View; label: string; icon: any }[] = [
   { key: "overview", label: "Overview", icon: LayoutDashboard },
@@ -45,7 +46,19 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "subscribers", label: "Newsletter", icon: Mail },
   { key: "messages", label: "Messages", icon: MessageSquare },
   { key: "broadcast", label: "Broadcast", icon: Megaphone },
+  { key: "settings", label: "Integrations", icon: Settings },
 ];
+
+const INTEGRATION_FIELDS = [
+  { key: "resend_api_key", label: "Resend API key", description: "Powers platform emails, job alerts, and broadcasts.", secret: true, placeholder: "re_…" },
+  { key: "resend_from_email", label: "Resend From address", description: "A verified Resend sender, e.g. M-Ploy <hello@go-mploy.com>.", secret: false, placeholder: "M-Ploy <hello@go-mploy.com>" },
+  { key: "stripe_secret_key", label: "Stripe secret key", description: "Enables Stripe checkout and customer portal.", secret: true, placeholder: "sk_live_…" },
+  { key: "paystack_secret_key", label: "Paystack secret key", description: "Enables M-Pesa, cards, and Paystack subscriptions.", secret: true, placeholder: "sk_live_…" },
+  { key: "recaptcha_secret_key", label: "reCAPTCHA secret key", description: "Verifies CAPTCHA challenges server-side.", secret: true, placeholder: "6L…" },
+  { key: "openai_api_key", label: "OpenAI API key", description: "Powers Career Coach and AI CV review.", secret: true, placeholder: "sk-…" },
+  { key: "openai_model", label: "OpenAI model", description: "Default: gpt-4o-mini. Change only if your account supports the model.", secret: false, placeholder: "gpt-4o-mini" },
+  { key: "app_url", label: "Public application URL", description: "Used in email links and payment return URLs.", secret: false, placeholder: "https://go-mploy.com" },
+] as const;
 
 const ConfirmDeleteButton = ({ onConfirm, label }: { onConfirm: () => void; label: string }) => (
   <AlertDialog>
@@ -77,6 +90,10 @@ const Admin = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [broadcast, setBroadcast] = useState({ subject: "", body: "", audience: "all_users" as "all_users" | "active_subscribers" | "newsletter" });
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [settingValues, setSettingValues] = useState<Record<string, string>>({});
+  const [savingSetting, setSavingSetting] = useState<string | null>(null);
+  const [resendTestTo, setResendTestTo] = useState("");
+  const [sendingResendTest, setSendingResendTest] = useState(false);
 
   // Realtime — auto-refresh every admin table on any change
   useEffect(() => {
@@ -128,6 +145,16 @@ const Admin = () => {
   const { data: paystackSubs = [] } = useQuery({
     queryKey: ["admin-paystack-subs"],
     queryFn: async () => (await supabase.from("paystack_subscribers").select("*").order("created_at", { ascending: false })).data ?? [],
+  });
+  const { data: integrationSettings = [], isLoading: integrationSettingsLoading } = useQuery({
+    queryKey: ["admin-integration-settings"],
+    enabled: view === "settings",
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("admin-provider-settings", { body: { action: "list" } });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      return ((data as any)?.settings ?? []) as Array<{ key: string; configured: boolean; updated_at: string; value: string | null; secret: boolean }>;
+    },
   });
 
   const roleMap = useMemo(() => {
@@ -217,6 +244,50 @@ const Admin = () => {
       toast.error(e.message || "Broadcast failed");
     } finally {
       setSendingBroadcast(false);
+    }
+  };
+
+  const integrationMap = useMemo(
+    () => Object.fromEntries(integrationSettings.map((setting) => [setting.key, setting])),
+    [integrationSettings]
+  );
+
+  const saveIntegrationSetting = async (key: string) => {
+    const value = (settingValues[key] ?? "").trim();
+    if (!value) {
+      toast.error("Enter a value before saving");
+      return;
+    }
+    setSavingSetting(key);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-provider-settings", {
+        body: { action: "save", key, value },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      setSettingValues((current) => ({ ...current, [key]: "" }));
+      await qc.invalidateQueries({ queryKey: ["admin-integration-settings"] });
+      toast.success("Integration setting saved securely");
+    } catch (error: any) {
+      toast.error(error.message || "Could not save integration setting");
+    } finally {
+      setSavingSetting(null);
+    }
+  };
+
+  const sendResendTest = async () => {
+    setSendingResendTest(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-provider-settings", {
+        body: { action: "test_resend", to: resendTestTo },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success("Resend test email sent");
+    } catch (error: any) {
+      toast.error(error.message || "Could not send Resend test");
+    } finally {
+      setSendingResendTest(false);
     }
   };
 
@@ -554,6 +625,76 @@ const Admin = () => {
     </div>
   );
 
+  const Integrations = () => (
+    <div className="space-y-6 max-w-5xl">
+      <Card className="p-6 bg-primary/5 border-primary/20">
+        <div className="flex items-start gap-3">
+          <Settings className="h-5 w-5 text-primary mt-0.5" />
+          <div>
+            <h2 className="font-display font-semibold">Secure provider configuration</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Keys are encrypted before storage and are never returned to this browser. Replace a value to rotate it.
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      {integrationSettingsLoading ? <Loader2 className="animate-spin" /> : (
+        <div className="grid lg:grid-cols-2 gap-4">
+          {INTEGRATION_FIELDS.map((field) => {
+            const current = integrationMap[field.key];
+            const value = settingValues[field.key] ?? (field.secret ? "" : current?.value ?? "");
+            return (
+              <Card key={field.key} className="p-5 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Label className="font-semibold">{field.label}</Label>
+                    <p className="text-xs text-muted-foreground mt-1">{field.description}</p>
+                  </div>
+                  <Badge variant={current?.configured ? "default" : "secondary"} className="shrink-0">
+                    {current?.configured ? "Configured" : "Not set"}
+                  </Badge>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type={field.secret ? "password" : "text"}
+                    autoComplete="off"
+                    value={value}
+                    onChange={(event) => setSettingValues((values) => ({ ...values, [field.key]: event.target.value }))}
+                    placeholder={current?.configured && field.secret ? "Enter a replacement to rotate" : field.placeholder}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => saveIntegrationSetting(field.key)}
+                    disabled={savingSetting === field.key}
+                  >
+                    {savingSetting === field.key ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+                  </Button>
+                </div>
+                {current?.updated_at && <p className="text-[11px] text-muted-foreground">Last updated {new Date(current.updated_at).toLocaleString()}</p>}
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      <Card className="p-6 space-y-3">
+        <div className="flex items-center gap-2">
+          <Mail className="h-5 w-5 text-primary" />
+          <h2 className="font-display font-semibold">Test Resend delivery</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">Sends a single test email using the saved Resend key and verified From address.</p>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Input type="email" value={resendTestTo} onChange={(event) => setResendTestTo(event.target.value)} placeholder="you@example.com" />
+          <Button onClick={sendResendTest} disabled={sendingResendTest} className="gap-2">
+            {sendingResendTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            Send test
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+
   const Subscribers = () => (
     <div className="space-y-3">
       {subscribers.length === 0 ? (
@@ -601,6 +742,7 @@ const Admin = () => {
       case "subscribers": return Subscribers();
       case "messages": return Messages();
       case "broadcast": return Broadcast();
+      case "settings": return Integrations();
     }
   };
 

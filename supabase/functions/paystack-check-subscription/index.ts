@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getIntegrationSetting } from "../_shared/integration-settings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,14 +11,13 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const paystackKey = Deno.env.get("PAYSTACK_SECRET_KEY");
-    if (!paystackKey) throw new Error("PAYSTACK_SECRET_KEY not set");
-
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
+    const paystackKey = await getIntegrationSetting(supabase, "paystack_secret_key");
+    if (!paystackKey) throw new Error("Paystack is not configured in Admin → Integrations");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("No authorization header");

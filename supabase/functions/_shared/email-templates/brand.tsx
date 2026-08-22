@@ -15,7 +15,7 @@ import {
 const ASSETS = 'https://nlfokrpapmzgazcwfgcp.supabase.co/storage/v1/object/public/email-assets'
 
 export const SITE_NAME = 'M-Ploy'
-export const SITE_URL = 'https://mploy.lovable.app'
+export const SITE_URL = 'https://go-mploy.com'
 
 /* ── shared styles ── */
 export const main = {

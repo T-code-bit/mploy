@@ -1,57 +1,97 @@
-# Supabase Edge Function deployment
+# M-Ploy deployment guide
 
-This project uses Supabase for authentication, database access, and Edge
-Functions. Do not commit credentials or deploy them from source files.
+M-Ploy is a Vite single-page app backed by Supabase. It can be deployed to
+Vercel without any server-side provider key in Vercel.
 
-## Deploy functions
+## 1. Deploy the frontend to Vercel
 
-1. Create a Supabase personal access token and expose it only in your shell:
+Import this GitHub repository into Vercel and use the defaults:
 
-   ```bash
-   export SUPABASE_ACCESS_TOKEN="..."
-   ```
+- **Build command:** `npm run build`
+- **Output directory:** `dist`
+- **Install command:** `npm install`
 
-2. Deploy every checked-in function:
+Add only the public Supabase values to Vercel:
 
-   ```bash
-   node deploy-edge-functions.js
-   ```
+```bash
+VITE_SUPABASE_URL=https://nlfokrpapmzgazcwfgcp.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=<Supabase publishable/anon key>
+```
 
-   The script uses Supabase's server-side bundler (`--use-api`), which avoids
-   local Docker and Deno import resolution issues.
+Never add Resend, Stripe, Paystack, OpenAI, reCAPTCHA, or Supabase service-role
+credentials to Vercel. They stay in Supabase's encrypted integration settings.
 
-## Required secrets
+In Supabase Auth, add the Vercel and production domains to **URL Configuration**
+as allowed redirect URLs, including:
 
-Set secrets in the Supabase dashboard or with `supabase secrets set`. Never
-place their values in this repository.
+```text
+https://go-mploy.com/auth
+https://www.go-mploy.com/auth
+https://<your-vercel-project>.vercel.app/auth
+```
 
-| Feature | Required secret |
+## 2. Deploy database and Edge Functions
+
+```bash
+supabase link --project-ref nlfokrpapmzgazcwfgcp
+supabase db push
+node deploy-edge-functions.js
+```
+
+The deployment script uses Supabase's server-side bundler (`--use-api`) and
+deploys every checked-in function.
+
+## 3. Required Supabase-only bootstrap secrets
+
+These are infrastructure secrets, not provider credentials. Set them in
+Supabase once; do not commit them or expose them in Vercel.
+
+| Secret | Why it exists |
 | --- | --- |
-| Admin sign-in | `ADMIN_ACCESS_CODE`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` |
-| Employer account access | `EMPLOYER_ACCESS_CODE` |
-| Paystack subscriptions | `PAYSTACK_SECRET_KEY` |
-| Stripe subscriptions (if used) | `STRIPE_SECRET_KEY` |
-| reCAPTCHA verification | `RECAPTCHA_SECRET_KEY` |
+| `ADMIN_ACCESS_CODE`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Secure initial admin session |
+| `EMPLOYER_ACCESS_CODE` | Server-side employer access verification |
+| `SETTINGS_ENCRYPTION_KEY` | 32-byte base64 key used by Edge Functions to encrypt provider settings |
+| `AUTH_EMAIL_HOOK_SECRET` | Shared secret for Supabase Auth's optional custom email hook |
 
-The legacy Lovable-dependent AI and mail functions are intentionally not
-configured by this guide. They will return a controlled configuration error
-until they are replaced with a provider you choose.
-
-## Verify deployment
-
-Check the function inventory:
+Generate secure values locally, for example:
 
 ```bash
-supabase functions list --project-ref nlfokrpapmzgazcwfgcp
+openssl rand -base64 32
+supabase secrets set SETTINGS_ENCRYPTION_KEY="<generated value>"
+supabase secrets set AUTH_EMAIL_HOOK_SECRET="<generated value>"
 ```
 
-For a safe endpoint check, send an `OPTIONS` request. A deployed endpoint
-returns a non-404 response:
+## 4. Configure providers in the admin dashboard
 
-```bash
-curl -i -X OPTIONS \
-  https://nlfokrpapmzgazcwfgcp.supabase.co/functions/v1/admin-access-login
-```
+Sign in at `/auth` with the admin access code, then open **Admin Console →
+Integrations**. The dashboard saves provider values through an admin-only Edge
+Function; API keys are encrypted before database storage and are never returned
+to the browser.
 
-Use real test accounts for sign-in, employer access, payment, and CAPTCHA
-flows. Do not test payment endpoints with production customer data.
+Configure the integrations you use:
+
+- **Resend API key** and a verified **From address** — platform emails, job
+  alerts, and broadcasts.
+- **Stripe secret key** — Stripe checkout and billing portal.
+- **Paystack secret key** — Paystack subscriptions.
+- **reCAPTCHA secret key** — CAPTCHA verification.
+- **OpenAI API key** and model — Career Coach and AI CV Review.
+- **Public application URL** — email and payment redirect links.
+
+Use **Send test** in the Resend card after verifying your sending domain in
+Resend.
+
+## 5. Optional: Supabase Auth emails through Resend
+
+The app's own emails use the Resend API above. For Supabase confirmation,
+password-recovery, and magic-link emails, either configure Resend SMTP in
+**Supabase Dashboard → Authentication → SMTP**, or set up the included
+`auth-email-hook` HTTP hook:
+
+1. Deploy the function.
+2. In **Authentication → Hooks**, set the Send Email hook URL to:
+   `https://nlfokrpapmzgazcwfgcp.supabase.co/functions/v1/auth-email-hook`
+3. Configure an `Authorization: Bearer <AUTH_EMAIL_HOOK_SECRET>` header.
+
+The hook queues mail through the same Resend configuration managed in Admin →
+Integrations.

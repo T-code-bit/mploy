@@ -1,5 +1,5 @@
-import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { getIntegrationSetting } from '../_shared/integration-settings.ts'
 
 const MAX_RETRIES = 5
 const DEFAULT_BATCH_SIZE = 10
@@ -28,8 +28,8 @@ function isRateLimited(error: unknown): boolean {
   return error instanceof Error && error.message.includes('429')
 }
 
-// Check if an error is a forbidden (403) response, which means emails are
-// disabled for this project. Retrying won't help — move straight to DLQ.
+// Check if an error is a forbidden (403) response. Retrying an invalid Resend
+// sender or API key will not help — move the message straight to the DLQ.
 function isForbidden(error: unknown): boolean {
   if (error && typeof error === 'object' && 'status' in error) {
     return (error as { status: number }).status === 403
@@ -43,6 +43,39 @@ function getRetryAfterSeconds(error: unknown): number {
     return (error as { retryAfterSeconds: number | null }).retryAfterSeconds ?? 60
   }
   return 60
+}
+
+async function sendResendEmail(
+  apiKey: string,
+  fallbackFrom: string,
+  payload: Record<string, any>
+) {
+  const response = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      ...(payload.idempotency_key ? { 'Idempotency-Key': payload.idempotency_key } : {}),
+    },
+    body: JSON.stringify({
+      from: payload.from || fallbackFrom,
+      to: [payload.to],
+      subject: payload.subject,
+      html: payload.html,
+      text: payload.text,
+    }),
+  })
+
+  if (!response.ok) {
+    const error = new Error((await response.text()).slice(0, 1000)) as Error & {
+      status?: number
+      retryAfterSeconds?: number | null
+    }
+    error.status = response.status
+    const retryAfter = response.headers.get('retry-after')
+    error.retryAfterSeconds = retryAfter ? Number(retryAfter) : null
+    throw error
+  }
 }
 
 function parseJwtClaims(token: string): Record<string, unknown> | null {
@@ -94,11 +127,10 @@ Deno.serve(async (req) => {
     return new Response(null, { status: 204, headers: corsHeaders })
   }
 
-  const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
-  if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
+  if (!supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
     return new Response(
       JSON.stringify({ error: 'Server configuration error' }),
@@ -127,6 +159,14 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const resendApiKey = await getIntegrationSetting(supabase, 'resend_api_key')
+  const resendFromEmail = await getIntegrationSetting(supabase, 'resend_from_email')
+  if (!resendApiKey || !resendFromEmail) {
+    return new Response(
+      JSON.stringify({ error: 'Resend is not configured in Admin → Integrations' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } }
+    )
+  }
 
   // 1. Check rate-limit cooldown and read queue config
   const { data: state } = await supabase
@@ -262,26 +302,7 @@ Deno.serve(async (req) => {
       }
 
       try {
-        await sendLovableEmail(
-          {
-            run_id: payload.run_id,
-            to: payload.to,
-            from: payload.from,
-            sender_domain: payload.sender_domain,
-            subject: payload.subject,
-            html: payload.html,
-            text: payload.text,
-            purpose: payload.purpose,
-            label: payload.label,
-            idempotency_key: payload.idempotency_key,
-            unsubscribe_token: payload.unsubscribe_token,
-            message_id: payload.message_id,
-          },
-          // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
-          // falls back to the default Lovable API endpoint (https://api.lovable.dev).
-          // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
-          { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
-        )
+        await sendResendEmail(resendApiKey, resendFromEmail, payload)
 
         // Log success
         await supabase.from('email_send_log').insert({
@@ -337,12 +358,12 @@ Deno.serve(async (req) => {
           )
         }
 
-        // 403 means emails are disabled for this project — retrying won't help.
+        // 403 means the configured Resend sender/key cannot send — retrying won't help.
         // Move straight to DLQ and stop processing the rest of the batch.
         if (isForbidden(error)) {
-          await moveToDlq(supabase, queue, msg, 'Emails disabled for this project')
+          await moveToDlq(supabase, queue, msg, 'Resend rejected the configured sender or API key')
           return new Response(
-            JSON.stringify({ processed: totalProcessed, stopped: 'emails_disabled' }),
+            JSON.stringify({ processed: totalProcessed, stopped: 'resend_configuration_error' }),
             { headers: { 'Content-Type': 'application/json' } }
           )
         }

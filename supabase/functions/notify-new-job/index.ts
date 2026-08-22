@@ -36,16 +36,16 @@ const buildEmailHtml = (jobTitle: string, company: string, location?: string, ty
         <p style="color: #1e40af; margin: 0; font-size: 14px; font-weight: 600;">${deadlineText}</p>
       </div>
       <div style="text-align: center;">
-        <a href="https://mploy.lovable.app/jobs" style="display: inline-block; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 15px;">View & Apply Now</a>
+        <a href="https://go-mploy.com/jobs" style="display: inline-block; background: linear-gradient(135deg, #1a365d, #2563eb); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 15px;">View & Apply Now</a>
       </div>
     </div>
     <div style="padding: 20px 24px; background: #f9fafb;">
       <div style="text-align: center; margin-bottom: 12px;">
-        <a href="https://mploy.lovable.app" style="color: #2563eb; text-decoration: none; font-size: 13px; margin: 0 8px;">Website</a>
+        <a href="https://go-mploy.com" style="color: #2563eb; text-decoration: none; font-size: 13px; margin: 0 8px;">Website</a>
         <span style="color: #d1d5db;">|</span>
-        <a href="https://mploy.lovable.app/about" style="color: #2563eb; text-decoration: none; font-size: 13px; margin: 0 8px;">About</a>
+        <a href="https://go-mploy.com/about" style="color: #2563eb; text-decoration: none; font-size: 13px; margin: 0 8px;">About</a>
         <span style="color: #d1d5db;">|</span>
-        <a href="https://mploy.lovable.app/jobs" style="color: #2563eb; text-decoration: none; font-size: 13px; margin: 0 8px;">Jobs</a>
+        <a href="https://go-mploy.com/jobs" style="color: #2563eb; text-decoration: none; font-size: 13px; margin: 0 8px;">Jobs</a>
       </div>
       <p style="color: #9ca3af; font-size: 12px; margin: 0; text-align: center;">You're receiving this because you subscribed to M-Ploy job alerts.</p>
       <p style="color: #9ca3af; font-size: 11px; margin: 8px 0 0; text-align: center;">© ${new Date().getFullYear()} M-Ploy. Nairobi, Kenya</p>
@@ -91,10 +91,6 @@ Deno.serve(async (req) => {
     const emailSubject = `🚀 New Job Alert: ${jobTitle} at ${company}`;
     const emailHtml = buildEmailHtml(jobTitle, company, location, type, deadline);
 
-    const SITE_NAME = "M-Ploy";
-    const SENDER_DOMAIN = "notify.mploy.vercel.app";
-    const FROM_DOMAIN = "notify.mploy.vercel.app";
-
     let enqueued = 0;
     for (const sub of subscribers) {
       try {
@@ -113,8 +109,6 @@ Deno.serve(async (req) => {
           payload: {
             message_id: messageId,
             to: sub.email,
-            from: `${SITE_NAME} Jobs <noreply@${FROM_DOMAIN}>`,
-            sender_domain: SENDER_DOMAIN,
             subject: emailSubject,
             html: emailHtml,
             purpose: "transactional",

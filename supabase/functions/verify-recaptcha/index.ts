@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getIntegrationSetting } from "../_shared/integration-settings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +22,12 @@ serve(async (req) => {
       });
     }
 
-    const secret = Deno.env.get("RECAPTCHA_SECRET_KEY");
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const secret = await getIntegrationSetting(admin, "recaptcha_secret_key");
     if (!secret) {
       return new Response(JSON.stringify({ success: false, error: "Server configuration error" }), {
         status: 500,

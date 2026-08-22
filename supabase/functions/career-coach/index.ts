@@ -1,4 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.57.2";
+import { getIntegrationSetting } from "../_shared/integration-settings.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -51,22 +53,28 @@ serve(async (req) => {
       });
     }
 
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+    const apiKey = await getIntegrationSetting(admin, "openai_api_key");
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "AI not configured" }), {
+      return new Response(JSON.stringify({ error: "AI is not configured in Admin → Integrations" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const upstream = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const model = await getIntegrationSetting(admin, "openai_model") || "gpt-4o-mini";
+    const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model,
         stream: true,
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
       }),

@@ -76,7 +76,7 @@ M-Ploy is an employability platform designed to help job seekers gain in-demand 
 
 <div align="center">
 
-### 🚀 Ready to transform your career?
+### 🚀 Ready to transform your career feel free to reach out?
 
 [Visit M-Ploy](https://go-mploy.com) | [Explore Code](https://github.com/T-code-bit/mploy)
 

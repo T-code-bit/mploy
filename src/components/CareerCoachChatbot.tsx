@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabaseAnonKey, supabaseUrl } from "@/integrations/supabase/client";
 import mployLogo from "@/assets/mploy-logo.png";
+import { toast } from "sonner";
 
 // Stylized robot head launcher with M-Ploy logo as the "face screen"
 const RobotHead = ({ open }: { open: boolean }) => (
@@ -36,6 +37,8 @@ const RobotHead = ({ open }: { open: boolean }) => (
 
 type Attachment = { name: string; mime: string; dataUrl: string };
 type Msg = { role: "user" | "assistant"; content: string; attachments?: Attachment[] };
+const MAX_CHAT_ATTACHMENTS = 3;
+const MAX_CHAT_ATTACHMENT_SIZE = 5 * 1024 * 1024;
 
 const toApiContent = (m: Msg) => {
   if (!m.attachments?.length) return m.content;
@@ -57,6 +60,22 @@ const readFile = (file: File) =>
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+
+const validateChatAttachment = (file: File) => {
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  const supported = file.type.startsWith("image/")
+    || ["pdf", "doc", "docx", "txt"].includes(extension || "");
+
+  if (!supported) {
+    throw new Error(`${file.name}: use an image, PDF, DOC, DOCX, or TXT file.`);
+  }
+  if (file.size === 0) {
+    throw new Error(`${file.name}: the file is empty.`);
+  }
+  if (file.size > MAX_CHAT_ATTACHMENT_SIZE) {
+    throw new Error(`${file.name}: files must be 5MB or smaller.`);
+  }
+};
 
 const CareerCoachChatbot = () => {
   const [open, setOpen] = useState(false);
@@ -285,9 +304,21 @@ const CareerCoachChatbot = () => {
                 className="hidden"
                 onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
-                  const parsed = await Promise.all(files.map(readFile));
-                  setAttachments((prev) => [...prev, ...parsed]);
                   e.target.value = "";
+                  const remainingSlots = MAX_CHAT_ATTACHMENTS - attachments.length;
+                  const selected = files.slice(0, Math.max(0, remainingSlots));
+
+                  if (files.length > selected.length) {
+                    toast.error(`You can attach up to ${MAX_CHAT_ATTACHMENTS} files at a time.`);
+                  }
+
+                  try {
+                    selected.forEach(validateChatAttachment);
+                    const parsed = await Promise.all(selected.map(readFile));
+                    setAttachments((prev) => [...prev, ...parsed]);
+                  } catch (error) {
+                    toast.error(error instanceof Error ? error.message : "One or more attachments could not be read.");
+                  }
                 }}
               />
               <Button

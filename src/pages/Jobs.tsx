@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { uploadUserFile, validateUpload } from "@/lib/file-storage";
 
 const categories = ["All", "Remote", "Full-time", "Part-time", "Contract", "Internship"];
 
@@ -80,35 +81,28 @@ const Jobs = () => {
     enabled: !!user,
   });
 
-  const uploadFile = async (file: File, folder: string) => {
-    const ext = file.name.split(".").pop();
-    const path = `${user!.id}/${folder}/${Date.now()}.${ext}`;
-    const { error } = await supabase.storage
-      .from("application-documents")
-      .upload(path, file);
-    if (error) throw error;
-    return path;
-  };
+  const uploadFile = (file: File, folder: string) =>
+    uploadUserFile(user!.id, file, folder);
 
   const applyMutation = useMutation({
     mutationFn: async () => {
       if (!cvFile) throw new Error("CV is required");
       if (!scannedIdFile) throw new Error("Scanned ID is required");
 
-      const cvPath = await uploadFile(cvFile, "cv");
-      const coverLetterPath = coverLetterFile ? await uploadFile(coverLetterFile, "cover-letter") : null;
-      const recommendationPath = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
-      const scannedIdPath = await uploadFile(scannedIdFile, "scanned-id");
+      const cvUpload = await uploadFile(cvFile, "cv");
+      const coverLetterUpload = coverLetterFile ? await uploadFile(coverLetterFile, "cover-letter") : null;
+      const recommendationUpload = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
+      const scannedIdUpload = await uploadFile(scannedIdFile, "scanned-id");
 
       const { error } = await supabase.from("applications").insert({
         job_id: selectedJob.id,
         applicant_id: user!.id,
         applicant_email: user!.email || null,
         cover_letter: coverLetter || null,
-        cv_url: cvPath,
-        resume_url: coverLetterPath,
-        recommendation_letter_url: recommendationPath,
-        scanned_id_url: scannedIdPath,
+        cv_url: cvUpload.path,
+        cover_letter_url: coverLetterUpload?.path || null,
+        recommendation_letter_url: recommendationUpload?.path || null,
+        scanned_id_url: scannedIdUpload.path,
         phone: phone || null,
         years_of_experience: yearsExp || null,
         availability,
@@ -229,8 +223,18 @@ const Jobs = () => {
         <input
           type="file"
           className="hidden"
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-          onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp,image/heic,image/heif"
+          onChange={(e) => {
+            const nextFile = e.target.files?.[0] || null;
+            e.currentTarget.value = "";
+            if (!nextFile) return;
+            try {
+              validateUpload(nextFile);
+              onFileChange(nextFile);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "This file cannot be uploaded.");
+            }
+          }}
         />
       </label>
     </div>

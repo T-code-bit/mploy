@@ -14,6 +14,7 @@ import { User, Mail, Phone, MapPin, FileText, Save, Loader2, AlertTriangle } fro
 import usePageTitle from "@/hooks/usePageTitle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
+import { uploadUserFile, validateImageUpload } from "@/lib/file-storage";
 
 const Profile = () => {
   usePageTitle("Profile Settings");
@@ -80,19 +81,17 @@ const Profile = () => {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.currentTarget.value = "";
     if (!file || !user) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Image must be under 5MB");
+    try {
+      validateImageUpload(file);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "This image cannot be uploaded.");
       return;
     }
     setUploading(true);
     try {
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-      const path = `${user.id}/avatar-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("application-documents")
-        .upload(path, file, { upsert: true, contentType: file.type });
-      if (uploadError) throw uploadError;
+      const { path } = await uploadUserFile(user.id, file, "avatar", 5 * 1024 * 1024);
 
       // Bucket is private — use a long-lived signed URL so the avatar renders everywhere
       const { data: signed, error: signErr } = await supabase.storage
@@ -163,8 +162,8 @@ const Profile = () => {
                       </span>
                     </Button>
                   </Label>
-                  <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG. Max 5MB.</p>
+                  <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatarUpload} />
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP, or HEIC. Max 5MB.</p>
                 </div>
               </div>
 

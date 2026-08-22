@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  User, Mail, Phone, MapPin, FileText, Briefcase, Download,
+  User, Mail, Phone, MapPin, FileText, Briefcase, Eye,
   Calendar, GraduationCap, DollarSign, Clock, Linkedin, Loader2, MessageSquare, Send
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import DocumentPreviewDialog from "@/components/DocumentPreviewDialog";
 
 interface ApplicantProfile {
   full_name: string;
@@ -27,6 +28,7 @@ interface ApplicantProfile {
 interface ApplicationData {
   id: string;
   cover_letter: string | null;
+  cover_letter_url: string | null;
   cv_url: string | null;
   resume_url: string | null;
   scanned_id_url: string | null;
@@ -61,6 +63,7 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
   const [feedback, setFeedback] = useState("");
   const [contactInfo, setContactInfo] = useState("");
   const [saving, setSaving] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<{ path: string; label: string } | null>(null);
 
   const fetchData = async (userId: string, appId?: string | null) => {
     setLoading(true);
@@ -128,38 +131,23 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
     }
   };
 
-  const openDocument = async (path: string) => {
-    // Support both stored paths and legacy full URLs
-    if (/^https?:\/\//.test(path)) {
-      window.open(path, "_blank", "noopener,noreferrer");
-      return;
-    }
-    const { data, error } = await supabase.storage
-      .from("application-documents")
-      .createSignedUrl(path, 60 * 60); // 1 hour
-    if (error || !data?.signedUrl) {
-      toast.error("Unable to open document");
-      return;
-    }
-    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-  };
-
   const DocumentLink = ({ url, label }: { url: string | null; label: string }) => {
     if (!url) return null;
     return (
       <button
         type="button"
-        onClick={() => openDocument(url)}
+        onClick={() => setPreviewDocument({ path: url, label })}
         className="flex items-center gap-2 px-3 py-2 rounded-xl bg-primary/5 hover:bg-primary/10 transition-colors text-sm text-primary font-medium"
       >
-        <Download className="h-4 w-4" /> {label}
+        <Eye className="h-4 w-4" /> Preview {label}
       </button>
     );
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl p-0">
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] rounded-2xl p-0">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="font-display text-xl">Applicant Profile & Application</DialogTitle>
         </DialogHeader>
@@ -284,6 +272,7 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
                     <h4 className="text-sm font-semibold text-foreground mb-2">Documents</h4>
                     <div className="flex flex-wrap gap-2">
                       <DocumentLink url={application.cv_url} label="CV" />
+                      <DocumentLink url={application.cover_letter_url} label="Cover Letter" />
                       <DocumentLink url={application.resume_url} label="Resume" />
                       <DocumentLink url={application.scanned_id_url} label="Scanned ID" />
                       <DocumentLink url={application.recommendation_letter_url} label="Recommendation" />
@@ -327,9 +316,17 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
           ) : (
             <p className="text-center text-muted-foreground py-8">Profile not found.</p>
           )}
-        </ScrollArea>
-      </DialogContent>
-    </Dialog>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+      <DocumentPreviewDialog
+        document={previewDocument}
+        open={Boolean(previewDocument)}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setPreviewDocument(null);
+        }}
+      />
+    </>
   );
 };
 

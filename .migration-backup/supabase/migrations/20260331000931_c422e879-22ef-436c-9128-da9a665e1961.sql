@@ -1,3 +1,0 @@
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone text DEFAULT NULL;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address text DEFAULT NULL;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS about text DEFAULT NULL;

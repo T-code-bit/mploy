@@ -1,0 +1,15 @@
+project_id = "nlfokrpapmzgazcwfgcp"
+
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.admin-access-login]
+    verify_jwt = false
+  [functions.account-auth]
+    verify_jwt = false
+  [functions.career-coach]
+    verify_jwt = false
+  [functions.verify-recaptcha]
+    verify_jwt = false

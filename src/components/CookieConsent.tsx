@@ -116,7 +116,7 @@ const CookieConsent = () => {
               )}
             </AnimatePresence>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               {showDetails ? (
                 <>
                   <Button variant="outline" size="sm" onClick={rejectOptional} className="flex-1 rounded-xl text-xs h-9">

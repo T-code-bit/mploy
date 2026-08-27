@@ -486,7 +486,7 @@ const CVBuilder = () => {
                           <Input placeholder="Job Title *" className="rounded-xl h-11" value={exp.title} onChange={(e) => updateExperience(exp.id, "title", e.target.value)} />
                           <Input placeholder="Company *" className="rounded-xl h-11" value={exp.company} onChange={(e) => updateExperience(exp.id, "company", e.target.value)} />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <Input placeholder="Start Date (e.g. Jan 2022)" className="rounded-xl h-11" value={exp.startDate} onChange={(e) => updateExperience(exp.id, "startDate", e.target.value)} />
                           <Input placeholder="End Date or Present" className="rounded-xl h-11" value={exp.endDate} onChange={(e) => updateExperience(exp.id, "endDate", e.target.value)} />
                         </div>
@@ -540,7 +540,7 @@ const CVBuilder = () => {
                           </Button>
                         </div>
                         <Input placeholder="Certification Name" className="rounded-xl h-11" value={cert.name} onChange={(e) => updateCertification(cert.id, "name", e.target.value)} />
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <Input placeholder="Issuing Organization" className="rounded-xl h-11" value={cert.issuer} onChange={(e) => updateCertification(cert.id, "issuer", e.target.value)} />
                           <Input placeholder="Year" className="rounded-xl h-11" value={cert.year} onChange={(e) => updateCertification(cert.id, "year", e.target.value)} />
                         </div>
@@ -642,7 +642,12 @@ const CVBuilder = () => {
                                   <p className="text-xs font-semibold text-foreground">{exp.title}</p>
                                   <p className="text-[11px] text-muted-foreground">{[exp.company, [exp.startDate, exp.endDate].filter(Boolean).join(" – ")].filter(Boolean).join("  |  ")}</p>
                                   {exp.description && <p className="text-[11px] text-muted-foreground mt-1">{exp.description}</p>}
-                                  {exp.achievements && <p className="text-[11px] text-primary/80 mt-0.5 italic">✦ {exp.achievements}</p>}
+                                  {exp.achievements && (
+                                    <p className="mt-0.5 flex items-start gap-1 text-[11px] italic text-primary/80">
+                                      <Award className="mt-0.5 h-3 w-3 shrink-0" aria-hidden="true" />
+                                      <span>{exp.achievements}</span>
+                                    </p>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -837,7 +842,9 @@ const CVBuilder = () => {
                             </Button>
                           ) : (
                             <Button size="sm" className="text-xs rounded-xl h-8 bg-gradient-primary text-primary-foreground" onClick={(e) => { e.stopPropagation(); selectTemplate(tmpl); }}>
-                              {selectedTemplate === tmpl.id ? "Selected ✓" : "Use Template"}
+                              {selectedTemplate === tmpl.id ? (
+                                <><CheckCircle2 className="h-3 w-3" /> Selected</>
+                              ) : "Use Template"}
                             </Button>
                           )}
                         </div>

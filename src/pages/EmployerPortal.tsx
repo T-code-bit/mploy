@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
 import usePageTitle from "@/hooks/usePageTitle";
+import { currentStatusTimestamp, formatExactDateTime } from "@/lib/date-time";
 
 const EmployerPortal = () => {
   usePageTitle("Employer Portal");
@@ -199,7 +200,7 @@ const EmployerPortal = () => {
                     <Label>Job Title</Label>
                     <Input value={jobForm.title} onChange={(e) => setJobForm({ ...jobForm, title: e.target.value })} placeholder="e.g. Frontend Developer" className="rounded-xl h-11" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Company</Label>
                       <Input value={jobForm.company} onChange={(e) => setJobForm({ ...jobForm, company: e.target.value })} className="rounded-xl h-11" />
@@ -209,7 +210,7 @@ const EmployerPortal = () => {
                       <Input value={jobForm.location} onChange={(e) => setJobForm({ ...jobForm, location: e.target.value })} className="rounded-xl h-11" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label>Type</Label>
                       <Select value={jobForm.type} onValueChange={(v) => setJobForm({ ...jobForm, type: v })}>
@@ -374,22 +375,27 @@ const EmployerPortal = () => {
                               <span className="text-xs text-muted-foreground">—</span>
                             )}
                           </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {new Date(app.created_at).toLocaleDateString()}
+                          <TableCell className="min-w-44 text-xs text-muted-foreground">
+                            {formatExactDateTime(app.created_at)}
                           </TableCell>
                           <TableCell>
-                            <Select value={app.status} onValueChange={(v) => updateApplicationStatus.mutate({ id: app.id, status: v })}>
-                              <SelectTrigger className="w-36 h-9 rounded-lg text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="reviewing">Reviewing</SelectItem>
-                                <SelectItem value="shortlisted">Shortlisted</SelectItem>
-                                <SelectItem value="hired">Hired</SelectItem>
-                                <SelectItem value="rejected">Rejected</SelectItem>
-                              </SelectContent>
-                            </Select>
+                            <div className="min-w-40 space-y-1">
+                              <Select value={app.status} onValueChange={(v) => updateApplicationStatus.mutate({ id: app.id, status: v })}>
+                                <SelectTrigger className="w-36 h-9 rounded-lg text-xs">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="reviewing">Reviewing</SelectItem>
+                                  <SelectItem value="shortlisted">Shortlisted</SelectItem>
+                                  <SelectItem value="hired">Hired</SelectItem>
+                                  <SelectItem value="rejected">Rejected</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <p className="text-[10px] leading-tight text-muted-foreground">
+                                {formatExactDateTime(currentStatusTimestamp(app))}
+                              </p>
+                            </div>
                           </TableCell>
                           <TableCell>
                             <Badge

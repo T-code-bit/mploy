@@ -16,6 +16,9 @@ const SETTINGS = {
   recaptcha_secret_key: { secret: true },
   openai_api_key: { secret: true },
   openai_model: { secret: false },
+  google_client_id: { secret: false },
+  google_client_secret: { secret: true },
+  google_allowed_origins: { secret: false },
   app_url: { secret: false },
 } as const
 
@@ -137,8 +140,28 @@ serve(async (req) => {
 
     if (action === "save") {
       if (!isSettingKey(body.key)) return json({ error: "Unsupported setting" }, 400)
-      const value = typeof body.value === "string" ? body.value.trim() : ""
+      const value: string = typeof body.value === "string" ? body.value.trim() : ""
       if (!value || value.length > 10000) return json({ error: "Enter a valid value" }, 400)
+      if (body.key === "google_client_id" && !/^[a-zA-Z0-9._-]+\.apps\.googleusercontent\.com$/.test(value)) {
+        return json({ error: "Enter a valid Google OAuth web client ID" }, 400)
+      }
+      if (body.key === "google_client_secret" && value.length < 12) {
+        return json({ error: "Enter a valid Google OAuth client secret" }, 400)
+      }
+      if (body.key === "google_allowed_origins") {
+        const origins = value.split(",").map((origin: string) => origin.trim()).filter(Boolean)
+        const valid = origins.length > 0 && origins.every((origin: string) => {
+          try {
+            const parsed = new URL(origin)
+            const localHttp = parsed.protocol === "http:"
+              && (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1")
+            return parsed.origin === origin.replace(/\/$/, "") && (parsed.protocol === "https:" || localHttp)
+          } catch {
+            return false
+          }
+        })
+        if (!valid) return json({ error: "Use comma-separated HTTPS origins without paths, for example https://go-mploy.com" }, 400)
+      }
 
       const { error } = await admin.from("integration_settings").upsert({
         setting_key: body.key,

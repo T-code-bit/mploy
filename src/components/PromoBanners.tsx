@@ -11,16 +11,32 @@ export const AES_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfWUxhefGqrCHMOwMrHQHgS2KLgdDP-HBccjv7_Rm_biHTXNQ/viewform";
 export const BOOK_PHONE = "+254 717 627632";
 export const BOOK_TEL = "+254717627632";
+const PROMO_SEEN_KEY = "mploy-promotions-seen-v1";
 
 const isSummitLive = () => Date.now() <= AES_END.getTime();
 
-/** Full-screen attention-grabbing popup shown on every visit (no dismissal memory). */
+/** Full-screen announcement shown once per browser storage lifecycle. */
 const PromoBanners = () => {
   const [open, setOpen] = useState(false);
   const summitLive = isSummitLive();
 
   useEffect(() => {
-    const t = setTimeout(() => setOpen(true), 900);
+    let hasSeenPromo = false;
+    try {
+      hasSeenPromo = localStorage.getItem(PROMO_SEEN_KEY) === "true";
+    } catch {
+      // If storage is unavailable, show the announcement without breaking the site.
+    }
+    if (hasSeenPromo) return;
+
+    const t = setTimeout(() => {
+      setOpen(true);
+      try {
+        localStorage.setItem(PROMO_SEEN_KEY, "true");
+      } catch {
+        // Storage can be unavailable in privacy modes.
+      }
+    }, 900);
     return () => clearTimeout(t);
   }, []);
 
@@ -122,8 +138,9 @@ const PromoBanners = () => {
 
 /** Slim always-on strip promoting the book. */
 export const BookStrip = () => (
-  <div className="w-full bg-gradient-primary text-primary-foreground text-center text-xs sm:text-sm py-2 px-3">
-    <span className="font-semibold">📘 "The Agile Jobseeker" by Cavin O. Apodo — KSh 1,000.</span>{" "}
+  <div className="flex w-full flex-wrap items-center justify-center gap-x-1.5 bg-gradient-primary px-3 py-2 text-center text-xs text-primary-foreground sm:text-sm">
+    <BookOpen className="h-4 w-4 shrink-0" aria-hidden="true" />
+    <span className="font-semibold">"The Agile Jobseeker" by Cavin O. Apodo — KSh 1,000.</span>
     <a href={`tel:${BOOK_TEL}`} className="underline underline-offset-2 font-semibold">
       Order on {BOOK_PHONE}
     </a>

@@ -173,7 +173,7 @@ const Reviews = () => {
                     <Label htmlFor="name" className="text-xs uppercase tracking-wider text-muted-foreground">Full name *</Label>
                     <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required className="rounded-xl h-11 mt-1.5" />
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                     <div>
                       <Label htmlFor="role" className="text-xs uppercase tracking-wider text-muted-foreground">Role</Label>
                       <Input id="role" placeholder="Software Dev" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="rounded-xl h-11 mt-1.5" />
@@ -228,8 +228,8 @@ const Reviews = () => {
               <div className="inline-flex p-1 rounded-xl bg-muted/60 border border-border">
                 {([
                   { k: "all" as const, label: "All" },
-                  { k: 5 as const, label: "5★" },
-                  { k: 4 as const, label: "4★" },
+                  { k: 5 as const, label: "5" },
+                  { k: 4 as const, label: "4" },
                 ]).map((opt) => (
                   <button
                     key={String(opt.k)}
@@ -240,7 +240,10 @@ const Reviews = () => {
                         : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {opt.label}
+                    <span className="inline-flex items-center gap-1">
+                      {opt.label}
+                      {opt.k !== "all" && <Star className="h-3 w-3 fill-current" aria-hidden="true" />}
+                    </span>
                   </button>
                 ))}
               </div>

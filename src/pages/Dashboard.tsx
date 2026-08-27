@@ -18,6 +18,8 @@ import { SUBSCRIPTION_TIERS } from "@/lib/subscription";
 import UpgradeBanner from "@/components/UpgradeBanner";
 import usePageTitle from "@/hooks/usePageTitle";
 import ApplicationProgress from "@/components/ApplicationProgress";
+import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
+import { formatExactDateTime } from "@/lib/date-time";
 import { toast } from "sonner";
 
 const Dashboard = () => {
@@ -107,15 +109,6 @@ const Dashboard = () => {
     }
   };
 
-  const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const days = Math.floor(diff / 86400000);
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-  };
-
   return (
     <div className="min-h-screen bg-background bg-mesh">
       <Navbar />
@@ -128,7 +121,10 @@ const Dashboard = () => {
           >
             <div>
               <h1 className="font-display text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                Welcome back, {profile?.full_name || "there"} 👋
+                 <span className="inline-flex flex-wrap items-center gap-2">
+                   Welcome back, {profile?.full_name || "there"}
+                   <Sparkles className="h-6 w-6 text-secondary" aria-hidden="true" />
+                 </span>
               </h1>
               <p className="text-muted-foreground mt-1">Here's your career readiness overview.</p>
             </div>
@@ -211,11 +207,21 @@ const Dashboard = () => {
                             <p className="text-xs text-muted-foreground truncate">{app.jobs?.company || "Unknown Company"}</p>
                           </div>
                         </div>
-                        <p className="text-[11px] text-muted-foreground shrink-0">{timeAgo(app.created_at)}</p>
+                        <p className="max-w-32 shrink-0 text-right text-[11px] leading-tight text-muted-foreground">
+                          {formatExactDateTime(app.created_at)}
+                        </p>
                       </div>
 
                       {/* Live progress timeline */}
                       <ApplicationProgress status={app.status} />
+                       <ApplicationStatusHistory
+                         className="mt-3 border-t border-border/60 pt-3"
+                         created_at={app.created_at}
+                         reviewed_at={app.reviewed_at}
+                         shortlisted_at={app.shortlisted_at}
+                         hired_at={app.hired_at}
+                         rejected_at={app.rejected_at}
+                       />
 
                       {/* Employer Feedback */}
                       {(app.employer_feedback || app.employer_contact_info) && (

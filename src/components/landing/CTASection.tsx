@@ -28,13 +28,13 @@ const CTASection = () => (
         Join thousands of job seekers who trust M-Ploy for verified careers, optimized skills, and total readiness.
       </p>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <Link to="/jobs">
-          <Button size="lg" className="bg-gradient-accent text-secondary-foreground font-semibold px-8 rounded-xl h-12 shadow-glow-accent hover:shadow-glow-accent">
+        <Link to="/jobs" className="w-full sm:w-auto">
+          <Button size="lg" className="w-full bg-gradient-accent text-secondary-foreground font-semibold px-8 rounded-xl h-12 shadow-glow-accent hover:shadow-glow-accent sm:w-auto">
             Explore Jobs <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </Link>
-        <Link to="/academy">
-          <Button size="lg" variant="outline" className="border-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/8 rounded-xl h-12">
+        <Link to="/academy" className="w-full sm:w-auto">
+          <Button size="lg" variant="outline" className="w-full border-primary-foreground/30 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground rounded-xl h-12 sm:w-auto">
             Start Learning
           </Button>
         </Link>

@@ -27,7 +27,7 @@ const buildEmailHtml = (jobTitle: string, company: string, location?: string, ty
   <div style="max-width: 560px; margin: 40px auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
     <div style="background: linear-gradient(135deg, #1a365d, #2563eb); padding: 32px 24px; text-align: center;">
       <img src="https://nlfokrpapmzgazcwfgcp.supabase.co/storage/v1/object/public/email-assets/logo.png" alt="M-Ploy" style="height: 40px; margin-bottom: 12px;" />
-      <h1 style="color: #ffffff; margin: 0; font-size: 22px;">🚀 New Job Opportunity!</h1>
+       <h1 style="color: #ffffff; margin: 0; font-size: 22px;">New Job Opportunity</h1>
     </div>
     <div style="padding: 32px 24px;">
       <h2 style="color: #1a365d; margin: 0 0 8px; font-size: 20px;">${jobTitle}</h2>
@@ -88,7 +88,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    const emailSubject = `🚀 New Job Alert: ${jobTitle} at ${company}`;
+    const emailSubject = `New Job Alert: ${jobTitle} at ${company}`;
     const emailHtml = buildEmailHtml(jobTitle, company, location, type, deadline);
 
     let enqueued = 0;

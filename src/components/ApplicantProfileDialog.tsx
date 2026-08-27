@@ -15,6 +15,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import DocumentPreviewDialog from "@/components/DocumentPreviewDialog";
+import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
 
 interface ApplicantProfile {
   full_name: string;
@@ -45,6 +46,10 @@ interface ApplicationData {
   employer_feedback: string | null;
   employer_contact_info: string | null;
   applicant_email: string | null;
+  reviewed_at: string | null;
+  shortlisted_at: string | null;
+  hired_at: string | null;
+  rejected_at: string | null;
   status: string;
   created_at: string;
 }
@@ -224,6 +229,14 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
                   <h4 className="font-display font-semibold text-foreground flex items-center gap-2">
                     <Briefcase className="h-4 w-4 text-primary" /> Application Details
                   </h4>
+
+                   <ApplicationStatusHistory
+                     created_at={application.created_at}
+                     reviewed_at={application.reviewed_at}
+                     shortlisted_at={application.shortlisted_at}
+                     hired_at={application.hired_at}
+                     rejected_at={application.rejected_at}
+                   />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {application.education_level && (

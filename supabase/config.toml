@@ -11,5 +11,7 @@ project_id = "nlfokrpapmzgazcwfgcp"
     verify_jwt = false
   [functions.career-coach]
     verify_jwt = false
+  [functions.google-auth]
+    verify_jwt = false
   [functions.verify-recaptcha]
     verify_jwt = false

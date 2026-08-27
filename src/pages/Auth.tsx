@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { User } from "@supabase/supabase-js";
 import { useSignIn, useSignUp, useClerk } from "@clerk/clerk-react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, supabaseAnonKey, supabaseUrl } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,8 @@ const Auth = () => {
   const [signupRole, setSignupRole] = useState<"job_seeker" | "employer">("job_seeker");
   const [signupEmployerCode, setSignupEmployerCode] = useState("");
   const [loginRole, setLoginRole] = useState<"job_seeker" | "employer" | "admin">("job_seeker");
+  const [customGoogleConfigured, setCustomGoogleConfigured] = useState(false);
+  const [processingGoogleCallback, setProcessingGoogleCallback] = useState(false);
   const clerkBridgeStarted = useRef(false);
 
   const routeForRole = (role?: string | null) => {
@@ -98,6 +100,42 @@ const Auth = () => {
     });
     if (error) throw error;
   };
+
+  useEffect(() => {
+    fetch(`${supabaseUrl}/functions/v1/google-auth?action=status`, {
+      headers: { apikey: supabaseAnonKey },
+    })
+      .then((response) => response.ok ? response.json() : null)
+      .then((result) => setCustomGoogleConfigured(Boolean(result?.configured)))
+      .catch(() => setCustomGoogleConfigured(false));
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const googleError = params.get("google_error");
+    const tokenHash = params.get("google_token_hash");
+    if (!googleError && !tokenHash) return;
+
+    window.history.replaceState({}, "", "/auth");
+    if (googleError) {
+      toast.error(googleError);
+      return;
+    }
+
+    const tokenType = params.get("google_token_type") === "signup" ? "signup" : "magiclink";
+    setProcessingGoogleCallback(true);
+    setLoading(true);
+    supabase.auth.verifyOtp({ token_hash: tokenHash!, type: tokenType })
+      .then(({ error }) => {
+        if (error) throw error;
+        toast.success("Signed in securely with Google");
+      })
+      .catch((error) => toast.error(friendlyAuthError(error instanceof Error ? error.message : String(error))))
+      .finally(() => {
+        setProcessingGoogleCallback(false);
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -379,6 +417,13 @@ const Auth = () => {
         return;
       }
 
+      if (customGoogleConfigured) {
+        const startUrl = new URL(`${supabaseUrl}/functions/v1/google-auth`);
+        startUrl.searchParams.set("redirect_origin", window.location.origin);
+        window.location.assign(startUrl.toString());
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: { redirectTo: `${window.location.origin}/auth`, queryParams: { prompt: "select_account" } },
@@ -402,7 +447,7 @@ const Auth = () => {
         type="button"
         variant="outline"
         onClick={handleGoogleAuth}
-        disabled={loading}
+        disabled={loading || processingGoogleCallback}
         className="w-full rounded-xl h-11 font-semibold gap-2"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
@@ -411,7 +456,7 @@ const Auth = () => {
           <path fill="#FBBC05" d="M5.84 14.11a6.6 6.6 0 0 1 0-4.22V7.05H2.18a11 11 0 0 0 0 9.9l3.66-2.84Z" />
           <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.05l3.66 2.84C6.71 7.31 9.14 5.38 12 5.38Z" />
         </svg>
-        {label}
+        {processingGoogleCallback ? "Finishing Google sign-in..." : label}
       </Button>
     </div>
   );
@@ -439,7 +484,7 @@ const Auth = () => {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-6 bg-mesh">
+      <div className="flex min-w-0 flex-1 items-center justify-center bg-mesh p-3 sm:p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -451,7 +496,7 @@ const Auth = () => {
             <span className="font-display text-xl font-bold text-foreground tracking-tight">M-Ploy</span>
           </div>
 
-          <div className="bg-card rounded-2xl border border-border p-8 shadow-md">
+          <div className="bg-card rounded-2xl border border-border p-4 shadow-md sm:p-8">
             {pendingVerification || resetPending ? (
               <form onSubmit={resetPending ? handleResetPassword : handleVerifyCode} className="space-y-4">
                 <div className="space-y-1">

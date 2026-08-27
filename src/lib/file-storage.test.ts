@@ -34,6 +34,13 @@ describe("file storage helpers", () => {
     );
   });
 
+  it("enforces a 5MB maximum for application documents", () => {
+    const exactlyFiveMb = new File([new Uint8Array(5 * 1024 * 1024)], "cv.pdf", { type: "application/pdf" });
+    const overFiveMb = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "cv.pdf", { type: "application/pdf" });
+    expect(() => validateUpload(exactlyFiveMb)).not.toThrow();
+    expect(() => validateUpload(overFiveMb)).toThrow("File must be 5MB or smaller.");
+  });
+
   it("only accepts images for profile photos", () => {
     expect(() => validateImageUpload(new File(["image"], "avatar.webp", { type: "image/webp" }))).not.toThrow();
     expect(() => validateImageUpload(new File(["document"], "cv.pdf", { type: "application/pdf" }))).toThrow(

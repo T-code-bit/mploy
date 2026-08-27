@@ -38,8 +38,8 @@ const RobotHead = ({ open }: { open: boolean }) => (
 type Attachment = { name: string; mime: string; dataUrl: string; size: number };
 type Msg = { role: "user" | "assistant"; content: string; attachments?: Attachment[] };
 const MAX_CHAT_ATTACHMENTS = 3;
-const MAX_CHAT_ATTACHMENT_SIZE = 4 * 1024 * 1024;
-const MAX_CHAT_ATTACHMENTS_TOTAL = 8 * 1024 * 1024;
+const MAX_CHAT_ATTACHMENT_SIZE = 5 * 1024 * 1024;
+const MAX_CHAT_ATTACHMENTS_TOTAL = 5 * 1024 * 1024;
 
 const toApiContent = (m: Msg) => {
   if (!m.attachments?.length) return m.content;
@@ -79,7 +79,7 @@ const validateChatAttachment = (file: File) => {
     throw new Error(`${file.name}: the file is empty.`);
   }
   if (file.size > MAX_CHAT_ATTACHMENT_SIZE) {
-    throw new Error(`${file.name}: files must be 4MB or smaller.`);
+    throw new Error(`${file.name}: files must be 5MB or smaller.`);
   }
 };
 
@@ -105,7 +105,7 @@ const CareerCoachChatbot = () => {
     {
       role: "assistant",
       content:
-        "Hi 👋 I'm **M-Ploy Coach** — your flexible career and life assistant. Ask me anything: jobs, CV tips, interviews, study advice, motivation, or life questions. How can I help today?",
+        "Hi, I'm **M-Ploy Coach** — your flexible career and life assistant. Ask me anything: jobs, CV tips, interviews, study advice, motivation, or life questions. How can I help today?",
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -244,7 +244,7 @@ const CareerCoachChatbot = () => {
                   className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
                 >
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm ${
+                    className={`max-w-[85%] break-words rounded-2xl px-3.5 py-2.5 text-sm ${
                       m.role === "user"
                         ? "bg-primary text-primary-foreground rounded-br-sm"
                         : "bg-card border border-border text-foreground rounded-bl-sm"
@@ -260,12 +260,13 @@ const CareerCoachChatbot = () => {
                           a.mime.startsWith("image/") ? (
                             <img key={ai} src={a.dataUrl} alt={a.name} className="rounded-lg max-h-40 object-cover" />
                           ) : (
-                            <div key={ai} className="flex items-center gap-1.5 text-xs opacity-90">
-                              <FileText className="h-3.5 w-3.5" /> {a.name}
+                            <div key={ai} className="flex min-w-0 items-center gap-1.5 text-xs opacity-90">
+                              <FileText className="h-3.5 w-3.5 shrink-0" />
+                              <span className="min-w-0 truncate">{a.name}</span>
                             </div>
                           )
                         )}
-                        {m.content && <div className="whitespace-pre-wrap">{m.content}</div>}
+                        {m.content && <div className="break-words whitespace-pre-wrap">{m.content}</div>}
                       </div>
                     )}
                   </div>
@@ -328,7 +329,7 @@ const CareerCoachChatbot = () => {
                     const totalSize = attachments.reduce((sum, attachment) => sum + attachment.size, 0)
                       + selected.reduce((sum, file) => sum + file.size, 0);
                     if (totalSize > MAX_CHAT_ATTACHMENTS_TOTAL) {
-                      throw new Error("Keep the combined attachment size under 8MB.");
+                      throw new Error("Keep the combined attachment size at 5MB or less.");
                     }
                     const parsed = await Promise.all(selected.map(readFile));
                     setAttachments((prev) => [...prev, ...parsed]);

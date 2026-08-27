@@ -16,6 +16,47 @@ const json = (body: unknown, status = 200) =>
 const wait = (milliseconds: number) =>
   new Promise((resolve) => setTimeout(resolve, milliseconds));
 
+const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+const MAX_ATTACHMENT_COUNT = 3;
+
+const getDataUrlBytes = (value: unknown) => {
+  if (typeof value !== "string") return 0;
+  const match = value.match(/^data:([^;,]+)?;base64,([A-Za-z0-9+/=_-]+)$/);
+  if (!match) return 0;
+  const encoded = match[2].replace(/-/g, "+").replace(/_/g, "/");
+  const padding = encoded.endsWith("==") ? 2 : encoded.endsWith("=") ? 1 : 0;
+  return Math.max(0, Math.floor(encoded.length * 3 / 4) - padding);
+};
+
+const validateAttachments = (messages: unknown[]) => {
+  let count = 0;
+  let totalBytes = 0;
+
+  for (const message of messages) {
+    if (!message || typeof message !== "object" || !Array.isArray((message as { content?: unknown }).content)) continue;
+    for (const part of (message as { content: unknown[] }).content) {
+      if (!part || typeof part !== "object") continue;
+      const candidate = part as { type?: unknown; image_url?: { url?: unknown }; file?: { file_data?: unknown } };
+      const dataUrl = candidate.type === "image_url"
+        ? candidate.image_url?.url
+        : candidate.type === "file"
+          ? candidate.file?.file_data
+          : undefined;
+      if (typeof dataUrl !== "string") continue;
+      count += 1;
+      totalBytes += getDataUrlBytes(dataUrl);
+    }
+  }
+
+  if (count > MAX_ATTACHMENT_COUNT) {
+    return "Attach up to 3 files at a time.";
+  }
+  if (totalBytes > MAX_ATTACHMENT_BYTES) {
+    return "Attachments are too large. Keep the combined file size at 5MB or less.";
+  }
+  return null;
+};
+
 const parseOpenAIError = (body: string) => {
   try {
     const parsed = JSON.parse(body);
@@ -68,14 +109,16 @@ serve(async (req) => {
 
   try {
     const contentLength = Number(req.headers.get("content-length") || 0);
-    if (contentLength > 12 * 1024 * 1024) {
-      return json({ error: "Attachments are too large. Keep the total under 8MB." }, 413);
+    if (contentLength > 8 * 1024 * 1024) {
+      return json({ error: "Attachments are too large. Keep the combined file size at 5MB or less." }, 413);
     }
 
     const { messages } = await req.json();
     if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
       return json({ error: "Send between 1 and 30 messages." }, 400);
     }
+    const attachmentError = validateAttachments(messages);
+    if (attachmentError) return json({ error: attachmentError }, 413);
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",

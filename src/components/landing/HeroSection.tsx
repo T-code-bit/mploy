@@ -42,14 +42,14 @@ const HeroSection = () => (
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 mb-12">
-            <Link to="/jobs">
-              <Button size="lg" className="bg-gradient-accent text-secondary-foreground font-semibold px-8 rounded-xl shadow-glow-accent hover:shadow-glow-accent transition-shadow h-13 text-base">
+            <Link to="/jobs" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full bg-gradient-accent text-secondary-foreground font-semibold px-8 rounded-xl shadow-glow-accent hover:shadow-glow-accent transition-shadow h-13 text-base sm:w-auto">
                 Find Verified Jobs
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
-            <Link to="/cv-builder">
-              <Button size="lg" variant="outline" className="border-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/8 rounded-xl h-13 text-base">
+            <Link to="/cv-builder" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground rounded-xl h-13 text-base sm:w-auto">
                 Build Your CV
               </Button>
             </Link>
@@ -63,7 +63,7 @@ const HeroSection = () => (
           >
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              <span className="text-xs font-medium">Made in Kenya 🇰🇪</span>
+              <span className="text-xs font-medium">Made in Kenya</span>
             </div>
             <div className="h-4 w-px bg-primary-foreground/15" />
             <div className="flex items-center gap-2">

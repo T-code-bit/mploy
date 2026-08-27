@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const APPLICATION_DOCUMENTS_BUCKET = "application-documents";
-export const MAX_APPLICATION_FILE_SIZE = 15 * 1024 * 1024;
+export const MAX_APPLICATION_FILE_SIZE = 5 * 1024 * 1024;
 export const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
 
 const MIME_BY_EXTENSION: Record<string, string> = {
@@ -77,7 +77,7 @@ export const validateUpload = (file: File, maxSize = MAX_APPLICATION_FILE_SIZE) 
   }
 
   if (file.size > maxSize) {
-    throw new Error(`File must be smaller than ${Math.round(maxSize / 1024 / 1024)}MB.`);
+    throw new Error(`File must be ${Math.round(maxSize / 1024 / 1024)}MB or smaller.`);
   }
 
   const extension = getUploadFileExtension(file);

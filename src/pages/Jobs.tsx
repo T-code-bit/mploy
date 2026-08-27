@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2, Upload, FileText, AlertCircle, CalendarClock, Eye, Trash2 } from "lucide-react";
+import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe, Send, Loader2, Upload, FileText, AlertCircle, CalendarClock, Eye, Trash2, Check } from "lucide-react";
 import usePageTitle from "@/hooks/usePageTitle";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -389,22 +389,22 @@ const Jobs = () => {
                     className="group bg-card rounded-2xl border border-border p-6 shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5 card-shine"
                   >
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div className="flex-1">
+                      <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2.5 mb-2">
                           <div className="h-10 w-10 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0">
                             <Building2 className="h-5 w-5 text-primary-foreground" />
                           </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-display font-semibold text-card-foreground text-lg">{job.title}</h3>
+                          <div className="min-w-0">
+                            <div className="flex min-w-0 items-center gap-2">
+                              <h3 className="break-words font-display font-semibold text-card-foreground text-lg">{job.title}</h3>
                               {job.is_verified && (
                                 <ShieldCheck className="h-4 w-4 text-primary" />
                               )}
                             </div>
-                            <p className="text-sm text-muted-foreground">{job.company}</p>
+                            <p className="break-words text-sm text-muted-foreground">{job.company}</p>
                           </div>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-3 ml-[52px]">
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground mb-3 sm:ml-[52px]">
                           <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{job.location || "Not specified"}</span>
                           <span className="flex items-center gap-1"><Briefcase className="h-3 w-3" />{job.type}</span>
                           <span className="flex items-center gap-1"><Clock className="h-3 w-3" />{timeAgo(job.created_at)}</span>
@@ -416,16 +416,16 @@ const Jobs = () => {
                           )}
                         </div>
                         {job.description && (
-                          <p className="text-sm text-muted-foreground mb-3 ml-[52px] line-clamp-2">{job.description}</p>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2 sm:ml-[52px]">{job.description}</p>
                         )}
-                        <div className="flex flex-wrap gap-1.5 ml-[52px]">
+                        <div className="flex flex-wrap gap-1.5 sm:ml-[52px]">
                           {(job.requirements || []).slice(0, 4).map((tag: string) => (
                             <span key={tag} className="inline-flex px-2.5 py-1 rounded-lg bg-muted text-xs font-medium text-muted-foreground">{tag}</span>
                           ))}
                           <span className="inline-flex px-2.5 py-1 rounded-lg bg-accent text-xs font-medium text-accent-foreground">{job.category}</span>
                         </div>
                       </div>
-                      <div className="text-right shrink-0 flex flex-col items-end gap-2">
+                      <div className="flex shrink-0 flex-col items-start gap-2 text-left sm:items-end sm:text-right">
                         {job.salary_range && (
                           <div>
                             <p className="font-display font-bold text-foreground text-lg">{job.salary_range}</p>
@@ -433,7 +433,7 @@ const Jobs = () => {
                           </div>
                         )}
                         {isOwner(job) ? (
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Button
                               size="sm"
                               variant="outline"
@@ -445,14 +445,16 @@ const Jobs = () => {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="gap-1.5 rounded-xl text-destructive border-destructive/30 hover:bg-destructive/10"
+                              className="gap-1.5 rounded-xl border-destructive/40 text-destructive hover:bg-destructive/10 dark:border-red-400/50 dark:text-red-400"
                               onClick={() => setDeleteJob(job)}
                             >
                               <Trash2 className="h-3.5 w-3.5" /> Delete
                             </Button>
                           </div>
                         ) : hasApplied(job.id) ? (
-                          <Badge variant="secondary" className="rounded-xl px-4 py-1.5">Applied ✓</Badge>
+                          <Badge variant="secondary" className="gap-1 rounded-xl px-4 py-1.5">
+                            Applied <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                          </Badge>
                         ) : (
                           <Button
                             size="sm"
@@ -585,7 +587,7 @@ const Jobs = () => {
             {/* Personal Information */}
             <div className="space-y-3">
               <h4 className="text-sm font-semibold text-foreground">Personal Information</h4>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Phone Number <span className="text-destructive">*</span></Label>
                   <Input placeholder="+254 7XX XXX XXX" className="rounded-xl h-11" value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -595,7 +597,7 @@ const Jobs = () => {
                   <Input type="date" className="rounded-xl h-11" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Gender</Label>
                   <Select value={gender} onValueChange={setGender}>
@@ -620,7 +622,7 @@ const Jobs = () => {
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Education Level</Label>
                   <Select value={educationLevel} onValueChange={setEducationLevel}>

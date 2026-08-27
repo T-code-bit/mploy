@@ -17,7 +17,7 @@ import {
   Trash2, Shield, Briefcase, Users, FileText, Mail, Loader2, Star, Check, X,
   Pencil, CreditCard, TrendingUp, UserCheck, BarChart3, DollarSign, Activity,
   MessageSquare, UserCog, LayoutDashboard, LogOut, Home, Menu, Send, Megaphone,
-  Settings,
+  Settings, ExternalLink, HelpCircle,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,6 +29,7 @@ import {
 import usePageTitle from "@/hooks/usePageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import mployLogo from "@/assets/mploy-logo.png";
+import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
 
 const TIER_PRICE: Record<string, number> = { basic: 10, premium: 15, free: 0 };
 
@@ -57,6 +58,9 @@ const INTEGRATION_FIELDS = [
   { key: "recaptcha_secret_key", label: "reCAPTCHA secret key", description: "Verifies CAPTCHA challenges server-side.", secret: true, placeholder: "6L…" },
   { key: "openai_api_key", label: "OpenAI API key", description: "Powers Career Coach and AI CV review.", secret: true, placeholder: "sk-…" },
   { key: "openai_model", label: "OpenAI model", description: "Default: gpt-4o-mini. Change only if your account supports the model.", secret: false, placeholder: "gpt-4o-mini" },
+  { key: "google_client_id", label: "Google OAuth client ID", description: "Public identifier for the custom Google sign-in application.", secret: false, placeholder: "1234567890-….apps.googleusercontent.com" },
+  { key: "google_client_secret", label: "Google OAuth client secret", description: "Encrypted server-side and never returned to the browser.", secret: true, placeholder: "GOCSPX-…" },
+  { key: "google_allowed_origins", label: "Google sign-in origins", description: "Comma-separated application origins allowed to receive sign-in, including Vercel or Netlify domains.", secret: false, placeholder: "https://go-mploy.com, https://your-site.vercel.app" },
   { key: "app_url", label: "Public application URL", description: "Used in email links and payment return URLs.", secret: false, placeholder: "https://go-mploy.com" },
 ] as const;
 
@@ -95,6 +99,7 @@ const Admin = () => {
   const [resendTestTo, setResendTestTo] = useState("");
   const [sendingResendTest, setSendingResendTest] = useState(false);
   const [testingOpenAI, setTestingOpenAI] = useState(false);
+  const [googleGuideOpen, setGoogleGuideOpen] = useState(false);
 
   // Realtime — auto-refresh every admin table on any change
   useEffect(() => {
@@ -457,7 +462,7 @@ const Admin = () => {
       {jobsLoading ? <Loader2 className="animate-spin" /> : jobs.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground">No jobs posted yet.</Card>
       ) : jobs.map((j: any) => (
-        <Card key={j.id} className="p-4 flex items-center justify-between gap-2">
+        <Card key={j.id} className="flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex-1 min-w-0">
             <p className="font-semibold truncate">{j.title}</p>
             <p className="text-sm text-muted-foreground truncate">{j.company} · {j.location}</p>
@@ -481,14 +486,22 @@ const Admin = () => {
       {applications.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground">No applications yet.</Card>
       ) : applications.map((a: any) => (
-        <Card key={a.id} className="p-4 flex items-center justify-between gap-2">
-          <div className="min-w-0">
+        <Card key={a.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0 flex-1">
             <p className="font-semibold truncate">{a.jobs?.title || "Job"} — {a.jobs?.company}</p>
-            <p className="text-sm text-muted-foreground">{new Date(a.created_at).toLocaleDateString()}</p>
+            <ApplicationStatusHistory
+              compact
+              className="mt-2"
+              created_at={a.created_at}
+              reviewed_at={a.reviewed_at}
+              shortlisted_at={a.shortlisted_at}
+              hired_at={a.hired_at}
+              rejected_at={a.rejected_at}
+            />
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex w-full items-center gap-2 sm:w-auto sm:shrink-0">
             <Select value={a.status} onValueChange={(v) => updateAppStatus.mutate({ id: a.id, status: v })}>
-              <SelectTrigger className="w-32 h-8 text-xs"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 min-w-0 flex-1 text-xs sm:w-32"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="reviewing">Reviewing</SelectItem>
@@ -512,7 +525,7 @@ const Admin = () => {
       ) : filteredProfiles.map((p: any) => {
         const currentRole = roleMap[p.user_id] || "job_seeker";
         return (
-          <Card key={p.id} className="p-4 flex items-center justify-between gap-2">
+        <Card key={p.id} className="flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <p className="font-semibold truncate">{p.full_name || "Unnamed"}</p>
               <p className="text-xs text-muted-foreground truncate">{p.phone || "—"} · {p.address || "no address"}</p>
@@ -548,7 +561,11 @@ const Admin = () => {
                 <Badge variant={r.is_approved ? "default" : "secondary"} className="text-xs">
                   {r.is_approved ? "Approved" : "Pending"}
                 </Badge>
-                <span className="text-xs text-muted-foreground">{Array.from({ length: r.rating }).map(() => "★").join("")}</span>
+                <span className="flex items-center gap-0.5 text-muted-foreground" aria-label={`${r.rating} out of 5 stars`}>
+                  {Array.from({ length: r.rating }).map((_, index) => (
+                    <Star key={index} className="h-3 w-3 fill-current" aria-hidden="true" />
+                  ))}
+                </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">{[r.role, r.location].filter(Boolean).join(" · ") || "—"}</p>
               {r.highlight && <p className="text-xs font-bold text-primary uppercase mt-1">{r.highlight}</p>}
@@ -586,7 +603,7 @@ const Admin = () => {
       {paystackSubs.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground">No transactions yet.</Card>
       ) : paystackSubs.map((s: any) => (
-        <Card key={s.id} className="p-4 flex items-center justify-between gap-2">
+        <Card key={s.id} className="flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
             <p className="font-semibold truncate">{s.email}</p>
             <p className="text-xs text-muted-foreground truncate">{s.customer_code || "—"} · {s.subscription_code || "no sub"}</p>
@@ -645,7 +662,8 @@ const Admin = () => {
   const Integrations = () => (
     <div className="space-y-6 max-w-5xl">
       <Card className="p-6 bg-primary/5 border-primary/20">
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex items-start gap-3">
           <Settings className="h-5 w-5 text-primary mt-0.5" />
           <div>
             <h2 className="font-display font-semibold">Secure provider configuration</h2>
@@ -653,8 +671,43 @@ const Admin = () => {
               Keys are encrypted before storage and are never returned to this browser. Replace a value to rotate it.
             </p>
           </div>
+          </div>
+          <Button type="button" variant="outline" className="shrink-0 gap-2 rounded-xl" onClick={() => setGoogleGuideOpen(true)}>
+            <HelpCircle className="h-4 w-4" /> See Google Guide
+          </Button>
         </div>
       </Card>
+
+      <Dialog open={googleGuideOpen} onOpenChange={setGoogleGuideOpen}>
+        <DialogContent className="max-h-[90vh] w-[calc(100%-1rem)] max-w-2xl overflow-y-auto rounded-2xl">
+          <DialogHeader>
+            <DialogTitle>Configure custom Google sign-in</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 text-sm">
+            <p className="text-muted-foreground">
+              The client secret stays encrypted in M-Ploy. Google redirects to the server-side callback, which creates a one-time Supabase session after verifying the Google email.
+            </p>
+            <ol className="list-decimal space-y-3 pl-5">
+              <li>
+                Open the{" "}
+                <a className="inline-flex items-center gap-1 font-semibold text-primary hover:underline" href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer">
+                  Google Cloud Credentials page <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+                {" "}and select or create a project.
+              </li>
+              <li>Configure the OAuth consent screen with the M-Ploy app name, support email, and required contact information.</li>
+              <li>Choose <strong>Create credentials → OAuth client ID → Web application</strong>.</li>
+              <li>Add each live site to <strong>Authorized JavaScript origins</strong>, for example <code className="break-all rounded bg-muted px-1.5 py-0.5">https://go-mploy.com</code>.</li>
+              <li>
+                Add this exact <strong>Authorized redirect URI</strong>:
+                <code className="mt-1 block break-all rounded-lg bg-muted p-2">https://nlfokrpapmzgazcwfgcp.supabase.co/functions/v1/google-auth/callback</code>
+              </li>
+              <li>Copy the client ID and client secret into the fields below. Add every production, Vercel, or Netlify origin to Google sign-in origins.</li>
+              <li>Save all three settings. New Google sign-ins will then use the custom credentials automatically.</li>
+            </ol>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {integrationSettingsLoading ? <Loader2 className="animate-spin" /> : (
         <div className="grid lg:grid-cols-2 gap-4">
@@ -672,7 +725,7 @@ const Admin = () => {
                     {current?.configured ? "Configured" : "Not set"}
                   </Badge>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2 sm:flex-row">
                   <Input
                     type={field.secret ? "password" : "text"}
                     autoComplete="off"
@@ -731,7 +784,7 @@ const Admin = () => {
       {subscribers.length === 0 ? (
         <Card className="p-6 text-center text-muted-foreground">No newsletter subscribers yet.</Card>
       ) : subscribers.map((s: any) => (
-        <Card key={s.id} className="p-4 flex items-center justify-between">
+        <Card key={s.id} className="flex flex-col items-start gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p>{s.email}</p>
             <p className="text-[10px] text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</p>
@@ -867,7 +920,7 @@ const Admin = () => {
               <div><Label>Title</Label><Input value={editingJob.title || ""} onChange={(e) => setEditingJob({ ...editingJob, title: e.target.value })} /></div>
               <div><Label>Company</Label><Input value={editingJob.company || ""} onChange={(e) => setEditingJob({ ...editingJob, company: e.target.value })} /></div>
               <div><Label>Location</Label><Input value={editingJob.location || ""} onChange={(e) => setEditingJob({ ...editingJob, location: e.target.value })} /></div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div><Label>Type</Label><Input value={editingJob.type || ""} onChange={(e) => setEditingJob({ ...editingJob, type: e.target.value })} /></div>
                 <div><Label>Category</Label><Input value={editingJob.category || ""} onChange={(e) => setEditingJob({ ...editingJob, category: e.target.value })} /></div>
               </div>

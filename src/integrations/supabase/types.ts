@@ -60,13 +60,17 @@ export type Database = {
           employer_feedback: string | null
           expected_salary: string | null
           gender: string | null
+          hired_at: string | null
           id: string
           job_id: string
           linkedin_url: string | null
           phone: string | null
           recommendation_letter_url: string | null
+          rejected_at: string | null
           resume_url: string | null
+          reviewed_at: string | null
           scanned_id_url: string | null
+          shortlisted_at: string | null
           status: string
           updated_at: string
           years_of_experience: string | null
@@ -86,13 +90,17 @@ export type Database = {
           employer_feedback?: string | null
           expected_salary?: string | null
           gender?: string | null
+          hired_at?: string | null
           id?: string
           job_id: string
           linkedin_url?: string | null
           phone?: string | null
           recommendation_letter_url?: string | null
+          rejected_at?: string | null
           resume_url?: string | null
+          reviewed_at?: string | null
           scanned_id_url?: string | null
+          shortlisted_at?: string | null
           status?: string
           updated_at?: string
           years_of_experience?: string | null
@@ -112,13 +120,17 @@ export type Database = {
           employer_feedback?: string | null
           expected_salary?: string | null
           gender?: string | null
+          hired_at?: string | null
           id?: string
           job_id?: string
           linkedin_url?: string | null
           phone?: string | null
           recommendation_letter_url?: string | null
+          rejected_at?: string | null
           resume_url?: string | null
+          reviewed_at?: string | null
           scanned_id_url?: string | null
+          shortlisted_at?: string | null
           status?: string
           updated_at?: string
           years_of_experience?: string | null

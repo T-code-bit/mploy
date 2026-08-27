@@ -51,6 +51,7 @@ export type Database = {
           availability: string | null
           county: string | null
           cover_letter: string | null
+          cover_letter_url: string | null
           created_at: string
           cv_url: string | null
           date_of_birth: string | null
@@ -76,6 +77,7 @@ export type Database = {
           availability?: string | null
           county?: string | null
           cover_letter?: string | null
+          cover_letter_url?: string | null
           created_at?: string
           cv_url?: string | null
           date_of_birth?: string | null
@@ -101,6 +103,7 @@ export type Database = {
           availability?: string | null
           county?: string | null
           cover_letter?: string | null
+          cover_letter_url?: string | null
           created_at?: string
           cv_url?: string | null
           date_of_birth?: string | null

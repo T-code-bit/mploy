@@ -94,6 +94,7 @@ const Admin = () => {
   const [savingSetting, setSavingSetting] = useState<string | null>(null);
   const [resendTestTo, setResendTestTo] = useState("");
   const [sendingResendTest, setSendingResendTest] = useState(false);
+  const [testingOpenAI, setTestingOpenAI] = useState(false);
 
   // Realtime — auto-refresh every admin table on any change
   useEffect(() => {
@@ -288,6 +289,22 @@ const Admin = () => {
       toast.error(error.message || "Could not send Resend test");
     } finally {
       setSendingResendTest(false);
+    }
+  };
+
+  const testOpenAI = async () => {
+    setTestingOpenAI(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-provider-settings", {
+        body: { action: "test_openai" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`OpenAI is working with ${(data as any)?.model || "the configured model"}`);
+    } catch (error: any) {
+      toast.error(error.message || "Could not test OpenAI");
+    } finally {
+      setTestingOpenAI(false);
     }
   };
 
@@ -691,6 +708,20 @@ const Admin = () => {
             Send test
           </Button>
         </div>
+      </Card>
+
+      <Card className="p-6 space-y-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <h2 className="font-display font-semibold">Test OpenAI Career Coach</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Verifies the saved key, account quota, and selected model with a minimal provider request.
+        </p>
+        <Button onClick={testOpenAI} disabled={testingOpenAI} className="gap-2">
+          {testingOpenAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+          Test OpenAI
+        </Button>
       </Card>
     </div>
   );

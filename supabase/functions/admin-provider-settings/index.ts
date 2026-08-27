@@ -48,6 +48,45 @@ async function resendEmail(apiKey: string, from: string, to: string) {
   }
 }
 
+async function testOpenAI(apiKey: string, model: string) {
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1,
+      messages: [{ role: "user", content: "Reply with OK." }],
+    }),
+  })
+
+  if (response.ok) return
+
+  const responseBody = await response.text()
+  let code = ""
+  let type = ""
+  try {
+    const parsed = JSON.parse(responseBody)
+    code = typeof parsed?.error?.code === "string" ? parsed.error.code : ""
+    type = typeof parsed?.error?.type === "string" ? parsed.error.type : ""
+  } catch {
+    // Provider returned a non-JSON error. Use the status-based message below.
+  }
+
+  if (response.status === 429 && (code === "insufficient_quota" || type === "insufficient_quota")) {
+    throw new Error("OpenAI key is saved, but its account has no available quota. Add billing or credits at OpenAI and test again.")
+  }
+  if (response.status === 429) {
+    throw new Error("OpenAI is rate-limiting this key. Wait briefly and test again.")
+  }
+  if (response.status === 401 || response.status === 403) {
+    throw new Error("OpenAI rejected this API key. Replace it with an active project key.")
+  }
+  if (response.status === 400 || response.status === 404) {
+    throw new Error(`OpenAI cannot use the configured model (${model}). Save a supported model such as gpt-4o-mini.`)
+  }
+  throw new Error("OpenAI is currently unavailable. Try the test again shortly.")
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: corsHeaders })
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405)
@@ -119,6 +158,17 @@ serve(async (req) => {
       if (!apiKey || !from) return json({ error: "Save the Resend API key and From address first" }, 400)
       await resendEmail(apiKey, from, to)
       return json({ ok: true })
+    }
+
+    if (action === "test_openai") {
+      const apiKey = await getIntegrationSetting(admin, "openai_api_key")
+      const configuredModel = await getIntegrationSetting(admin, "openai_model")
+      const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
+        ? configuredModel
+        : "gpt-4o-mini"
+      if (!apiKey) return json({ error: "Save the OpenAI API key first" }, 400)
+      await testOpenAI(apiKey, model)
+      return json({ ok: true, model })
     }
 
     return json({ error: "Unsupported action" }, 400)

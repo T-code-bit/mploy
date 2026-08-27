@@ -21,10 +21,16 @@ describe("file storage helpers", () => {
     );
   });
 
+  it("infers an extension when a mobile provider returns a generic file name", () => {
+    const file = new File(["resume"], "document", { type: "application/pdf" });
+    expect(() => validateUpload(file)).not.toThrow();
+    expect(getFileContentType(file)).toBe("application/pdf");
+  });
+
   it("accepts supported application files and rejects unsupported uploads", () => {
     expect(() => validateUpload(new File(["cv"], "cv.pdf", { type: "application/pdf" }))).not.toThrow();
     expect(() => validateUpload(new File(["file"], "archive.zip", { type: "application/zip" }))).toThrow(
-      "Use PDF, DOC, DOCX, JPG, PNG, WEBP, or HEIC files.",
+      "Use PDF, DOC, DOCX, ODT, RTF, TXT, JPG, PNG, WEBP, or HEIC files.",
     );
   });
 

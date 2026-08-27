@@ -81,7 +81,6 @@ const Profile = () => {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    e.currentTarget.value = "";
     if (!file || !user) return;
     try {
       validateImageUpload(file);
@@ -162,7 +161,16 @@ const Profile = () => {
                       </span>
                     </Button>
                   </Label>
-                  <input id="avatar-upload" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif" className="hidden" onChange={handleAvatarUpload} />
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.heic,.heif"
+                    className="sr-only"
+                    onClick={(event) => {
+                      event.currentTarget.value = "";
+                    }}
+                    onChange={handleAvatarUpload}
+                  />
                   <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP, or HEIC. Max 5MB.</p>
                 </div>
               </div>

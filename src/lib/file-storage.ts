@@ -5,7 +5,6 @@ export const MAX_APPLICATION_FILE_SIZE = 15 * 1024 * 1024;
 export const MAX_AVATAR_FILE_SIZE = 5 * 1024 * 1024;
 
 const MIME_BY_EXTENSION: Record<string, string> = {
-  csv: "text/csv",
   doc: "application/msword",
   docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   heic: "image/heic",
@@ -14,7 +13,24 @@ const MIME_BY_EXTENSION: Record<string, string> = {
   jpg: "image/jpeg",
   pdf: "application/pdf",
   png: "image/png",
+  odt: "application/vnd.oasis.opendocument.text",
+  rtf: "application/rtf",
+  txt: "text/plain",
   webp: "image/webp",
+};
+
+const EXTENSION_BY_MIME: Record<string, string> = {
+  "application/msword": "doc",
+  "application/pdf": "pdf",
+  "application/rtf": "rtf",
+  "application/vnd.oasis.opendocument.text": "odt",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+  "image/heic": "heic",
+  "image/heif": "heif",
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "text/plain": "txt",
 };
 
 const APPLICATION_FILE_EXTENSIONS = new Set(Object.keys(MIME_BY_EXTENSION));
@@ -27,22 +43,31 @@ export type UploadedFile = {
 };
 
 const extensionFromName = (fileName: string) => {
-  const extension = fileName.split(".").pop()?.toLowerCase().trim() || "";
+  const cleanName = fileName.split(/[?#]/, 1)[0];
+  const lastDot = cleanName.lastIndexOf(".");
+  if (lastDot <= 0 || lastDot === cleanName.length - 1) return "";
+  const extension = cleanName.slice(lastDot + 1).toLowerCase().trim();
   return extension.replace(/[^a-z0-9]/g, "");
 };
 
 export const getFileExtension = (fileName: string) => extensionFromName(fileName);
 
+export const getUploadFileExtension = (file: File) =>
+  extensionFromName(file.name) || EXTENSION_BY_MIME[file.type.toLowerCase()] || "";
+
 export const getFileContentType = (file: File) => {
-  const extension = extensionFromName(file.name);
-  return file.type || MIME_BY_EXTENSION[extension] || "application/octet-stream";
+  const extension = getUploadFileExtension(file);
+  const reportedType = file.type.toLowerCase();
+  return reportedType && reportedType !== "application/octet-stream"
+    ? reportedType
+    : MIME_BY_EXTENSION[extension] || "application/octet-stream";
 };
 
 export const getDocumentKind = (fileName: string): "image" | "pdf" | "office" | "unknown" => {
   const extension = extensionFromName(fileName);
   if (["jpg", "jpeg", "png", "webp", "heic", "heif"].includes(extension)) return "image";
   if (extension === "pdf") return "pdf";
-  if (["doc", "docx"].includes(extension)) return "office";
+  if (["doc", "docx", "odt", "rtf", "txt"].includes(extension)) return "office";
   return "unknown";
 };
 
@@ -55,15 +80,15 @@ export const validateUpload = (file: File, maxSize = MAX_APPLICATION_FILE_SIZE) 
     throw new Error(`File must be smaller than ${Math.round(maxSize / 1024 / 1024)}MB.`);
   }
 
-  const extension = extensionFromName(file.name);
+  const extension = getUploadFileExtension(file);
   if (!APPLICATION_FILE_EXTENSIONS.has(extension)) {
-    throw new Error("Use PDF, DOC, DOCX, JPG, PNG, WEBP, or HEIC files.");
+    throw new Error("Use PDF, DOC, DOCX, ODT, RTF, TXT, JPG, PNG, WEBP, or HEIC files.");
   }
 };
 
 export const validateImageUpload = (file: File, maxSize = MAX_AVATAR_FILE_SIZE) => {
   validateUpload(file, maxSize);
-  if (!IMAGE_FILE_EXTENSIONS.has(extensionFromName(file.name))) {
+  if (!IMAGE_FILE_EXTENSIONS.has(getUploadFileExtension(file))) {
     throw new Error("Use a JPG, PNG, WEBP, or HEIC image.");
   }
 };
@@ -83,17 +108,29 @@ export const uploadUserFile = async (
 ): Promise<UploadedFile> => {
   validateUpload(file, maxSize);
 
-  const extension = extensionFromName(file.name);
+  const extension = getUploadFileExtension(file);
   const path = `${userId}/${folder}/${createUniqueId()}.${extension}`;
   const contentType = getFileContentType(file);
-  const { error } = await supabase.storage
-    .from(APPLICATION_DOCUMENTS_BUCKET)
-    .upload(path, file, {
-      cacheControl: "3600",
-      contentType,
-      upsert: false,
-    });
 
-  if (error) throw error;
-  return { path, contentType, fileName: file.name };
+  let lastError: Error | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const { error } = await supabase.storage
+      .from(APPLICATION_DOCUMENTS_BUCKET)
+      .upload(path, file, {
+        cacheControl: "3600",
+        contentType,
+        upsert: true,
+      });
+
+    if (!error) {
+      return { path, contentType, fileName: file.name };
+    }
+
+    lastError = error;
+    if (attempt < 2) {
+      await new Promise((resolve) => window.setTimeout(resolve, 600 * (attempt + 1)));
+    }
+  }
+
+  throw lastError || new Error("The file upload failed. Check your connection and try again.");
 };

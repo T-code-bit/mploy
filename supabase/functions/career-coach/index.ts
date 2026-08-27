@@ -7,6 +7,27 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const wait = (milliseconds: number) =>
+  new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+const parseOpenAIError = (body: string) => {
+  try {
+    const parsed = JSON.parse(body);
+    return {
+      code: typeof parsed?.error?.code === "string" ? parsed.error.code : "",
+      type: typeof parsed?.error?.type === "string" ? parsed.error.type : "",
+    };
+  } catch {
+    return { code: "", type: "" };
+  }
+};
+
 const SYSTEM_PROMPT = `You are M-Ploy Coach — the smartest, warmest, most flexible career & life assistant for M-Ploy (go-mploy.com), a Kenyan job & career platform based in Nairobi.
 
 CORE CAPABILITIES:
@@ -43,14 +64,17 @@ STYLE:
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
+    const contentLength = Number(req.headers.get("content-length") || 0);
+    if (contentLength > 12 * 1024 * 1024) {
+      return json({ error: "Attachments are too large. Keep the total under 8MB." }, 413);
+    }
+
     const { messages } = await req.json();
-    if (!Array.isArray(messages)) {
-      return new Response(JSON.stringify({ error: "messages required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
+      return json({ error: "Send between 1 and 30 messages." }, 400);
     }
 
     const admin = createClient(
@@ -60,44 +84,72 @@ serve(async (req) => {
     );
     const apiKey = await getIntegrationSetting(admin, "openai_api_key");
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "AI is not configured in Admin → Integrations" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return json({ error: "AI is not configured in Admin → Integrations." }, 503);
     }
 
-    const model = await getIntegrationSetting(admin, "openai_model") || "gpt-4o-mini";
-    const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        stream: true,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
-      }),
-    });
+    const configuredModel = await getIntegrationSetting(admin, "openai_model");
+    const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
+      ? configuredModel
+      : "gpt-4o-mini";
+
+    const callOpenAI = () =>
+      fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({
+          model,
+          stream: true,
+          max_tokens: 1200,
+          messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+        }),
+      });
+
+    let upstream = await callOpenAI();
+    let upstreamError = "";
+
+    if (upstream.status === 429) {
+      upstreamError = await upstream.text();
+      const details = parseOpenAIError(upstreamError);
+      const isQuotaError = details.code === "insufficient_quota" || details.type === "insufficient_quota";
+
+      if (!isQuotaError) {
+        await wait(1200);
+        upstream = await callOpenAI();
+        if (!upstream.ok) upstreamError = await upstream.text();
+      }
+    }
 
     if (!upstream.ok) {
-      const errText = await upstream.text();
+      const errText = upstreamError || await upstream.text();
+      const details = parseOpenAIError(errText);
       if (upstream.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        if (details.code === "insufficient_quota" || details.type === "insufficient_quota") {
+          return json({
+            error: "OpenAI account quota is exhausted. Add billing or credits to the configured OpenAI account, then use Test OpenAI in Admin → Integrations.",
+            code: "openai_quota_exhausted",
+          }, 402);
+        }
+        return json({
+          error: "OpenAI is temporarily rate-limiting requests. Please retry shortly.",
+          code: "openai_rate_limited",
+        }, 429);
       }
-      if (upstream.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please contact admin." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      if (upstream.status === 401 || upstream.status === 403) {
+        return json({
+          error: "The configured OpenAI API key was rejected. Replace it in Admin → Integrations.",
+          code: "openai_key_rejected",
+        }, 502);
       }
-      return new Response(JSON.stringify({ error: errText }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      if (upstream.status === 400 || upstream.status === 404) {
+        return json({
+          error: `The configured OpenAI model (${model}) is unavailable or cannot process this request.`,
+          code: "openai_model_error",
+        }, 502);
+      }
+      return json({ error: "The AI provider is temporarily unavailable." }, 502);
     }
 
     return new Response(upstream.body, {
@@ -110,9 +162,7 @@ serve(async (req) => {
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("career-coach error:", msg);
+    return json({ error: "The Career Coach could not process this request." }, 500);
   }
 });

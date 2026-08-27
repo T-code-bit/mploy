@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
-import { supabaseAnonKey, supabaseUrl } from "@/integrations/supabase/client";
+import { supabase, supabaseAnonKey, supabaseUrl } from "@/integrations/supabase/client";
 import mployLogo from "@/assets/mploy-logo.png";
 import { toast } from "sonner";
 
@@ -35,10 +35,11 @@ const RobotHead = ({ open }: { open: boolean }) => (
   </div>
 );
 
-type Attachment = { name: string; mime: string; dataUrl: string };
+type Attachment = { name: string; mime: string; dataUrl: string; size: number };
 type Msg = { role: "user" | "assistant"; content: string; attachments?: Attachment[] };
 const MAX_CHAT_ATTACHMENTS = 3;
-const MAX_CHAT_ATTACHMENT_SIZE = 5 * 1024 * 1024;
+const MAX_CHAT_ATTACHMENT_SIZE = 4 * 1024 * 1024;
+const MAX_CHAT_ATTACHMENTS_TOTAL = 8 * 1024 * 1024;
 
 const toApiContent = (m: Msg) => {
   if (!m.attachments?.length) return m.content;
@@ -56,8 +57,13 @@ const toApiContent = (m: Msg) => {
 const readFile = (file: File) =>
   new Promise<Attachment>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve({ name: file.name, mime: file.type || "application/octet-stream", dataUrl: String(reader.result) });
-    reader.onerror = reject;
+    reader.onload = () => resolve({
+      name: file.name,
+      mime: file.type || "application/octet-stream",
+      dataUrl: String(reader.result),
+      size: file.size,
+    });
+    reader.onerror = () => reject(new Error(`${file.name}: the browser could not read this file.`));
     reader.readAsDataURL(file);
   });
 
@@ -73,8 +79,22 @@ const validateChatAttachment = (file: File) => {
     throw new Error(`${file.name}: the file is empty.`);
   }
   if (file.size > MAX_CHAT_ATTACHMENT_SIZE) {
-    throw new Error(`${file.name}: files must be 5MB or smaller.`);
+    throw new Error(`${file.name}: files must be 4MB or smaller.`);
   }
+};
+
+const responseErrorMessage = async (response: Response) => {
+  try {
+    const payload = await response.json();
+    if (typeof payload?.error === "string") return payload.error;
+  } catch {
+    // Use the status-specific fallback below.
+  }
+
+  if (response.status === 413) return "The attachments are too large. Use smaller files.";
+  if (response.status === 429) return "The AI service is busy. Please retry shortly.";
+  if (response.status === 402) return "The configured AI account has no available quota.";
+  return "The Career Coach is temporarily unavailable.";
 };
 
 const CareerCoachChatbot = () => {
@@ -111,12 +131,13 @@ const CareerCoachChatbot = () => {
     setLoading(true);
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${supabaseUrl}/functions/v1/career-coach`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
+          Authorization: `Bearer ${session?.access_token || supabaseAnonKey}`,
         },
         body: JSON.stringify({
           messages: next.map((m) => ({ role: m.role, content: toApiContent(m) })),
@@ -124,24 +145,12 @@ const CareerCoachChatbot = () => {
       });
 
       if (!res.ok || !res.body) {
-        const errText = await res.text().catch(() => "");
-        let errorMsg = "Sorry, I hit an error. Please try again.";
-        
-        if (res.status === 429) {
-          errorMsg = "I'm getting too many requests right now — try again in a moment.";
-        } else if (res.status === 402) {
-          errorMsg = "AI usage limit reached. Please contact admin.";
-        } else if (res.status === 404) {
-          errorMsg = "The AI service is currently unavailable. Please try again later or contact support.";
-        } else if (res.status >= 500) {
-          errorMsg = "Server error. Our team has been notified. Please try again later.";
-        }
-        
+        const errorMsg = await responseErrorMessage(res);
         setMessages((m) => [
           ...m,
           {
             role: "assistant",
-            content: errorMsg + (errText ? `\n\n_Debug: ${errText.slice(0, 100)}_` : ""),
+            content: errorMsg,
           },
         ]);
         setLoading(false);
@@ -302,9 +311,11 @@ const CareerCoachChatbot = () => {
                 multiple
                 accept="image/*,.pdf,.doc,.docx,.txt"
                 className="hidden"
+                onClick={(event) => {
+                  event.currentTarget.value = "";
+                }}
                 onChange={async (e) => {
                   const files = Array.from(e.target.files || []);
-                  e.target.value = "";
                   const remainingSlots = MAX_CHAT_ATTACHMENTS - attachments.length;
                   const selected = files.slice(0, Math.max(0, remainingSlots));
 
@@ -314,6 +325,11 @@ const CareerCoachChatbot = () => {
 
                   try {
                     selected.forEach(validateChatAttachment);
+                    const totalSize = attachments.reduce((sum, attachment) => sum + attachment.size, 0)
+                      + selected.reduce((sum, file) => sum + file.size, 0);
+                    if (totalSize > MAX_CHAT_ATTACHMENTS_TOTAL) {
+                      throw new Error("Keep the combined attachment size under 8MB.");
+                    }
                     const parsed = await Promise.all(selected.map(readFile));
                     setAttachments((prev) => [...prev, ...parsed]);
                   } catch (error) {

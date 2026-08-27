@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -29,6 +29,104 @@ import { toast } from "sonner";
 import { uploadUserFile, validateUpload } from "@/lib/file-storage";
 
 const categories = ["All", "Remote", "Full-time", "Part-time", "Contract", "Internship"];
+const APPLICATION_FILE_ACCEPT = [
+  ".pdf", ".doc", ".docx", ".odt", ".rtf", ".txt",
+  ".jpg", ".jpeg", ".png", ".webp", ".heic", ".heif",
+  "application/pdf", "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.oasis.opendocument.text", "application/rtf", "text/plain",
+  "image/jpeg", "image/png", "image/webp", "image/heic", "image/heif",
+].join(",");
+
+interface FileUploadFieldProps {
+  label: string;
+  required?: boolean;
+  file: File | null;
+  onFileChange: (file: File | null) => void;
+}
+
+const FileUploadField = ({ label, required, file, onFileChange }: FileUploadFieldProps) => {
+  const inputId = useId();
+
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={inputId} className="flex items-center gap-1">
+        {label}
+        {required && <span className="text-destructive">*</span>}
+      </Label>
+      <div className="relative flex min-h-16 items-center gap-3 rounded-xl border border-border bg-background p-3 transition-colors hover:bg-muted/50 focus-within:ring-2 focus-within:ring-primary/30">
+        <div className="shrink-0 p-2 rounded-lg bg-primary/10">
+          <Upload className="h-4 w-4 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          {file ? (
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm text-foreground truncate">{file.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {(file.size / 1024 / 1024).toFixed(1)} MB · Tap to replace
+                </p>
+              </div>
+            </div>
+          ) : (
+            <span className="text-sm text-muted-foreground">
+              Choose PDF, Word, text, or image file
+            </span>
+          )}
+        </div>
+        <input
+          id={inputId}
+          type="file"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          accept={APPLICATION_FILE_ACCEPT}
+          aria-label={label}
+          onClick={(event) => {
+            // Reset before opening the picker so choosing the same file again
+            // still fires onChange, without invalidating a selected mobile File.
+            event.currentTarget.value = "";
+          }}
+          onChange={(event) => {
+            const nextFile = event.currentTarget.files?.item(0) || null;
+            if (!nextFile) return;
+            try {
+              validateUpload(nextFile);
+              onFileChange(nextFile);
+            } catch (error) {
+              toast.error(error instanceof Error ? error.message : "This file cannot be uploaded.");
+            }
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+const applicationErrorMessage = (error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  const normalized = message.toLowerCase();
+  if (normalized.includes("duplicate") || normalized.includes("unique constraint")) {
+    return "You have already applied for this job.";
+  }
+  if (
+    normalized.includes("jwt")
+    || normalized.includes("unauthorized")
+    || normalized.includes("row-level security")
+  ) {
+    return "Your session expired. Please sign in again, then retry.";
+  }
+  if (
+    normalized.includes("schema cache")
+    || normalized.includes("column")
+    || normalized.includes("relation")
+  ) {
+    return "The application service is updating. Refresh the page and retry.";
+  }
+  if (normalized.includes("fetch") || normalized.includes("network")) {
+    return "The connection was interrupted. Check your internet and retry.";
+  }
+  return "The application could not be submitted. Please retry.";
+};
 
 const Jobs = () => {
   usePageTitle("Verified Jobs");
@@ -86,40 +184,56 @@ const Jobs = () => {
 
   const applyMutation = useMutation({
     mutationFn: async () => {
+      if (!user || !selectedJob) throw new Error("Please sign in and select a job.");
       if (!cvFile) throw new Error("CV is required");
       if (!scannedIdFile) throw new Error("Scanned ID is required");
 
-      const cvUpload = await uploadFile(cvFile, "cv");
-      const coverLetterUpload = coverLetterFile ? await uploadFile(coverLetterFile, "cover-letter") : null;
-      const recommendationUpload = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
-      const scannedIdUpload = await uploadFile(scannedIdFile, "scanned-id");
+      const uploadedPaths: string[] = [];
+      try {
+        const cvUpload = await uploadFile(cvFile, "cv");
+        uploadedPaths.push(cvUpload.path);
+        const coverLetterUpload = coverLetterFile ? await uploadFile(coverLetterFile, "cover-letter") : null;
+        if (coverLetterUpload) uploadedPaths.push(coverLetterUpload.path);
+        const recommendationUpload = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
+        if (recommendationUpload) uploadedPaths.push(recommendationUpload.path);
+        const scannedIdUpload = await uploadFile(scannedIdFile, "scanned-id");
+        uploadedPaths.push(scannedIdUpload.path);
 
-      const { error } = await supabase.from("applications").insert({
-        job_id: selectedJob.id,
-        applicant_id: user!.id,
-        applicant_email: user!.email || null,
-        cover_letter: coverLetter || null,
-        cv_url: cvUpload.path,
-        cover_letter_url: coverLetterUpload?.path || null,
-        recommendation_letter_url: recommendationUpload?.path || null,
-        scanned_id_url: scannedIdUpload.path,
-        phone: phone || null,
-        years_of_experience: yearsExp || null,
-        availability,
-        linkedin_url: linkedinUrl || null,
-        education_level: educationLevel || null,
-        gender: gender || null,
-        county: county || null,
-        date_of_birth: dateOfBirth || null,
-      } as any);
-      if (error) throw error;
+        const { error } = await supabase.from("applications").insert({
+          job_id: selectedJob.id,
+          applicant_id: user.id,
+          applicant_email: user.email || null,
+          cover_letter: coverLetter || null,
+          cv_url: cvUpload.path,
+          cover_letter_url: coverLetterUpload?.path || null,
+          recommendation_letter_url: recommendationUpload?.path || null,
+          scanned_id_url: scannedIdUpload.path,
+          phone: phone || null,
+          years_of_experience: yearsExp || null,
+          availability,
+          linkedin_url: linkedinUrl || null,
+          education_level: educationLevel || null,
+          gender: gender || null,
+          county: county || null,
+          date_of_birth: dateOfBirth || null,
+        });
+        if (error) throw error;
+      } catch (error) {
+        if (uploadedPaths.length > 0) {
+          await supabase.storage.from("application-documents").remove(uploadedPaths).catch(() => undefined);
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["my-applications"] });
       toast.success("Application submitted successfully!");
       resetForm();
     },
-    onError: (e: Error) => toast.error(e.message),
+    onError: (error) => {
+      console.error("Application submission failed:", error);
+      toast.error(applicationErrorMessage(error));
+    },
   });
 
   const resetForm = () => {
@@ -197,48 +311,6 @@ const Jobs = () => {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-
-  const FileUploadField = ({ label, required, file, onFileChange }: {
-    label: string; required?: boolean; file: File | null; onFileChange: (f: File | null) => void;
-  }) => (
-    <div className="space-y-2">
-      <Label className="flex items-center gap-1">
-        {label}
-        {required && <span className="text-destructive">*</span>}
-      </Label>
-      <label className="flex items-center gap-3 p-3 rounded-xl border border-border bg-background cursor-pointer hover:bg-muted/50 transition-colors">
-        <div className="shrink-0 p-2 rounded-lg bg-primary/10">
-          <Upload className="h-4 w-4 text-primary" />
-        </div>
-        <div className="flex-1 min-w-0">
-          {file ? (
-            <div className="flex items-center gap-2">
-              <FileText className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-sm text-foreground truncate">{file.name}</span>
-            </div>
-          ) : (
-            <span className="text-sm text-muted-foreground">Choose file (PDF, DOC, JPG, PNG)</span>
-          )}
-        </div>
-        <input
-          type="file"
-          className="hidden"
-          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.heic,.heif,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp,image/heic,image/heif"
-          onChange={(e) => {
-            const nextFile = e.target.files?.[0] || null;
-            e.currentTarget.value = "";
-            if (!nextFile) return;
-            try {
-              validateUpload(nextFile);
-              onFileChange(nextFile);
-            } catch (error) {
-              toast.error(error instanceof Error ? error.message : "This file cannot be uploaded.");
-            }
-          }}
-        />
-      </label>
-    </div>
-  );
 
   return (
     <div className="min-h-screen bg-background">

@@ -86,7 +86,7 @@ const INTEGRATION_FIELDS: IntegrationField[] = [
   { key: "openai_api_key", label: "OpenAI API key", description: "Optional alternative used only when Career Coach is explicitly set to OpenAI.", secret: true, placeholder: "sk-…" },
   { key: "openai_model", label: "OpenAI chatbot model", description: "Used only by Career Coach when OpenAI is selected. Default: gpt-4o-mini.", secret: false, placeholder: "gpt-4o-mini" },
   { key: "gemini_api_key", label: "Google Gemini API key", description: "Primary platform AI provider and one of the Career Coach options.", secret: true, placeholder: "AIza…" },
-  { key: "gemini_model", label: "Google Gemini model", description: "Used for platform AI and Career Coach when Gemini is selected. Default: gemini-2.5-flash.", secret: false, placeholder: "gemini-2.5-flash" },
+  { key: "gemini_model", label: "Google Gemini model", description: "Used for platform AI and Career Coach when Gemini is selected. Use a current stable model or the rolling latest alias.", secret: false, placeholder: "gemini-flash-latest" },
   { key: "google_client_id", label: "Google OAuth client ID", description: "Public identifier for the custom Google sign-in application.", secret: false, placeholder: "1234567890-….apps.googleusercontent.com" },
   { key: "google_client_secret", label: "Google OAuth client secret", description: "Encrypted server-side and never returned to the browser.", secret: true, placeholder: "GOCSPX-…" },
   { key: "google_allowed_origins", label: "Google sign-in origins", description: "Comma-separated application origins allowed to receive sign-in, including Vercel or Netlify domains.", secret: false, placeholder: "https://go-mploy.com, https://your-site.vercel.app" },

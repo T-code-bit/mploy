@@ -44,6 +44,8 @@ const MAX_ATTACHMENT_COUNT = 3
 const MAX_MESSAGES = 20
 const MAX_TEXT_CHARACTERS = 60_000
 const MAX_EXTRACTED_DOCUMENT_BYTES = 2 * 1024 * 1024
+const DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
+const GEMINI_MODEL_FALLBACKS = [DEFAULT_GEMINI_MODEL, "gemini-flash-lite-latest"]
 const ALLOWED_ATTACHMENT_MIMES = new Set([
   "image/jpeg",
   "image/png",
@@ -456,11 +458,11 @@ serve(async (req) => {
       const configuredModel = await getIntegrationSetting(admin, "gemini_model")
       const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
         ? configuredModel
-        : "gemini-2.5-flash"
+        : DEFAULT_GEMINI_MODEL
       if (!apiKey) return busy()
       const contents = await geminiContents(messages)
-      const callGemini = () => fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:streamGenerateContent?alt=sse`,
+      const callGemini = (candidateModel: string) => fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:streamGenerateContent?alt=sse`,
         {
           method: "POST",
           headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
@@ -471,11 +473,20 @@ serve(async (req) => {
           }),
         },
       )
-      upstream = await callGemini()
+      let activeModel = model
+      upstream = await callGemini(activeModel)
+      for (const fallbackModel of GEMINI_MODEL_FALLBACKS) {
+        if (upstream.status !== 400 && upstream.status !== 404) break
+        if (fallbackModel === activeModel) continue
+        const detail = await upstream.text().catch(() => "")
+        console.warn("career-coach Gemini model unavailable:", activeModel, upstream.status, detail.slice(0, 300))
+        activeModel = fallbackModel
+        upstream = await callGemini(activeModel)
+      }
       if (upstream.status === 429 || upstream.status >= 500) {
         await upstream.body?.cancel()
         await wait(900)
-        upstream = await callGemini()
+        upstream = await callGemini(activeModel)
       }
     } else {
       const apiKey = await getIntegrationSetting(admin, "openai_api_key")

@@ -25,6 +25,8 @@ const SETTINGS = {
   app_url: { secret: false },
 } as const
 
+const DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
+
 type SettingKey = keyof typeof SETTINGS
 
 const json = (body: unknown, status = 200) =>
@@ -107,14 +109,27 @@ async function testGemini(apiKey: string, model: string) {
   )
   if (response.ok) return
   const detail = await response.text()
+  let providerStatus = ""
+  let providerMessage = ""
+  try {
+    const parsed = JSON.parse(detail)
+    providerStatus = typeof parsed?.error?.status === "string" ? parsed.error.status : ""
+    providerMessage = typeof parsed?.error?.message === "string" ? parsed.error.message : ""
+  } catch {
+    // Provider returned a non-JSON error. Use the status-based message below.
+  }
   if (response.status === 401 || response.status === 403) {
     throw new Error("Google Gemini rejected this API key. Check its API access and restrictions.")
   }
   if (response.status === 400 || response.status === 404) {
-    throw new Error(`Google Gemini cannot use the configured model (${model}). Save a supported model such as gemini-2.5-flash.`)
+    throw new Error(`Google Gemini cannot use the configured model (${model}). Save a current model alias such as ${DEFAULT_GEMINI_MODEL}.`)
   }
   if (response.status === 429) {
-    throw new Error("Google Gemini is rate-limiting this key or its quota is unavailable.")
+    const quotaUnavailable = providerStatus === "RESOURCE_EXHAUSTED"
+      || /quota|billing|resource exhausted/i.test(providerMessage)
+    throw new Error(quotaUnavailable
+      ? "Google Gemini accepted this API key and model, but the Google Cloud project has no available Gemini API quota. Enable billing or request quota, then test again."
+      : "Google Gemini is rate-limiting this key. Wait briefly and test again.")
   }
   console.error("Gemini test error:", response.status, detail.slice(0, 300))
   throw new Error("Google Gemini is currently unavailable. Try the test again shortly.")
@@ -237,7 +252,7 @@ serve(async (req) => {
         const configuredModel = await getIntegrationSetting(admin, "gemini_model")
         const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
           ? configuredModel
-          : "gemini-2.5-flash"
+          : DEFAULT_GEMINI_MODEL
         if (!apiKey) return json({ error: "Save the Google Gemini API key first" }, 400)
         await testGemini(apiKey, model)
         return json({ ok: true, provider, model })

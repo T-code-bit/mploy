@@ -2,6 +2,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getIntegrationSetting } from "../_shared/integration-settings.ts";
 
+const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
+const GEMINI_MODEL_FALLBACKS = [DEFAULT_GEMINI_MODEL, "gemini-flash-lite-latest"];
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
@@ -103,9 +106,9 @@ Skills: ${skills.map((skill: unknown) => safeText(skill, 100)).filter(Boolean).j
     const configuredModel = await getIntegrationSetting(admin, "gemini_model");
     const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
       ? configuredModel
-      : "gemini-2.5-flash";
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+      : DEFAULT_GEMINI_MODEL;
+    const callGemini = (candidateModel: string) => fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidateModel)}:generateContent`,
       {
       method: "POST",
       headers: {
@@ -129,6 +132,16 @@ Skills: ${skills.map((skill: unknown) => safeText(skill, 100)).filter(Boolean).j
       }),
       },
     );
+    let activeModel = model;
+    let response = await callGemini(activeModel);
+    for (const fallbackModel of GEMINI_MODEL_FALLBACKS) {
+      if (response.status !== 400 && response.status !== 404) break;
+      if (fallbackModel === activeModel) continue;
+      const detail = await response.text().catch(() => "");
+      console.warn("Gemini CV review model unavailable:", activeModel, response.status, detail.slice(0, 300));
+      activeModel = fallbackModel;
+      response = await callGemini(activeModel);
+    }
 
     if (!response.ok) {
       if (response.status === 429) {

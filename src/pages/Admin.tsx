@@ -33,6 +33,23 @@ import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
 
 const TIER_PRICE: Record<string, number> = { basic: 999, premium: 1999, free: 0 };
 
+const edgeFunctionErrorMessage = async (error: unknown, fallback: string) => {
+  const context = (error as { context?: unknown } | null)?.context;
+  if (context instanceof Response) {
+    try {
+      const payload = await context.clone().json();
+      if (payload && typeof payload.error === "string" && payload.error.trim()) {
+        return payload.error;
+      }
+    } catch {
+      // Fall back to the SDK message when the response is not JSON.
+    }
+  }
+  return error instanceof Error && error.message
+    ? error.message
+    : fallback;
+};
+
 type View =
   | "overview" | "jobs" | "applications" | "users"
   | "reviews" | "transactions" | "subscribers" | "messages" | "broadcast" | "settings";
@@ -170,7 +187,7 @@ const Admin = () => {
     enabled: view === "settings",
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("admin-provider-settings", { body: { action: "list" } });
-      if (error) throw error;
+      if (error) throw new Error(await edgeFunctionErrorMessage(error, "Could not load integration settings"));
       if ((data as any)?.error) throw new Error((data as any).error);
       return ((data as any)?.settings ?? []) as Array<{ key: string; configured: boolean; updated_at: string; value: string | null; secret: boolean }>;
     },
@@ -292,7 +309,7 @@ const Admin = () => {
       await qc.invalidateQueries({ queryKey: ["admin-integration-settings"] });
       toast.success("Integration setting saved securely");
     } catch (error: any) {
-      toast.error(error.message || "Could not save integration setting");
+      toast.error(await edgeFunctionErrorMessage(error, "Could not save integration setting"));
     } finally {
       setSavingSetting(null);
     }
@@ -308,7 +325,7 @@ const Admin = () => {
       if ((data as any)?.error) throw new Error((data as any).error);
       toast.success("Resend test email sent");
     } catch (error: any) {
-      toast.error(error.message || "Could not send Resend test");
+      toast.error(await edgeFunctionErrorMessage(error, "Could not send Resend test"));
     } finally {
       setSendingResendTest(false);
     }
@@ -324,7 +341,7 @@ const Admin = () => {
       if ((data as any)?.error) throw new Error((data as any).error);
       toast.success(`${(data as any)?.provider === "gemini" ? "Google Gemini" : "OpenAI"} is working with ${(data as any)?.model || "the configured model"}`);
     } catch (error: any) {
-      toast.error(error.message || "Could not test the active AI provider");
+      toast.error(await edgeFunctionErrorMessage(error, "Could not test the active AI provider"));
     } finally {
       setTestingAI(false);
     }
@@ -340,7 +357,7 @@ const Admin = () => {
       if ((data as any)?.error) throw new Error((data as any).error);
       toast.success(`${((data as any)?.providers || []).join(" and ")} payment credentials are working`);
     } catch (error: any) {
-      toast.error(error.message || "Could not test payment credentials");
+      toast.error(await edgeFunctionErrorMessage(error, "Could not test payment credentials"));
     } finally {
       setTestingPayments(false);
     }

@@ -2,8 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import { getIntegrationSetting } from "../_shared/integration-settings.ts";
 
-const DEFAULT_GEMINI_MODEL = "gemini-flash-latest";
-const GEMINI_MODEL_FALLBACKS = [DEFAULT_GEMINI_MODEL, "gemini-flash-lite-latest"];
+const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash";
+const GEMINI_MODEL_FALLBACKS = [DEFAULT_GEMINI_MODEL, "gemini-3.6-flash", "gemini-flash-latest"];
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

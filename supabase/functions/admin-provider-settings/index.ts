@@ -25,7 +25,7 @@ const SETTINGS = {
   app_url: { secret: false },
 } as const
 
-const DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
+const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
 
 type SettingKey = keyof typeof SETTINGS
 
@@ -103,7 +103,10 @@ async function testGemini(apiKey: string, model: string) {
       headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [{ role: "user", parts: [{ text: "Reply with OK." }] }],
-        generationConfig: { maxOutputTokens: 8 },
+        generationConfig: {
+          maxOutputTokens: 8,
+          thinkingConfig: { thinkingLevel: "minimal" },
+        },
       }),
     },
   )

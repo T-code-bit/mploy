@@ -387,6 +387,7 @@ const EmployerPortal = () => {
                                 <SelectContent>
                                   <SelectItem value="pending">Pending</SelectItem>
                                   <SelectItem value="reviewing">Reviewing</SelectItem>
+                                   <SelectItem value="reviewed">Reviewed</SelectItem>
                                   <SelectItem value="shortlisted">Shortlisted</SelectItem>
                                   <SelectItem value="hired">Hired</SelectItem>
                                   <SelectItem value="rejected">Rejected</SelectItem>

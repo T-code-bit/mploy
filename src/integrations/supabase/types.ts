@@ -68,6 +68,7 @@ export type Database = {
           recommendation_letter_url: string | null
           rejected_at: string | null
           resume_url: string | null
+          reviewing_at: string | null
           reviewed_at: string | null
           scanned_id_url: string | null
           shortlisted_at: string | null
@@ -98,6 +99,7 @@ export type Database = {
           recommendation_letter_url?: string | null
           rejected_at?: string | null
           resume_url?: string | null
+          reviewing_at?: string | null
           reviewed_at?: string | null
           scanned_id_url?: string | null
           shortlisted_at?: string | null
@@ -128,6 +130,7 @@ export type Database = {
           recommendation_letter_url?: string | null
           rejected_at?: string | null
           resume_url?: string | null
+          reviewing_at?: string | null
           reviewed_at?: string | null
           scanned_id_url?: string | null
           shortlisted_at?: string | null
@@ -340,7 +343,9 @@ export type Database = {
           email_token: string | null
           id: string
           plan_code: string | null
+          provider_event_at: string | null
           status: string
+          transaction_reference: string | null
           subscription_code: string | null
           tier: string
           updated_at: string
@@ -354,7 +359,9 @@ export type Database = {
           email_token?: string | null
           id?: string
           plan_code?: string | null
+          provider_event_at?: string | null
           status?: string
+          transaction_reference?: string | null
           subscription_code?: string | null
           tier?: string
           updated_at?: string
@@ -368,7 +375,9 @@ export type Database = {
           email_token?: string | null
           id?: string
           plan_code?: string | null
+          provider_event_at?: string | null
           status?: string
+          transaction_reference?: string | null
           subscription_code?: string | null
           tier?: string
           updated_at?: string

@@ -41,7 +41,7 @@ serve(async (req) => {
       body: JSON.stringify({ code: row.subscription_code, token: row.email_token }),
     });
     const json = await res.json();
-    if (!json.status) throw new Error(json.message || "Cancel failed");
+    if (!res.ok || !json.status) throw new Error(json.message || "Cancel failed");
 
     await supabase.from("paystack_subscribers")
       .update({ status: "cancelled", tier: "free" })

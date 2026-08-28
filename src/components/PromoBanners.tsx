@@ -11,28 +11,30 @@ export const AES_FORM_URL =
   "https://docs.google.com/forms/d/e/1FAIpQLSfWUxhefGqrCHMOwMrHQHgS2KLgdDP-HBccjv7_Rm_biHTXNQ/viewform";
 export const BOOK_PHONE = "+254 717 627632";
 export const BOOK_TEL = "+254717627632";
-const PROMO_SEEN_KEY = "mploy-promotions-seen-v1";
+const PROMO_LAST_SHOWN_KEY = "mploy-promotions-last-shown-v2";
+const PROMO_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
 const isSummitLive = () => Date.now() <= AES_END.getTime();
 
-/** Full-screen announcement shown once per browser storage lifecycle. */
+/** Full-screen announcement shown at most once every 24 hours per browser. */
 const PromoBanners = () => {
   const [open, setOpen] = useState(false);
   const summitLive = isSummitLive();
 
   useEffect(() => {
-    let hasSeenPromo = false;
+    let shownWithinLastDay = false;
     try {
-      hasSeenPromo = localStorage.getItem(PROMO_SEEN_KEY) === "true";
+      const lastShown = Number(localStorage.getItem(PROMO_LAST_SHOWN_KEY) || 0);
+      shownWithinLastDay = Number.isFinite(lastShown) && Date.now() - lastShown < PROMO_INTERVAL_MS;
     } catch {
       // If storage is unavailable, show the announcement without breaking the site.
     }
-    if (hasSeenPromo) return;
+    if (shownWithinLastDay) return;
 
     const t = setTimeout(() => {
       setOpen(true);
       try {
-        localStorage.setItem(PROMO_SEEN_KEY, "true");
+        localStorage.setItem(PROMO_LAST_SHOWN_KEY, String(Date.now()));
       } catch {
         // Storage can be unavailable in privacy modes.
       }

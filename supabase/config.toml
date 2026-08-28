@@ -10,8 +10,10 @@ project_id = "nlfokrpapmzgazcwfgcp"
   [functions.account-auth]
     verify_jwt = false
   [functions.career-coach]
-    verify_jwt = false
+    verify_jwt = true
   [functions.google-auth]
+    verify_jwt = false
+  [functions.paystack-webhook]
     verify_jwt = false
   [functions.verify-recaptcha]
     verify_jwt = false

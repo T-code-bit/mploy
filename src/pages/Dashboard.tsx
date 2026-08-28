@@ -217,6 +217,7 @@ const Dashboard = () => {
                        <ApplicationStatusHistory
                          className="mt-3 border-t border-border/60 pt-3"
                          created_at={app.created_at}
+                          reviewing_at={app.reviewing_at}
                          reviewed_at={app.reviewed_at}
                          shortlisted_at={app.shortlisted_at}
                          hired_at={app.hired_at}

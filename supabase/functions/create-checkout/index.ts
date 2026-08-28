@@ -25,8 +25,13 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { priceId } = await req.json();
-    if (!priceId) throw new Error("Price ID is required");
+    const { tier } = await req.json();
+    const tiers: Record<string, { name: string; amount: number }> = {
+      basic: { name: "M-Ploy Basic", amount: 99900 },
+      premium: { name: "M-Ploy Premium", amount: 199900 },
+    };
+    const selectedTier = tiers[tier];
+    if (!selectedTier) throw new Error("Invalid subscription tier");
 
     const settings = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -34,7 +39,10 @@ serve(async (req) => {
       { auth: { persistSession: false } }
     );
     const stripeKey = await getIntegrationSetting(settings, "stripe_secret_key");
+    const configuredAppUrl = await getIntegrationSetting(settings, "app_url") || "https://go-mploy.com";
     if (!stripeKey) throw new Error("Stripe is not configured in Admin → Integrations");
+    const appUrl = new URL(configuredAppUrl);
+    if (appUrl.protocol !== "https:" && appUrl.hostname !== "localhost") throw new Error("The configured application URL must use HTTPS");
     const stripe = new Stripe(stripeKey, {
       apiVersion: "2025-08-27.basil",
     });
@@ -48,10 +56,20 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
+      line_items: [{
+        price_data: {
+          currency: "kes",
+          unit_amount: selectedTier.amount,
+          recurring: { interval: "month" },
+          product_data: { name: selectedTier.name },
+        },
+        quantity: 1,
+      }],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/dashboard?subscription=success`,
-      cancel_url: `${req.headers.get("origin")}/dashboard?subscription=canceled`,
+      success_url: `${appUrl.origin}/dashboard?subscription=success`,
+      cancel_url: `${appUrl.origin}/dashboard?subscription=canceled`,
+      metadata: { user_id: user.id, tier },
+      subscription_data: { metadata: { user_id: user.id, tier } },
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

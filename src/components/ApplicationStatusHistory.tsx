@@ -9,6 +9,7 @@ type Props = ApplicationTimestamps & {
 
 const ApplicationStatusHistory = ({
   created_at,
+  reviewing_at,
   reviewed_at,
   shortlisted_at,
   hired_at,
@@ -18,6 +19,7 @@ const ApplicationStatusHistory = ({
 }: Props) => {
   const events = [
     { label: "Applied", value: created_at, icon: BriefcaseBusiness, color: "text-primary" },
+    { label: "Review started", value: reviewing_at, icon: Eye, color: "text-primary" },
     { label: "Reviewed", value: reviewed_at, icon: Eye, color: "text-primary" },
     { label: "Shortlisted", value: shortlisted_at, icon: Star, color: "text-warning" },
     { label: "Hired", value: hired_at, icon: UserCheck, color: "text-success" },

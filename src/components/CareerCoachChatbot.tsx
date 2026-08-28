@@ -40,6 +40,7 @@ type Msg = { role: "user" | "assistant"; content: string; attachments?: Attachme
 const MAX_CHAT_ATTACHMENTS = 3;
 const MAX_CHAT_ATTACHMENT_SIZE = 5 * 1024 * 1024;
 const MAX_CHAT_ATTACHMENTS_TOTAL = 5 * 1024 * 1024;
+const CHAT_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif", "image/heic", "image/heif"]);
 
 const toApiContent = (m: Msg) => {
   if (!m.attachments?.length) return m.content;
@@ -69,11 +70,11 @@ const readFile = (file: File) =>
 
 const validateChatAttachment = (file: File) => {
   const extension = file.name.split(".").pop()?.toLowerCase();
-  const supported = file.type.startsWith("image/")
-    || ["pdf", "doc", "docx", "txt"].includes(extension || "");
+  const supported = CHAT_IMAGE_TYPES.has(file.type.toLowerCase())
+    || ["jpg", "jpeg", "png", "webp", "gif", "heic", "heif", "pdf", "doc", "docx", "odt", "rtf", "txt"].includes(extension || "");
 
   if (!supported) {
-    throw new Error(`${file.name}: use an image, PDF, DOC, DOCX, or TXT file.`);
+    throw new Error(`${file.name}: use an image, PDF, DOC, DOCX, ODT, RTF, or TXT file.`);
   }
   if (file.size === 0) {
     throw new Error(`${file.name}: the file is empty.`);
@@ -86,15 +87,15 @@ const validateChatAttachment = (file: File) => {
 const responseErrorMessage = async (response: Response) => {
   try {
     const payload = await response.json();
-    if (typeof payload?.error === "string") return payload.error;
+    if ((response.status === 400 || response.status === 413) && typeof payload?.error === "string") {
+      return payload.error;
+    }
   } catch {
     // Use the status-specific fallback below.
   }
 
   if (response.status === 413) return "The attachments are too large. Use smaller files.";
-  if (response.status === 429) return "The AI service is busy. Please retry shortly.";
-  if (response.status === 402) return "The configured AI account has no available quota.";
-  return "The Career Coach is temporarily unavailable.";
+  return "Server Currently Busy";
 };
 
 const CareerCoachChatbot = () => {
@@ -105,7 +106,7 @@ const CareerCoachChatbot = () => {
     {
       role: "assistant",
       content:
-        "Hi, I'm **M-Ploy Coach** — your flexible career and life assistant. Ask me anything: jobs, CV tips, interviews, study advice, motivation, or life questions. How can I help today?",
+        "Hi, I'm **M-Ploy Coach**. I can help with M-Ploy, job applications, CVs, interviews, workplace skills, and career planning. What are you working on?",
     },
   ]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -132,15 +133,26 @@ const CareerCoachChatbot = () => {
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        setMessages((current) => [
+          ...current,
+          { role: "assistant", content: "Please sign in to use M-Ploy Coach." },
+        ]);
+        return;
+      }
+      const recentMessages = next.slice(-12);
       const res = await fetch(`${supabaseUrl}/functions/v1/career-coach`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           apikey: supabaseAnonKey,
-          Authorization: `Bearer ${session?.access_token || supabaseAnonKey}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          messages: next.map((m) => ({ role: m.role, content: toApiContent(m) })),
+          messages: recentMessages.map((m, index) => ({
+            role: m.role,
+            content: index === recentMessages.length - 1 ? toApiContent(m) : m.content,
+          })),
         }),
       });
 
@@ -176,7 +188,9 @@ const CareerCoachChatbot = () => {
           if (!data || data === "[DONE]") continue;
           try {
             const json = JSON.parse(data);
-            const delta = json.choices?.[0]?.delta?.content;
+            const delta = json.choices?.[0]?.delta?.content
+              || (json.type === "response.output_text.delta" ? json.delta : "")
+              || json.candidates?.[0]?.content?.parts?.map((part: { text?: string }) => part.text || "").join("");
             if (delta) {
               assistant += delta;
               setMessages((m) => {
@@ -190,12 +204,18 @@ const CareerCoachChatbot = () => {
           }
         }
       }
+      if (!assistant.trim()) {
+        setMessages((current) => {
+          const copy = [...current];
+          copy[copy.length - 1] = { role: "assistant", content: "Server Currently Busy" };
+          return copy;
+        });
+      }
     } catch (err) {
       console.error("Chatbot error:", err);
-      const errorMessage = err instanceof Error ? err.message : String(err);
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: `Connection problem: ${errorMessage}. Please check your network and try again.` },
+        { role: "assistant", content: "Server Currently Busy" },
       ]);
     } finally {
       setLoading(false);
@@ -310,7 +330,7 @@ const CareerCoachChatbot = () => {
                 ref={fileRef}
                 type="file"
                 multiple
-                accept="image/*,.pdf,.doc,.docx,.txt"
+                accept="image/*,.pdf,.doc,.docx,.odt,.rtf,.txt"
                 className="hidden"
                 onClick={(event) => {
                   event.currentTarget.value = "";
@@ -353,7 +373,7 @@ const CareerCoachChatbot = () => {
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask me anything or attach a CV…"
+                placeholder="Ask about careers or attach a file…"
                 className="rounded-full"
                 disabled={loading}
               />

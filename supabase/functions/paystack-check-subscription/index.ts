@@ -34,7 +34,9 @@ serve(async (req) => {
     );
     const custJson = await custRes.json();
 
-    if (!custJson.status) {
+    const customerNotFound = custRes.status === 404
+      || (!custJson.status && /not found|does not exist/i.test(String(custJson.message || "")));
+    if (customerNotFound) {
       // No customer yet → free
       await supabase.from("paystack_subscribers").upsert({
         user_id: user.id, email: user.email, tier: "free", status: "inactive",
@@ -42,6 +44,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({ subscribed: false, tier: "free" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200,
       });
+    }
+    if (!custRes.ok || !custJson.status || !custJson.data) {
+      throw new Error(`Paystack customer lookup failed (${custRes.status})`);
     }
 
     const customer = custJson.data;
@@ -53,7 +58,17 @@ serve(async (req) => {
       { headers: { Authorization: `Bearer ${paystackKey}` } }
     );
     const subsJson = await subsRes.json();
-    const active = subsJson.data?.find((s: any) => s.status === "active");
+    if (!subsRes.ok || !subsJson.status || !Array.isArray(subsJson.data)) {
+      throw new Error(`Paystack subscription lookup failed (${subsRes.status})`);
+    }
+    const mployPlans: Record<string, "basic" | "premium"> = {
+      mploy_basic_monthly_99900: "basic",
+      mploy_premium_monthly_199900: "premium",
+    };
+    const active = subsJson.data.find((subscription: any) => {
+      const planName = String(subscription.plan?.name || "").toLowerCase();
+      return subscription.status === "active" && Boolean(mployPlans[planName]);
+    });
 
     let tier = "free";
     let status = "inactive";
@@ -68,9 +83,8 @@ serve(async (req) => {
       emailToken = active.email_token;
       planCode = active.plan?.plan_code;
       periodEnd = active.next_payment_date;
-      const planName: string = active.plan?.name || "";
-      if (planName.includes("premium")) tier = "premium";
-      else if (planName.includes("basic")) tier = "basic";
+      const planName = String(active.plan?.name || "").toLowerCase();
+      tier = mployPlans[planName];
     }
 
     await supabase.from("paystack_subscribers").upsert({

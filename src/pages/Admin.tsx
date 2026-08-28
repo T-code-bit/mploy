@@ -31,7 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import mployLogo from "@/assets/mploy-logo.png";
 import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
 
-const TIER_PRICE: Record<string, number> = { basic: 10, premium: 15, free: 0 };
+const TIER_PRICE: Record<string, number> = { basic: 999, premium: 1999, free: 0 };
 
 type View =
   | "overview" | "jobs" | "applications" | "users"
@@ -50,14 +50,26 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "settings", label: "Integrations", icon: Settings },
 ];
 
-const INTEGRATION_FIELDS = [
+type IntegrationField = {
+  key: string;
+  label: string;
+  description: string;
+  secret: boolean;
+  placeholder: string;
+  options?: Array<{ value: string; label: string }>;
+};
+
+const INTEGRATION_FIELDS: IntegrationField[] = [
   { key: "resend_api_key", label: "Resend API key", description: "Powers platform emails, job alerts, and broadcasts.", secret: true, placeholder: "re_…" },
   { key: "resend_from_email", label: "Resend From address", description: "A verified Resend sender, e.g. M-Ploy <hello@go-mploy.com>.", secret: false, placeholder: "M-Ploy <hello@go-mploy.com>" },
-  { key: "stripe_secret_key", label: "Stripe secret key", description: "Enables Stripe checkout and customer portal.", secret: true, placeholder: "sk_live_…" },
+  { key: "stripe_secret_key", label: "Stripe secret key", description: "Alternate Stripe server credential. Paystack remains the checkout shown on the site.", secret: true, placeholder: "sk_live_…" },
   { key: "paystack_secret_key", label: "Paystack secret key", description: "Enables M-Pesa, cards, and Paystack subscriptions.", secret: true, placeholder: "sk_live_…" },
   { key: "recaptcha_secret_key", label: "reCAPTCHA secret key", description: "Verifies CAPTCHA challenges server-side.", secret: true, placeholder: "6L…" },
-  { key: "openai_api_key", label: "OpenAI API key", description: "Powers Career Coach and AI CV review.", secret: true, placeholder: "sk-…" },
-  { key: "openai_model", label: "OpenAI model", description: "Default: gpt-4o-mini. Change only if your account supports the model.", secret: false, placeholder: "gpt-4o-mini" },
+  { key: "ai_provider", label: "Career Coach provider", description: "Only the chatbot can switch between these two providers. The rest of the platform uses Google Gemini.", secret: false, placeholder: "Google Gemini (default)", options: [{ value: "gemini", label: "Google Gemini" }, { value: "openai", label: "OpenAI" }] },
+  { key: "openai_api_key", label: "OpenAI API key", description: "Optional alternative used only when Career Coach is explicitly set to OpenAI.", secret: true, placeholder: "sk-…" },
+  { key: "openai_model", label: "OpenAI chatbot model", description: "Used only by Career Coach when OpenAI is selected. Default: gpt-4o-mini.", secret: false, placeholder: "gpt-4o-mini" },
+  { key: "gemini_api_key", label: "Google Gemini API key", description: "Primary platform AI provider and one of the Career Coach options.", secret: true, placeholder: "AIza…" },
+  { key: "gemini_model", label: "Google Gemini model", description: "Used for platform AI and Career Coach when Gemini is selected. Default: gemini-2.5-flash.", secret: false, placeholder: "gemini-2.5-flash" },
   { key: "google_client_id", label: "Google OAuth client ID", description: "Public identifier for the custom Google sign-in application.", secret: false, placeholder: "1234567890-….apps.googleusercontent.com" },
   { key: "google_client_secret", label: "Google OAuth client secret", description: "Encrypted server-side and never returned to the browser.", secret: true, placeholder: "GOCSPX-…" },
   { key: "google_allowed_origins", label: "Google sign-in origins", description: "Comma-separated application origins allowed to receive sign-in, including Vercel or Netlify domains.", secret: false, placeholder: "https://go-mploy.com, https://your-site.vercel.app" },
@@ -98,7 +110,8 @@ const Admin = () => {
   const [savingSetting, setSavingSetting] = useState<string | null>(null);
   const [resendTestTo, setResendTestTo] = useState("");
   const [sendingResendTest, setSendingResendTest] = useState(false);
-  const [testingOpenAI, setTestingOpenAI] = useState(false);
+  const [testingAI, setTestingAI] = useState(false);
+  const [testingPayments, setTestingPayments] = useState(false);
   const [googleGuideOpen, setGoogleGuideOpen] = useState(false);
 
   // Realtime — auto-refresh every admin table on any change
@@ -271,7 +284,11 @@ const Admin = () => {
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      setSettingValues((current) => ({ ...current, [key]: "" }));
+      setSettingValues((current) => {
+        const next = { ...current };
+        delete next[key];
+        return next;
+      });
       await qc.invalidateQueries({ queryKey: ["admin-integration-settings"] });
       toast.success("Integration setting saved securely");
     } catch (error: any) {
@@ -297,19 +314,35 @@ const Admin = () => {
     }
   };
 
-  const testOpenAI = async () => {
-    setTestingOpenAI(true);
+  const testActiveAI = async () => {
+    setTestingAI(true);
     try {
       const { data, error } = await supabase.functions.invoke("admin-provider-settings", {
-        body: { action: "test_openai" },
+        body: { action: "test_ai_provider" },
       });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success(`OpenAI is working with ${(data as any)?.model || "the configured model"}`);
+      toast.success(`${(data as any)?.provider === "gemini" ? "Google Gemini" : "OpenAI"} is working with ${(data as any)?.model || "the configured model"}`);
     } catch (error: any) {
-      toast.error(error.message || "Could not test OpenAI");
+      toast.error(error.message || "Could not test the active AI provider");
     } finally {
-      setTestingOpenAI(false);
+      setTestingAI(false);
+    }
+  };
+
+  const testPayments = async () => {
+    setTestingPayments(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-provider-settings", {
+        body: { action: "test_payments" },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      toast.success(`${((data as any)?.providers || []).join(" and ")} payment credentials are working`);
+    } catch (error: any) {
+      toast.error(error.message || "Could not test payment credentials");
+    } finally {
+      setTestingPayments(false);
     }
   };
 
@@ -493,6 +526,7 @@ const Admin = () => {
               compact
               className="mt-2"
               created_at={a.created_at}
+              reviewing_at={a.reviewing_at}
               reviewed_at={a.reviewed_at}
               shortlisted_at={a.shortlisted_at}
               hired_at={a.hired_at}
@@ -505,6 +539,7 @@ const Admin = () => {
               <SelectContent>
                 <SelectItem value="pending">Pending</SelectItem>
                 <SelectItem value="reviewing">Reviewing</SelectItem>
+                <SelectItem value="reviewed">Reviewed</SelectItem>
                 <SelectItem value="shortlisted">Shortlisted</SelectItem>
                 <SelectItem value="rejected">Rejected</SelectItem>
                 <SelectItem value="hired">Hired</SelectItem>
@@ -713,7 +748,7 @@ const Admin = () => {
         <div className="grid lg:grid-cols-2 gap-4">
           {INTEGRATION_FIELDS.map((field) => {
             const current = integrationMap[field.key];
-            const value = settingValues[field.key] ?? (field.secret ? "" : current?.value ?? "");
+            const value = settingValues[field.key] ?? (field.secret ? "" : current?.value ?? (field.key === "ai_provider" ? "gemini" : ""));
             return (
               <Card key={field.key} className="p-5 space-y-3">
                 <div className="flex items-start justify-between gap-3">
@@ -726,13 +761,27 @@ const Admin = () => {
                   </Badge>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <Input
-                    type={field.secret ? "password" : "text"}
-                    autoComplete="off"
-                    value={value}
-                    onChange={(event) => setSettingValues((values) => ({ ...values, [field.key]: event.target.value }))}
-                    placeholder={current?.configured && field.secret ? "Enter a replacement to rotate" : field.placeholder}
-                  />
+                  {field.options ? (
+                    <Select
+                      value={value}
+                      onValueChange={(selected) => setSettingValues((values) => ({ ...values, [field.key]: selected }))}
+                    >
+                      <SelectTrigger><SelectValue placeholder={field.placeholder} /></SelectTrigger>
+                      <SelectContent>
+                        {field.options.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input
+                      type={field.secret ? "password" : "text"}
+                      autoComplete="off"
+                      value={value}
+                      onChange={(event) => setSettingValues((values) => ({ ...values, [field.key]: event.target.value }))}
+                      placeholder={current?.configured && field.secret ? "Enter a replacement to rotate" : field.placeholder}
+                    />
+                  )}
                   <Button
                     size="sm"
                     onClick={() => saveIntegrationSetting(field.key)}
@@ -765,15 +814,32 @@ const Admin = () => {
 
       <Card className="p-6 space-y-3">
         <div className="flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
-          <h2 className="font-display font-semibold">Test OpenAI Career Coach</h2>
+          <CreditCard className="h-5 w-5 text-primary" />
+          <h2 className="font-display font-semibold">Test payment credentials</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Verifies the saved key, account quota, and selected model with a minimal provider request.
+          Validates every saved Paystack or Stripe key. Paystack is the checkout provider currently shown on M-Ploy.
         </p>
-        <Button onClick={testOpenAI} disabled={testingOpenAI} className="gap-2">
-          {testingOpenAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
-          Test OpenAI
+        <Button onClick={testPayments} disabled={testingPayments} className="gap-2">
+          {testingPayments ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+          Test payment providers
+        </Button>
+        <p className="break-all text-xs text-muted-foreground">
+          Paystack webhook URL: https://nlfokrpapmzgazcwfgcp.supabase.co/functions/v1/paystack-webhook
+        </p>
+      </Card>
+
+      <Card className="p-6 space-y-3">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-5 w-5 text-primary" />
+          <h2 className="font-display font-semibold">Test active Career Coach provider</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          Verifies the selected OpenAI or Google Gemini key and model with a minimal provider request.
+        </p>
+        <Button onClick={testActiveAI} disabled={testingAI} className="gap-2">
+          {testingAI ? <Loader2 className="h-4 w-4 animate-spin" /> : <Activity className="h-4 w-4" />}
+          Test active provider
         </Button>
       </Card>
     </div>

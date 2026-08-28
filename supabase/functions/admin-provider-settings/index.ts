@@ -14,8 +14,11 @@ const SETTINGS = {
   stripe_secret_key: { secret: true },
   paystack_secret_key: { secret: true },
   recaptcha_secret_key: { secret: true },
+  ai_provider: { secret: false },
   openai_api_key: { secret: true },
   openai_model: { secret: false },
+  gemini_api_key: { secret: true },
+  gemini_model: { secret: false },
   google_client_id: { secret: false },
   google_client_secret: { secret: true },
   google_allowed_origins: { secret: false },
@@ -52,13 +55,13 @@ async function resendEmail(apiKey: string, from: string, to: string) {
 }
 
 async function testOpenAI(apiKey: string, model: string) {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+  const response = await fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
-      max_tokens: 1,
-      messages: [{ role: "user", content: "Reply with OK." }],
+      max_output_tokens: 16,
+      input: "Reply with OK.",
     }),
   })
 
@@ -88,6 +91,46 @@ async function testOpenAI(apiKey: string, model: string) {
     throw new Error(`OpenAI cannot use the configured model (${model}). Save a supported model such as gpt-4o-mini.`)
   }
   throw new Error("OpenAI is currently unavailable. Try the test again shortly.")
+}
+
+async function testGemini(apiKey: string, model: string) {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+    {
+      method: "POST",
+      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ role: "user", parts: [{ text: "Reply with OK." }] }],
+        generationConfig: { maxOutputTokens: 8 },
+      }),
+    },
+  )
+  if (response.ok) return
+  const detail = await response.text()
+  if (response.status === 401 || response.status === 403) {
+    throw new Error("Google Gemini rejected this API key. Check its API access and restrictions.")
+  }
+  if (response.status === 400 || response.status === 404) {
+    throw new Error(`Google Gemini cannot use the configured model (${model}). Save a supported model such as gemini-2.5-flash.`)
+  }
+  if (response.status === 429) {
+    throw new Error("Google Gemini is rate-limiting this key or its quota is unavailable.")
+  }
+  console.error("Gemini test error:", response.status, detail.slice(0, 300))
+  throw new Error("Google Gemini is currently unavailable. Try the test again shortly.")
+}
+
+async function testPaymentKey(provider: "Paystack" | "Stripe", apiKey: string) {
+  const response = provider === "Paystack"
+    ? await fetch("https://api.paystack.co/balance", { headers: { Authorization: `Bearer ${apiKey}` } })
+    : await fetch("https://api.stripe.com/v1/account", { headers: { Authorization: `Bearer ${apiKey}` } })
+  if (response.ok) return
+  const detail = await response.text()
+  console.error(`${provider} key test error:`, response.status, detail.slice(0, 300))
+  if (response.status === 401 || response.status === 403) {
+    throw new Error(`${provider} rejected the configured API key.`)
+  }
+  throw new Error(`${provider} could not be reached. Try the test again shortly.`)
 }
 
 serve(async (req) => {
@@ -142,6 +185,9 @@ serve(async (req) => {
       if (!isSettingKey(body.key)) return json({ error: "Unsupported setting" }, 400)
       const value: string = typeof body.value === "string" ? body.value.trim() : ""
       if (!value || value.length > 10000) return json({ error: "Enter a valid value" }, 400)
+      if (body.key === "ai_provider" && value !== "openai" && value !== "gemini") {
+        return json({ error: "Choose OpenAI or Google Gemini" }, 400)
+      }
       if (body.key === "google_client_id" && !/^[a-zA-Z0-9._-]+\.apps\.googleusercontent\.com$/.test(value)) {
         return json({ error: "Enter a valid Google OAuth web client ID" }, 400)
       }
@@ -183,7 +229,20 @@ serve(async (req) => {
       return json({ ok: true })
     }
 
-    if (action === "test_openai") {
+    if (action === "test_openai" || action === "test_ai_provider") {
+      const configuredProvider = await getIntegrationSetting(admin, "ai_provider")
+      const provider = configuredProvider === "openai" ? "openai" : "gemini"
+      if (provider === "gemini") {
+        const apiKey = await getIntegrationSetting(admin, "gemini_api_key")
+        const configuredModel = await getIntegrationSetting(admin, "gemini_model")
+        const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
+          ? configuredModel
+          : "gemini-2.5-flash"
+        if (!apiKey) return json({ error: "Save the Google Gemini API key first" }, 400)
+        await testGemini(apiKey, model)
+        return json({ ok: true, provider, model })
+      }
+
       const apiKey = await getIntegrationSetting(admin, "openai_api_key")
       const configuredModel = await getIntegrationSetting(admin, "openai_model")
       const model = configuredModel && /^[a-zA-Z0-9._:-]{1,100}$/.test(configuredModel)
@@ -191,7 +250,36 @@ serve(async (req) => {
         : "gpt-4o-mini"
       if (!apiKey) return json({ error: "Save the OpenAI API key first" }, 400)
       await testOpenAI(apiKey, model)
-      return json({ ok: true, model })
+      return json({ ok: true, provider, model })
+    }
+
+    if (action === "test_payments") {
+      const paystackKey = await getIntegrationSetting(admin, "paystack_secret_key")
+      const stripeKey = await getIntegrationSetting(admin, "stripe_secret_key")
+      if (!paystackKey && !stripeKey) return json({ error: "Save a Paystack or Stripe key first" }, 400)
+      const checks = [
+        paystackKey ? { provider: "Paystack" as const, promise: testPaymentKey("Paystack", paystackKey) } : null,
+        stripeKey ? { provider: "Stripe" as const, promise: testPaymentKey("Stripe", stripeKey) } : null,
+      ].filter((check): check is { provider: "Paystack" | "Stripe"; promise: Promise<void> } => Boolean(check))
+      const settled = await Promise.allSettled(checks.map((check) => check.promise))
+      const results = checks.map((check, index) => ({
+        provider: check.provider,
+        ok: settled[index].status === "fulfilled",
+        error: settled[index].status === "rejected"
+          ? (settled[index] as PromiseRejectedResult).reason instanceof Error
+            ? (settled[index] as PromiseRejectedResult).reason.message
+            : "Credential test failed"
+          : null,
+      }))
+      const failures = results.filter((result) => !result.ok)
+      if (failures.length) {
+        return json({ error: failures.map((result) => `${result.provider}: ${result.error}`).join(" "), results }, 400)
+      }
+      return json({
+        ok: true,
+        providers: results.map((result) => result.provider),
+        results,
+      })
     }
 
     return json({ error: "Unsupported action" }, 400)

@@ -10,6 +10,7 @@ export const formatExactDateTime = (value?: string | null) => {
 
 export type ApplicationTimestamps = {
   created_at: string;
+  reviewing_at?: string | null;
   reviewed_at?: string | null;
   shortlisted_at?: string | null;
   hired_at?: string | null;
@@ -21,6 +22,7 @@ export const currentStatusTimestamp = (
 ) => {
   switch ((application.status || "").toLowerCase()) {
     case "reviewing":
+      return application.reviewing_at;
     case "reviewed":
       return application.reviewed_at;
     case "shortlisted":

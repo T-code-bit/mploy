@@ -1,9 +1,10 @@
-import { Check, X, Loader2 } from "lucide-react";
+import { Check, Eye, X, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const STAGES = [
   { key: "pending", label: "Pending" },
   { key: "reviewing", label: "Reviewing" },
+  { key: "reviewed", label: "Reviewed" },
   { key: "shortlisted", label: "Shortlisted" },
   { key: "hired", label: "Hired" },
 ] as const;
@@ -11,9 +12,10 @@ const STAGES = [
 const STAGE_INDEX: Record<string, number> = {
   pending: 0,
   reviewing: 1,
-  shortlisted: 2,
-  hired: 3,
-  accepted: 3,
+  reviewed: 2,
+  shortlisted: 3,
+  hired: 4,
+  accepted: 4,
 };
 
 interface Props {
@@ -76,6 +78,9 @@ const ApplicationProgress = ({ status, className }: Props) => {
                 {stage.label}
                 {active && stage.key === "reviewing" && (
                   <Loader2 className="inline-block h-2.5 w-2.5 animate-spin ml-0.5" />
+                )}
+                {active && stage.key === "reviewed" && (
+                  <Eye className="ml-0.5 inline-block h-2.5 w-2.5" />
                 )}
                 {active && stage.key === "hired" && (
                   <Check className="inline-block h-2.5 w-2.5 ml-0.5" />

@@ -36,7 +36,12 @@ serve(async (req) => {
     const t = TIERS[tier];
     if (!t) throw new Error("Invalid tier");
 
-    const origin = req.headers.get("origin") || await getIntegrationSetting(supabase, "app_url") || "https://go-mploy.com";
+    const configuredAppUrl = await getIntegrationSetting(supabase, "app_url") || "https://go-mploy.com";
+    const appUrl = new URL(configuredAppUrl);
+    if (appUrl.protocol !== "https:" && appUrl.hostname !== "localhost") {
+      throw new Error("The configured application URL must use HTTPS");
+    }
+    const origin = appUrl.origin;
 
     // Find or create plan on Paystack (plan_code is required for recurring monthly)
     const planKey = `mploy_${tier}_monthly_${t.amount}`;
@@ -46,6 +51,7 @@ serve(async (req) => {
       headers: { Authorization: `Bearer ${paystackKey}` },
     });
     const plansJson = await plansRes.json();
+    if (!plansRes.ok || !plansJson.status) throw new Error("Paystack could not load subscription plans");
     const existing = plansJson?.data?.find((p: any) => p.name === planKey);
     if (existing) {
       planCode = existing.plan_code;
@@ -84,16 +90,19 @@ serve(async (req) => {
       }),
     });
     const initJson = await initRes.json();
-    if (!initJson.status) throw new Error(`Paystack init error: ${initJson.message}`);
+    if (!initRes.ok || !initJson.status || !initJson.data?.authorization_url) {
+      throw new Error(`Paystack init error: ${initJson.message || "checkout unavailable"}`);
+    }
 
-    // Pre-record pending state
-    await supabase.from("paystack_subscribers").upsert({
-      user_id: user.id,
-      email: user.email,
-      plan_code: planCode,
-      tier,
-      status: "pending",
-    }, { onConflict: "user_id" });
+    // This atomic RPC never overwrites an active paid state with pending.
+    const { error: pendingError } = await supabase.rpc("initialize_paystack_checkout", {
+      p_user_id: user.id,
+      p_email: user.email,
+      p_plan_code: planCode,
+      p_transaction_reference: initJson.data.reference,
+      p_tier: tier,
+    });
+    if (pendingError) throw pendingError;
 
     return new Response(JSON.stringify({ url: initJson.data.authorization_url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

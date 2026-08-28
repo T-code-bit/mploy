@@ -46,6 +46,7 @@ interface ApplicationData {
   employer_feedback: string | null;
   employer_contact_info: string | null;
   applicant_email: string | null;
+  reviewing_at: string | null;
   reviewed_at: string | null;
   shortlisted_at: string | null;
   hired_at: string | null;
@@ -116,8 +117,12 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
     onOpenChange(isOpen);
   };
 
-  const saveFeedback = async () => {
+  const saveFeedback = async (finalize = false) => {
     if (!application) return;
+    if (finalize && !feedback.trim()) {
+      toast.error("Enter the final response before sending it");
+      return;
+    }
     setSaving(true);
     try {
       const { error } = await supabase
@@ -125,10 +130,17 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
         .update({
           employer_feedback: feedback || null,
           employer_contact_info: contactInfo || null,
+          ...(finalize ? { status: "reviewed" } : {}),
         } as any)
         .eq("id", application.id);
       if (error) throw error;
-      toast.success("Feedback saved successfully");
+      setApplication((current) => current ? {
+        ...current,
+        employer_feedback: feedback || null,
+        employer_contact_info: contactInfo || null,
+        ...(finalize ? { status: "reviewed" } : {}),
+      } : current);
+      toast.success(finalize ? "Final response sent to the applicant" : "Feedback draft saved");
     } catch (e: any) {
       toast.error(e.message);
     } finally {
@@ -232,6 +244,7 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
 
                    <ApplicationStatusHistory
                      created_at={application.created_at}
+                     reviewing_at={application.reviewing_at}
                      reviewed_at={application.reviewed_at}
                      shortlisted_at={application.shortlisted_at}
                      hired_at={application.hired_at}
@@ -318,10 +331,15 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
                         className="rounded-xl h-11"
                       />
                     </div>
-                    <Button onClick={saveFeedback} disabled={saving} className="bg-gradient-primary text-primary-foreground rounded-xl gap-2">
-                      <Send className="h-4 w-4" />
-                      {saving ? "Saving..." : "Save Feedback"}
-                    </Button>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <Button type="button" variant="outline" onClick={() => saveFeedback(false)} disabled={saving} className="rounded-xl">
+                        Save draft
+                      </Button>
+                      <Button type="button" onClick={() => saveFeedback(true)} disabled={saving} className="bg-gradient-primary text-primary-foreground rounded-xl gap-2">
+                        <Send className="h-4 w-4" />
+                        {saving ? "Sending..." : "Send final response"}
+                      </Button>
+                    </div>
                   </div>
                 </>
               )}

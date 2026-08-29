@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ const INDUSTRY_KEYWORDS: Record<string, string[]> = {
 };
 
 const CVBuilder = () => {
-  const { subscriptionTier } = useAuth();
+  const { user, userRole, subscriptionTier } = useAuth();
   const tierLimits = SUBSCRIPTION_TIERS[subscriptionTier].limits;
   const tabsRef = useRef<HTMLDivElement>(null);
 
@@ -91,6 +91,11 @@ const CVBuilder = () => {
   const [hobbies, setHobbies] = useState("");
   const [references, setReferences] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [verifiedPurchaseReference, setVerifiedPurchaseReference] = useState<string | null>(null);
+  const [pendingPurchaseReference, setPendingPurchaseReference] = useState<string | null>(null);
+  const [pendingCheckoutUrl, setPendingCheckoutUrl] = useState<string | null>(null);
+  const [needsFinalization, setNeedsFinalization] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(1);
   const [aiSuggestions, setAiSuggestions] = useState<string>("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -259,9 +264,10 @@ const CVBuilder = () => {
     }
   };
 
-  const generatePDF = () => {
+  const generatePDF = async (purchaseReference?: string) => {
     if (!fullName) { toast.error("Please enter your full name"); return; }
     setDownloading(true);
+    setPaymentStatus("Building your ATS-ready PDF…");
     try {
       const doc = new jsPDF();
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -395,10 +401,174 @@ const CVBuilder = () => {
       }
 
       doc.save(`${fullName.replace(/\s+/g, "_")}_CV.pdf`);
+      if (purchaseReference) {
+        // Keep a local recovery marker until the server records the completed export.
+        // This is intentionally set only after jsPDF has successfully saved the file.
+        sessionStorage.setItem(`mploy-cv-exported-${purchaseReference}`, "true");
+        setPaymentStatus("Finalizing your paid CV export…");
+        const { error } = await supabase.functions.invoke("complete-cv-export", {
+          body: { reference: purchaseReference },
+        });
+        if (error) throw error;
+        setVerifiedPurchaseReference(null);
+        sessionStorage.removeItem(`mploy-cv-draft-${purchaseReference}`);
+        sessionStorage.removeItem(`mploy-cv-exported-${purchaseReference}`);
+      }
+      setPaymentStatus("CV exported successfully.");
       toast.success("CV downloaded successfully!");
-    } catch { toast.error("Failed to generate PDF"); }
-    finally { setDownloading(false); }
+    } catch (err: any) {
+      if (purchaseReference) setNeedsFinalization(true);
+      setPaymentStatus(purchaseReference
+        ? "Your PDF was downloaded, but finalization needs retrying. Do not start another payment."
+        : "Export could not be completed. Please try again.");
+      toast.error(err.message || "Failed to generate PDF");
+    } finally { setDownloading(false); }
   };
+
+  const saveDraft = () => ({
+    fullName, email, phone, location, linkedinUrl, portfolioUrl, summary, experiences,
+    educations, certifications, languages, skills, hobbies, references, selectedTemplate,
+  });
+
+  const restoreDraft = (draft: ReturnType<typeof saveDraft>) => {
+    setFullName(draft.fullName); setEmail(draft.email); setPhone(draft.phone); setLocation(draft.location);
+    setLinkedinUrl(draft.linkedinUrl); setPortfolioUrl(draft.portfolioUrl); setSummary(draft.summary);
+    setExperiences(draft.experiences); setEducations(draft.educations); setCertifications(draft.certifications);
+    setLanguages(draft.languages); setSkills(draft.skills); setHobbies(draft.hobbies); setReferences(draft.references);
+    setSelectedTemplate(draft.selectedTemplate);
+  };
+
+  const startPaidExport = async () => {
+    if (!user) { toast.error("Please sign in to pay for and export your CV"); return; }
+    if (userRole === "admin") {
+      if (!fullName) { toast.error("Please enter your full name"); return; }
+      await generatePDF();
+      return;
+    }
+    if (verifiedPurchaseReference) {
+      if (!fullName) { toast.error("Please enter your full name"); return; }
+      await generatePDF(verifiedPurchaseReference);
+      return;
+    }
+    if (pendingPurchaseReference) {
+      await verifyPurchase(pendingPurchaseReference);
+      return;
+    }
+    setDownloading(true);
+    setPaymentStatus("Opening secure KES 10 Paystack checkout…");
+    try {
+      const { data, error } = await supabase.functions.invoke("paystack-create-cv-payment");
+      if (error) throw error;
+      if (!data?.url || !data?.reference) throw new Error("Checkout could not be started");
+      sessionStorage.setItem(`mploy-cv-draft-${data.reference}`, JSON.stringify(saveDraft()));
+      setPendingPurchaseReference(data.reference);
+      setPendingCheckoutUrl(data.url);
+      setPaymentStatus("Redirecting to Paystack to complete payment…");
+      window.location.assign(data.url);
+    } catch (err: any) {
+      setPaymentStatus("");
+      toast.error(err.message || "Failed to start secure checkout");
+      setDownloading(false);
+    }
+  };
+
+  const verifyPurchase = async (reference: string) => {
+    setDownloading(true);
+    setPaymentStatus("Verifying your KES 10 payment securely with Paystack…");
+    try {
+      const { data, error } = await supabase.functions.invoke("paystack-verify-cv-payment", { body: { reference } });
+      if (error || !data?.verified) throw error || new Error("Payment has not been verified");
+      const savedDraft = sessionStorage.getItem(`mploy-cv-draft-${reference}`);
+      if (savedDraft) {
+        try {
+          restoreDraft(JSON.parse(savedDraft));
+        } catch {
+          // Verification must remain usable even if a local draft was corrupted.
+          sessionStorage.removeItem(`mploy-cv-draft-${reference}`);
+          toast.error("Your payment was verified, but the saved local draft could not be restored.");
+        }
+      }
+      setPendingPurchaseReference(null);
+      setPendingCheckoutUrl(null);
+      setVerifiedPurchaseReference(data.exported ? null : reference);
+      const finalizePending = sessionStorage.getItem(`mploy-cv-exported-${reference}`) === "true";
+      setNeedsFinalization(finalizePending && !data.exported);
+      setPaymentStatus(data.exported
+        ? "This paid CV was already exported."
+        : finalizePending
+          ? "Your PDF was downloaded earlier, but finalization needs retrying."
+          : "Payment verified. You can now build and export this CV.");
+      toast.success(data.exported ? "This CV purchase has already been used." : "Payment verified — CV Builder unlocked.");
+      // The database now holds the verified purchase, so removing callback details is safe.
+      if (new URLSearchParams(window.location.search).get("reference") === reference) {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    } catch (err: any) {
+      setPendingPurchaseReference(reference);
+      setPaymentStatus("Payment is still pending or could not be verified. Retry verification after completing Paystack checkout.");
+      toast.error(err.message || "Payment verification failed");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  const finalizeExport = async () => {
+    if (!verifiedPurchaseReference) return;
+    setDownloading(true);
+    setPaymentStatus("Finalizing your paid CV export…");
+    try {
+      const { error } = await supabase.functions.invoke("complete-cv-export", { body: { reference: verifiedPurchaseReference } });
+      if (error) throw error;
+      sessionStorage.removeItem(`mploy-cv-draft-${verifiedPurchaseReference}`);
+      sessionStorage.removeItem(`mploy-cv-exported-${verifiedPurchaseReference}`);
+      setVerifiedPurchaseReference(null);
+      setNeedsFinalization(false);
+      setPaymentStatus("CV export completed successfully.");
+      toast.success("Your paid CV export has been finalized.");
+    } catch (err: any) {
+      setNeedsFinalization(true);
+      setPaymentStatus("Your PDF was downloaded, but finalization needs retrying. Do not start another payment.");
+      toast.error(err.message || "Could not finalize the exported CV");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get("reference");
+    if (!user || userRole === "admin") return;
+    let cancelled = false;
+    const recoverPurchase = async () => {
+      if (params.get("cv_payment") === "1" && reference) {
+        await verifyPurchase(reference);
+        return;
+      }
+      try {
+        const { data, error } = await supabase.functions.invoke("paystack-cv-purchase-status");
+        if (error) throw error;
+        if (!cancelled && data?.purchase?.status === "verified") {
+          setVerifiedPurchaseReference(data.purchase.reference);
+          const finalizePending = sessionStorage.getItem(`mploy-cv-exported-${data.purchase.reference}`) === "true";
+          setNeedsFinalization(finalizePending);
+          setPaymentStatus(finalizePending
+            ? "Your PDF was downloaded earlier, but finalization needs retrying."
+            : "Recovered your verified CV build session. Continue building, then export it.");
+        } else if (!cancelled && data?.purchase?.status === "pending") {
+          setPendingPurchaseReference(data.purchase.reference);
+          setPendingCheckoutUrl(data.purchase.checkout_url || null);
+          setPaymentStatus("A CV payment is pending. Complete checkout, then verify it to unlock the builder.");
+        }
+      } catch (err: any) {
+        if (!cancelled) {
+          setPaymentStatus("We could not recover your CV payment status. Refresh to retry; do not make another payment yet.");
+          toast.error(err.message || "Could not recover payment status");
+        }
+      }
+    };
+    recoverPurchase();
+    return () => { cancelled = true; };
+  }, [user, userRole]);
 
   const selectTemplate = (tmpl: typeof templates[0]) => {
     setSelectedTemplate(tmpl.id);
@@ -437,6 +607,27 @@ const CVBuilder = () => {
             </TabsList>
 
             <TabsContent value="builder">
+              {userRole !== "admin" && !verifiedPurchaseReference ? (
+                <div className="mx-auto max-w-xl rounded-2xl border border-border bg-card p-8 text-center shadow-card">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
+                    <Lock className="h-6 w-6 text-primary" />
+                  </div>
+                  <h2 className="font-display text-xl font-semibold text-foreground">Unlock one CV build for KES 10</h2>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                    A verified, one-off Paystack payment unlocks this builder for one CV session. Your purchase is finalized only after its PDF export succeeds.
+                  </p>
+                  <p className="mt-3 text-xs text-muted-foreground">{paymentStatus || "Start secure checkout to build your CV."}</p>
+                  <Button onClick={startPaidExport} disabled={downloading} className="mt-6 gap-2 rounded-xl bg-gradient-primary text-primary-foreground">
+                    {downloading ? <Loader2 className="h-4 w-4 animate-spin" /> : pendingPurchaseReference ? <CheckCircle2 className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                    {pendingPurchaseReference ? "Verify KES 10 payment" : "Pay KES 10 to start building"}
+                  </Button>
+                  {pendingPurchaseReference && pendingCheckoutUrl && (
+                    <Button variant="outline" onClick={() => window.location.assign(pendingCheckoutUrl)} disabled={downloading} className="ml-3 mt-6 rounded-xl">
+                      Return to Paystack checkout
+                    </Button>
+                  )}
+                </div>
+              ) : (
               <div className="grid lg:grid-cols-2 gap-8">
                 <div className="space-y-5">
                   {/* Personal Details */}
@@ -610,9 +801,20 @@ const CVBuilder = () => {
                   <div className="bg-card rounded-2xl border border-border p-8 shadow-card">
                     <div className="flex items-center justify-between mb-6">
                       <h3 className="font-display font-semibold text-card-foreground">Live Preview</h3>
-                      <Button size="sm" onClick={generatePDF} disabled={downloading} className="bg-gradient-primary text-primary-foreground gap-2 rounded-xl shadow-glow hover:shadow-glow">
-                        {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />} Download PDF
+                      <Button size="sm" onClick={startPaidExport} disabled={downloading} className="bg-gradient-primary text-primary-foreground gap-2 rounded-xl shadow-glow hover:shadow-glow">
+                        {downloading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                        {verifiedPurchaseReference ? "Export paid CV" : userRole === "admin" ? "Download PDF" : "Pay KES 10 & Export"}
                       </Button>
+                    </div>
+                    <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+                      {paymentStatus || (userRole === "admin"
+                        ? "Admin access: export is available without checkout."
+                        : "Each CV export costs KES 10. Payment is verified securely before export.")}
+                      {needsFinalization && (
+                        <Button variant="link" size="sm" onClick={finalizeExport} disabled={downloading} className="ml-2 h-auto px-0 text-xs text-primary">
+                          Retry finalization
+                        </Button>
+                      )}
                     </div>
                     <div className="border border-border rounded-xl p-6 bg-background min-h-[500px] max-h-[70vh] overflow-y-auto text-sm">
                       {fullName ? (
@@ -714,6 +916,7 @@ const CVBuilder = () => {
                   </div>
                 </div>
               </div>
+              )}
             </TabsContent>
 
             <TabsContent value="score">

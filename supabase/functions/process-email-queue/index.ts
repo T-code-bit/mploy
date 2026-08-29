@@ -256,15 +256,20 @@ Deno.serve(async (req) => {
       // Drop expired messages (TTL exceeded)
       if (payload.queued_at) {
         const ageMs = Date.now() - new Date(payload.queued_at).getTime()
-        const maxAgeMs = ttlMinutes[queue] * 60 * 1000
+        // Broadcasts are intentionally retained longer than ordinary
+        // transactional mail: a large audience can take several worker cycles.
+        const messageTtlMinutes = payload.label === 'admin_broadcast'
+          ? 24 * 60
+          : ttlMinutes[queue]
+        const maxAgeMs = messageTtlMinutes * 60 * 1000
         if (ageMs > maxAgeMs) {
           console.warn('Email expired (TTL exceeded)', {
             queue,
             msg_id: msg.msg_id,
             queued_at: payload.queued_at,
-            ttl_minutes: ttlMinutes[queue],
+            ttl_minutes: messageTtlMinutes,
           })
-          await moveToDlq(supabase, queue, msg, `TTL exceeded (${ttlMinutes[queue]} minutes)`)
+          await moveToDlq(supabase, queue, msg, `TTL exceeded (${messageTtlMinutes} minutes)`)
           continue
         }
       }

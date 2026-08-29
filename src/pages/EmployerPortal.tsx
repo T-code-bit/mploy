@@ -83,6 +83,9 @@ const EmployerPortal = () => {
     return map;
   }, [applications]);
 
+  const applicationStatusLabel = (status: string) =>
+    status === "pending" ? "Received" : status;
+
   const createJob = useMutation({
     mutationFn: async () => {
       if (editingJob) {
@@ -352,7 +355,7 @@ const EmployerPortal = () => {
                         <TableHead>Job</TableHead>
                         <TableHead>Applicant</TableHead>
                         <TableHead>Email</TableHead>
-                        <TableHead>Applied</TableHead>
+                        <TableHead>Received</TableHead>
                         <TableHead>Progress</TableHead>
                         <TableHead></TableHead>
                       </TableRow>
@@ -385,7 +388,7 @@ const EmployerPortal = () => {
                                   <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="pending">Pending</SelectItem>
+                                  <SelectItem value="pending">Received</SelectItem>
                                   <SelectItem value="reviewing">Reviewing</SelectItem>
                                    <SelectItem value="reviewed">Reviewed</SelectItem>
                                   <SelectItem value="shortlisted">Shortlisted</SelectItem>
@@ -403,7 +406,7 @@ const EmployerPortal = () => {
                               variant={["hired", "accepted"].includes(app.status) ? "default" : app.status === "rejected" ? "destructive" : "secondary"}
                               className="rounded-lg capitalize"
                             >
-                              {app.status}
+                              {applicationStatusLabel(app.status)}
                             </Badge>
                           </TableCell>
                         </TableRow>

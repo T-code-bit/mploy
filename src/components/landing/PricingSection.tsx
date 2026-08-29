@@ -63,6 +63,7 @@ const PricingSection = () => {
             Plans That Fit <span className="text-gradient-accent">Your Journey</span>
           </h2>
           <p className="text-muted-foreground text-lg">Secure monthly billing in KES via Paystack — cancel anytime.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Need a one-off CV? Start each CV build for <strong className="text-foreground">KES 10</strong> after secure Paystack verification; the purchase completes after export.</p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
             <span className="font-semibold">We accept:</span>
             {[

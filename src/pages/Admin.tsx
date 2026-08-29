@@ -30,6 +30,7 @@ import usePageTitle from "@/hooks/usePageTitle";
 import { useAuth } from "@/contexts/AuthContext";
 import mployLogo from "@/assets/mploy-logo.png";
 import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
+import RichEmailEditor from "@/components/RichEmailEditor";
 
 const TIER_PRICE: Record<string, number> = { basic: 999, premium: 1999, free: 0 };
 
@@ -66,6 +67,7 @@ const NAV: { key: View; label: string; icon: any }[] = [
   { key: "broadcast", label: "Broadcast", icon: Megaphone },
   { key: "settings", label: "Integrations", icon: Settings },
 ];
+const isView = (value: string): value is View => NAV.some((item) => item.key === value);
 
 type IntegrationField = {
   key: string;
@@ -117,11 +119,13 @@ const Admin = () => {
   usePageTitle("Admin Console");
   const qc = useQueryClient();
   const { profile, signOut } = useAuth();
-  const [view, setView] = useState<View>("overview");
+  const [view, setView] = useState<View>(() => isView(window.location.hash.slice(1)) ? window.location.hash.slice(1) as View : "overview");
   const [editingJob, setEditingJob] = useState<any | null>(null);
   const [search, setSearch] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [broadcast, setBroadcast] = useState({ subject: "", body: "", audience: "all_users" as "all_users" | "active_subscribers" | "newsletter" });
+  const [broadcast, setBroadcast] = useState({ subject: "", body: "", audience: "all_users" as "all_users" | "active_subscribers" | "newsletter" | "selected_users", selected_user_ids: [] as string[] });
+  const [recipientSearch, setRecipientSearch] = useState("");
+  const [recipientResults, setRecipientResults] = useState<Array<{ id: string; email: string; name: string }>>([]);
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [settingValues, setSettingValues] = useState<Record<string, string>>({});
   const [savingSetting, setSavingSetting] = useState<string | null>(null);
@@ -149,6 +153,34 @@ const Admin = () => {
     ch.subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [qc]);
+
+  useEffect(() => {
+    const onHashChange = () => {
+      const next = window.location.hash.slice(1);
+      setView(isView(next) ? next : "overview");
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  useEffect(() => {
+    if (window.location.hash.slice(1) !== view) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#${view}`);
+    }
+  }, [view]);
+  const navigateView = (next: View) => {
+    if (window.location.hash.slice(1) === next) setView(next);
+    else window.location.hash = next;
+  };
+  useEffect(() => {
+    if (view === "broadcast" && recipientSearch.trim().length > 1) {
+      const timer = window.setTimeout(async () => {
+        const { data, error } = await supabase.functions.invoke("admin-broadcast", { body: { action: "search_users", query: recipientSearch } });
+        if (!error && !(data as any)?.error) setRecipientResults((data as any)?.users ?? []);
+      }, 250);
+      return () => window.clearTimeout(timer);
+    }
+    setRecipientResults([]);
+  }, [recipientSearch, view]);
 
   const { data: jobs = [], isLoading: jobsLoading } = useQuery({
     queryKey: ["admin-jobs"],
@@ -274,10 +306,12 @@ const Admin = () => {
       const { data, error } = await supabase.functions.invoke("admin-broadcast", { body: broadcast });
       if (error) throw error;
       if ((data as any)?.error) throw new Error((data as any).error);
-      toast.success(`Broadcast queued to ${(data as any)?.total_recipients || 0} recipients`);
-      setBroadcast({ subject: "", body: "", audience: broadcast.audience });
-    } catch (e: any) {
-      toast.error(e.message || "Broadcast failed");
+      const failed = Number((data as any)?.failed || 0);
+      if (failed) toast.warning(`Queued ${(data as any)?.queued || 0} recipients; ${failed} could not be queued.`);
+      else toast.success(`Broadcast queued to ${(data as any)?.queued || 0} recipients`);
+      setBroadcast({ subject: "", body: "", audience: broadcast.audience, selected_user_ids: [] });
+    } catch (e: unknown) {
+      toast.error(await edgeFunctionErrorMessage(e, "Broadcast failed"));
     } finally {
       setSendingBroadcast(false);
     }
@@ -489,16 +523,16 @@ const Admin = () => {
             <h2 className="font-display font-semibold">Quick Actions</h2>
           </div>
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setView("jobs")}>
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigateView("jobs")}>
               <Briefcase className="h-4 w-4" /> Manage jobs
             </Button>
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setView("users")}>
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigateView("users")}>
               <UserCog className="h-4 w-4" /> Manage users
             </Button>
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setView("reviews")}>
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigateView("reviews")}>
               <Star className="h-4 w-4" /> Moderate reviews ({pendingReviews})
             </Button>
-            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => setView("transactions")}>
+            <Button variant="outline" className="w-full justify-start gap-2" onClick={() => navigateView("transactions")}>
               <CreditCard className="h-4 w-4" /> View transactions
             </Button>
           </div>
@@ -692,16 +726,35 @@ const Admin = () => {
               <SelectItem value="all_users">All platform users ({profiles.length})</SelectItem>
               <SelectItem value="active_subscribers">Active paid subscribers ({activeSubs})</SelectItem>
               <SelectItem value="newsletter">Newsletter subscribers ({subscribers.length})</SelectItem>
+              <SelectItem value="selected_users">Selected users ({broadcast.selected_user_ids.length})</SelectItem>
             </SelectContent>
           </Select>
         </div>
+        {broadcast.audience === "selected_users" && (
+          <div className="space-y-2 rounded-xl border bg-muted/20 p-3">
+            <Label>Find recipients</Label>
+            <Input value={recipientSearch} onChange={(e) => setRecipientSearch(e.target.value)} placeholder="Search by username or email…" />
+            {recipientResults.length > 0 && <div className="max-h-40 space-y-1 overflow-y-auto">
+              {recipientResults.map((user) => {
+                const chosen = broadcast.selected_user_ids.includes(user.id);
+                return <button type="button" key={user.id} onClick={() => setBroadcast((current) => ({
+                  ...current, selected_user_ids: chosen ? current.selected_user_ids.filter((id) => id !== user.id) : [...current.selected_user_ids, user.id],
+                }))} className={`flex w-full items-center justify-between rounded-lg px-2 py-2 text-left text-sm ${chosen ? "bg-primary/10" : "hover:bg-muted"}`}>
+                  <span className="min-w-0 truncate"><strong>{user.name || "Unnamed user"}</strong> <span className="text-muted-foreground">{user.email}</span></span>
+                  {chosen && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                </button>;
+              })}
+            </div>}
+            {broadcast.selected_user_ids.length > 0 && <p className="text-xs text-muted-foreground">{broadcast.selected_user_ids.length} recipient{broadcast.selected_user_ids.length === 1 ? "" : "s"} selected.</p>}
+          </div>
+        )}
         <div className="space-y-2">
           <Label>Subject</Label>
           <Input value={broadcast.subject} onChange={(e) => setBroadcast({ ...broadcast, subject: e.target.value })} placeholder="Subject line" />
         </div>
         <div className="space-y-2">
           <Label>Message</Label>
-          <Textarea rows={8} value={broadcast.body} onChange={(e) => setBroadcast({ ...broadcast, body: e.target.value })} placeholder="Write your message here..." />
+          <RichEmailEditor value={broadcast.body} onChange={(body) => setBroadcast((current) => ({ ...current, body }))} />
         </div>
         <Button onClick={sendBroadcast} disabled={sendingBroadcast} className="gap-2">
           {sendingBroadcast ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -933,7 +986,7 @@ const Admin = () => {
             return (
               <button
                 key={n.key}
-                onClick={() => { setView(n.key); setSidebarOpen(false); }}
+                onClick={() => { navigateView(n.key); setSidebarOpen(false); }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                   active
                     ? "bg-primary text-primary-foreground shadow-sm"

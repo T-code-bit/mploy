@@ -21,6 +21,10 @@ export type Database = {
           created_at: string
           id: string
           recipient_count: number
+          queued_count: number
+          failed_count: number
+          status: string
+          queue_error: string | null
           sender_id: string | null
           subject: string
         }
@@ -30,6 +34,10 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_count?: number
+          queued_count?: number
+          failed_count?: number
+          status?: string
+          queue_error?: string | null
           sender_id?: string | null
           subject: string
         }
@@ -39,6 +47,10 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_count?: number
+          queued_count?: number
+          failed_count?: number
+          status?: string
+          queue_error?: string | null
           sender_id?: string | null
           subject?: string
         }

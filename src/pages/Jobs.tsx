@@ -147,7 +147,6 @@ const Jobs = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [coverLetterFile, setCoverLetterFile] = useState<File | null>(null);
   const [recommendationFile, setRecommendationFile] = useState<File | null>(null);
-  const [scannedIdFile, setScannedIdFile] = useState<File | null>(null);
   const [educationLevel, setEducationLevel] = useState("");
   const [gender, setGender] = useState("");
   const [county, setCounty] = useState("");
@@ -186,7 +185,6 @@ const Jobs = () => {
     mutationFn: async () => {
       if (!user || !selectedJob) throw new Error("Please sign in and select a job.");
       if (!cvFile) throw new Error("CV is required");
-      if (!scannedIdFile) throw new Error("Scanned ID is required");
 
       const uploadedPaths: string[] = [];
       try {
@@ -196,8 +194,6 @@ const Jobs = () => {
         if (coverLetterUpload) uploadedPaths.push(coverLetterUpload.path);
         const recommendationUpload = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
         if (recommendationUpload) uploadedPaths.push(recommendationUpload.path);
-        const scannedIdUpload = await uploadFile(scannedIdFile, "scanned-id");
-        uploadedPaths.push(scannedIdUpload.path);
 
         const { error } = await supabase.from("applications").insert({
           job_id: selectedJob.id,
@@ -207,7 +203,6 @@ const Jobs = () => {
           cv_url: cvUpload.path,
           cover_letter_url: coverLetterUpload?.path || null,
           recommendation_letter_url: recommendationUpload?.path || null,
-          scanned_id_url: scannedIdUpload.path,
           phone: phone || null,
           years_of_experience: yearsExp || null,
           availability,
@@ -246,7 +241,6 @@ const Jobs = () => {
     setCvFile(null);
     setCoverLetterFile(null);
     setRecommendationFile(null);
-    setScannedIdFile(null);
     setSelectedJob(null);
     setEducationLevel("");
     setGender("");
@@ -671,11 +665,10 @@ const Jobs = () => {
 
             {/* Document Uploads */}
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-foreground">Required Documents</h4>
+              <h4 className="text-sm font-semibold text-foreground">Documents</h4>
               <FileUploadField label="Upload CV" required file={cvFile} onFileChange={setCvFile} />
               <FileUploadField label="Upload Cover Letter" file={coverLetterFile} onFileChange={setCoverLetterFile} />
               <FileUploadField label="Recommendation Letter" file={recommendationFile} onFileChange={setRecommendationFile} />
-              <FileUploadField label="Scanned ID" required file={scannedIdFile} onFileChange={setScannedIdFile} />
             </div>
 
             {/* Cover Letter Text */}
@@ -692,7 +685,7 @@ const Jobs = () => {
 
             <Button
               onClick={() => applyMutation.mutate()}
-              disabled={applyMutation.isPending || !cvFile || !scannedIdFile}
+              disabled={applyMutation.isPending || !cvFile}
               className="w-full bg-gradient-primary text-primary-foreground gap-2 rounded-xl h-11"
             >
               {applyMutation.isPending ? (

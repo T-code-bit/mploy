@@ -70,7 +70,6 @@ export type Database = {
           resume_url: string | null
           reviewing_at: string | null
           reviewed_at: string | null
-          scanned_id_url: string | null
           shortlisted_at: string | null
           status: string
           updated_at: string
@@ -101,7 +100,6 @@ export type Database = {
           resume_url?: string | null
           reviewing_at?: string | null
           reviewed_at?: string | null
-          scanned_id_url?: string | null
           shortlisted_at?: string | null
           status?: string
           updated_at?: string
@@ -132,7 +130,6 @@ export type Database = {
           resume_url?: string | null
           reviewing_at?: string | null
           reviewed_at?: string | null
-          scanned_id_url?: string | null
           shortlisted_at?: string | null
           status?: string
           updated_at?: string

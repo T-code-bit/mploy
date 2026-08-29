@@ -32,7 +32,6 @@ interface ApplicationData {
   cover_letter_url: string | null;
   cv_url: string | null;
   resume_url: string | null;
-  scanned_id_url: string | null;
   recommendation_letter_url: string | null;
   phone: string | null;
   linkedin_url: string | null;
@@ -300,7 +299,6 @@ const ApplicantProfileDialog = ({ applicantId, applicationId, open, onOpenChange
                       <DocumentLink url={application.cv_url} label="CV" />
                       <DocumentLink url={application.cover_letter_url} label="Cover Letter" />
                       <DocumentLink url={application.resume_url} label="Resume" />
-                      <DocumentLink url={application.scanned_id_url} label="Scanned ID" />
                       <DocumentLink url={application.recommendation_letter_url} label="Recommendation" />
                     </div>
                   </div>

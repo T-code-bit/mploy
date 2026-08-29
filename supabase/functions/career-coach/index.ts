@@ -45,7 +45,7 @@ const MAX_MESSAGES = 20
 const MAX_TEXT_CHARACTERS = 60_000
 const MAX_EXTRACTED_DOCUMENT_BYTES = 2 * 1024 * 1024
 const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash"
-const GEMINI_MODEL_FALLBACKS = [DEFAULT_GEMINI_MODEL, "gemini-3.6-flash", "gemini-flash-latest"]
+const GEMINI_MODEL_FALLBACKS = [DEFAULT_GEMINI_MODEL, "gemini-3.6-flash", "gemini-3.1-flash-lite"]
 const ALLOWED_ATTACHMENT_MIMES = new Set([
   "image/jpeg",
   "image/png",

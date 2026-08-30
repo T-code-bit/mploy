@@ -184,6 +184,51 @@ export type Database = {
         }
         Relationships: []
       }
+      cv_export_purchases: {
+        Row: {
+          amount: number
+          checkout_url: string | null
+          created_at: string
+          currency: string
+          email: string
+          exported_at: string | null
+          id: string
+          provider_paid_at: string | null
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          email: string
+          exported_at?: string | null
+          id?: string
+          provider_paid_at?: string | null
+          reference: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          checkout_url?: string | null
+          created_at?: string
+          currency?: string
+          email?: string
+          exported_at?: string | null
+          id?: string
+          provider_paid_at?: string | null
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -528,6 +573,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_cv_export_revenue: {
+        Args: never
+        Returns: {
+          purchase_count: number
+          total_amount: number
+        }[]
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean

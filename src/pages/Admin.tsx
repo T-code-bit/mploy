@@ -137,10 +137,11 @@ const Admin = () => {
 
   // Realtime — auto-refresh every admin table on any change
   useEffect(() => {
-    const tables = ["jobs", "applications", "profiles", "user_roles", "paystack_subscribers", "reviews", "newsletter_subscribers", "contact_messages"];
+    const tables = ["jobs", "applications", "profiles", "user_roles", "paystack_subscribers", "cv_export_purchases", "reviews", "newsletter_subscribers", "contact_messages"];
     const keyMap: Record<string, string> = {
       jobs: "admin-jobs", applications: "admin-applications", profiles: "admin-profiles",
       user_roles: "admin-roles", paystack_subscribers: "admin-paystack-subs",
+      cv_export_purchases: "admin-cv-export-revenue",
       reviews: "admin-reviews", newsletter_subscribers: "admin-subscribers",
       contact_messages: "admin-messages",
     };
@@ -214,6 +215,15 @@ const Admin = () => {
     queryKey: ["admin-paystack-subs"],
     queryFn: async () => (await supabase.from("paystack_subscribers").select("*").order("created_at", { ascending: false })).data ?? [],
   });
+  const { data: cvExportRevenue, isLoading: cvExportRevenueLoading } = useQuery({
+    queryKey: ["admin-cv-export-revenue"],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_cv_export_revenue");
+      if (error) throw error;
+      return data?.[0] ?? { total_amount: 0, purchase_count: 0 };
+    },
+  });
   const { data: integrationSettings = [], isLoading: integrationSettingsLoading } = useQuery({
     queryKey: ["admin-integration-settings"],
     enabled: view === "settings",
@@ -235,7 +245,6 @@ const Admin = () => {
   const seekerCount = roles.filter((r: any) => r.role === "job_seeker").length;
   const adminCount = roles.filter((r: any) => r.role === "admin").length;
   const activeSubs = paystackSubs.filter((s: any) => s.status === "active").length;
-  const totalTransactions = paystackSubs.length;
   const totalRevenue = paystackSubs
     .filter((s: any) => s.status === "active")
     .reduce((sum: number, s: any) => sum + (TIER_PRICE[s.tier] || 0), 0);
@@ -472,7 +481,13 @@ const Admin = () => {
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPI icon={DollarSign} label="MRR (Active)" value={`KES ${totalRevenue.toLocaleString()}`} sub={`${activeSubs} active subs`} tone="bg-primary" />
-        <KPI icon={CreditCard} label="Total Transactions" value={totalTransactions} sub="all-time" tone="bg-secondary" />
+        <KPI
+          icon={CreditCard}
+          label="CV Export Revenue"
+          value={cvExportRevenueLoading ? "…" : `KES ${Number(cvExportRevenue?.total_amount ?? 0).toLocaleString()}`}
+          sub={cvExportRevenueLoading ? "loading live total" : `${cvExportRevenue?.purchase_count ?? 0} verified/exported purchases · live`}
+          tone="bg-secondary"
+        />
         <KPI icon={Users} label="Total Users" value={profiles.length} sub={`${adminCount} admins · ${employerCount} employers`} tone="bg-primary" />
         <KPI icon={Star} label="Pending Reviews" value={pendingReviews} sub={`${reviews.length} total`} tone="bg-secondary" />
       </div>

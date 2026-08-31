@@ -50,7 +50,7 @@ const sections = [
   },
   {
     title: "12. Contact",
-    content: `For questions about these terms:\n\nEmail: mploykenya@gmail.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 793 264 418`,
+    content: `For questions about these terms:\n\nEmail: info@go-mploy.com\nAddress: M-Ploy Headquarters, Nairobi, Kenya\nPhone: +254 793 264 418`,
   },
 ];
 

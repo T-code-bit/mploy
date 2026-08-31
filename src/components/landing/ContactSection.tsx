@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import GoogleReCaptcha from "@/components/GoogleReCaptcha";
 
 const contactInfo = [
-  { icon: Mail, label: "Email", value: "mploykenya@gmail.com", href: "mailto:mploykenya@gmail.com" },
+  { icon: Mail, label: "Email", value: "info@go-mploy.com", href: "mailto:info@go-mploy.com" },
   { icon: Phone, label: "Phone", value: "+254 793 264 418", href: "tel:+254793264418" },
   { icon: MapPin, label: "Office", value: "Nairobi, Kenya", href: "#" },
 ];

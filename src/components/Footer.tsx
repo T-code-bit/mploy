@@ -202,7 +202,7 @@ const Footer = () => {
           <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-primary" /> Nairobi, Kenya</span>
           <span className="flex items-center gap-1.5">Mon–Fri 8:00 AM – 5:00 PM (EAT)</span>
           <a href="tel:+254793264418" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Phone className="h-3.5 w-3.5 text-primary" /> +254 793 264 418</a>
-          <a href="mailto:mploykenya@gmail.com" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Mail className="h-3.5 w-3.5 text-primary" /> mploykenya@gmail.com</a>
+          <a href="mailto:info@go-mploy.com" className="flex items-center gap-1.5 hover:text-foreground transition-colors"><Mail className="h-3.5 w-3.5 text-primary" /> info@go-mploy.com</a>
         </div>
 
         {/* Bottom bar */}

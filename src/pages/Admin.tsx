@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import mployLogo from "@/assets/mploy-logo.png";
 import ApplicationStatusHistory from "@/components/ApplicationStatusHistory";
 import RichEmailEditor from "@/components/RichEmailEditor";
+import { formatMinorCurrency } from "@/lib/currency";
 
 const TIER_PRICE: Record<string, number> = { basic: 999, premium: 1999, free: 0 };
 
@@ -484,7 +485,7 @@ const Admin = () => {
         <KPI
           icon={CreditCard}
           label="CV Export Revenue"
-          value={cvExportRevenueLoading ? "…" : `KES ${Number(cvExportRevenue?.total_amount ?? 0).toLocaleString()}`}
+          value={cvExportRevenueLoading ? "…" : formatMinorCurrency(cvExportRevenue?.total_amount)}
           sub={cvExportRevenueLoading ? "loading live total" : `${cvExportRevenue?.purchase_count ?? 0} verified/exported purchases · live`}
           tone="bg-secondary"
         />

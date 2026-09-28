@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Phone, BookOpen, CalendarDays, ExternalLink, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import bookCover from "@/assets/agile-jobseeker-book.jpg";
-import summitPoster from "@/assets/aes-summit-november-2026.jpg.asset.json";
+import summitPoster from "@/assets/aes-summit-november-2026.webp";
 
 // The event banner disappears automatically after 6 November 2026 (end of day, EAT).
 export const AES_END = new Date("2026-11-06T23:59:59+03:00");
@@ -103,7 +103,7 @@ const PromoBanners = () => {
                     <CalendarDays className="h-3.5 w-3.5" /> 5–6 November 2026
                   </span>
                   <img
-                    src={summitPoster.url}
+                    src={summitPoster}
                     alt="African Employability Summit 2026, 5–6 November at The Nairobi National Polytechnic"
                     className="mt-3 w-full rounded-2xl object-cover shadow-lg"
                     loading="eager"

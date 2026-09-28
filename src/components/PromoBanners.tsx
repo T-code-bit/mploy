@@ -3,12 +3,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Phone, BookOpen, CalendarDays, ExternalLink, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import bookCover from "@/assets/agile-jobseeker-book.jpg";
-import summitPoster from "@/assets/aes-summit-2026.jpg";
+import summitPoster from "@/assets/aes-summit-november-2026.jpg.asset.json";
 
-// The event banner disappears automatically after 3 October 2026 (end of day, EAT).
-export const AES_END = new Date("2026-10-03T23:59:59+03:00");
+// The event banner disappears automatically after 6 November 2026 (end of day, EAT).
+export const AES_END = new Date("2026-11-06T23:59:59+03:00");
 export const AES_FORM_URL =
-  "https://docs.google.com/forms/d/e/1FAIpQLSfWUxhefGqrCHMOwMrHQHgS2KLgdDP-HBccjv7_Rm_biHTXNQ/viewform";
+  "https://forms.gle/5KMudVrZ6d3DGxUu7";
 export const BOOK_PHONE = "+254 717 627632";
 export const BOOK_TEL = "+254717627632";
 const PROMO_LAST_SHOWN_KEY = "mploy-promotions-last-shown-v2";
@@ -100,20 +100,20 @@ const PromoBanners = () => {
               {summitLive ? (
                 <div className="p-5 sm:p-6">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide rounded-full bg-primary/15 text-primary px-2.5 py-1">
-                    <CalendarDays className="h-3.5 w-3.5" /> 1–3 October 2026
+                    <CalendarDays className="h-3.5 w-3.5" /> 5–6 November 2026
                   </span>
                   <img
-                    src={summitPoster}
-                    alt="African Employability Summit 2026 in Nairobi, Kenya"
+                    src={summitPoster.url}
+                    alt="African Employability Summit 2026, 5–6 November at The Nairobi National Polytechnic"
                     className="mt-3 w-full rounded-2xl object-cover shadow-lg"
                     loading="eager"
                   />
                   <h3 className="mt-4 text-lg font-bold leading-snug">African Employability Summit 2026</h3>
                   <p className="text-sm text-muted-foreground inline-flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5" /> Nairobi, Kenya
+                    <MapPin className="h-3.5 w-3.5" /> The Nairobi National Polytechnic, Nairobi
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Register now to join Africa's biggest employability gathering.
+                    Building Africa's future workforce. Connect. Empower. Employ.
                   </p>
                   <Button asChild className="mt-3 w-full rounded-full bg-gradient-primary text-primary-foreground">
                     <a href={AES_FORM_URL} target="_blank" rel="noopener noreferrer">

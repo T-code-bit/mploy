@@ -214,7 +214,10 @@ const Jobs = () => {
           county: county || null,
           date_of_birth: dateOfBirth || null,
         };
-        const { error } = await supabase.from("applications").insert(application);
+        const insertApplication = supabase.from("applications").insert as unknown as (
+          values: typeof application
+        ) => PromiseLike<{ error: Error | null }>;
+        const { error } = await insertApplication(application);
         if (error) throw error;
       } catch (error) {
         if (uploadedPaths.length > 0) {

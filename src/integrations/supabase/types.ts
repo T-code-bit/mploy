@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
@@ -21,10 +21,6 @@ export type Database = {
           created_at: string
           id: string
           recipient_count: number
-          queued_count: number
-          failed_count: number
-          status: string
-          queue_error: string | null
           sender_id: string | null
           subject: string
         }
@@ -34,10 +30,6 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_count?: number
-          queued_count?: number
-          failed_count?: number
-          status?: string
-          queue_error?: string | null
           sender_id?: string | null
           subject: string
         }
@@ -47,10 +39,6 @@ export type Database = {
           created_at?: string
           id?: string
           recipient_count?: number
-          queued_count?: number
-          failed_count?: number
-          status?: string
-          queue_error?: string | null
           sender_id?: string | null
           subject?: string
         }
@@ -63,7 +51,6 @@ export type Database = {
           availability: string | null
           county: string | null
           cover_letter: string | null
-          cover_letter_url: string | null
           created_at: string
           cv_url: string | null
           date_of_birth: string | null
@@ -72,17 +59,13 @@ export type Database = {
           employer_feedback: string | null
           expected_salary: string | null
           gender: string | null
-          hired_at: string | null
           id: string
           job_id: string
           linkedin_url: string | null
           phone: string | null
           recommendation_letter_url: string | null
-          rejected_at: string | null
           resume_url: string | null
-          reviewing_at: string | null
-          reviewed_at: string | null
-          shortlisted_at: string | null
+          scanned_id_url: string | null
           status: string
           updated_at: string
           years_of_experience: string | null
@@ -93,7 +76,6 @@ export type Database = {
           availability?: string | null
           county?: string | null
           cover_letter?: string | null
-          cover_letter_url?: string | null
           created_at?: string
           cv_url?: string | null
           date_of_birth?: string | null
@@ -102,17 +84,13 @@ export type Database = {
           employer_feedback?: string | null
           expected_salary?: string | null
           gender?: string | null
-          hired_at?: string | null
           id?: string
           job_id: string
           linkedin_url?: string | null
           phone?: string | null
           recommendation_letter_url?: string | null
-          rejected_at?: string | null
           resume_url?: string | null
-          reviewing_at?: string | null
-          reviewed_at?: string | null
-          shortlisted_at?: string | null
+          scanned_id_url?: string | null
           status?: string
           updated_at?: string
           years_of_experience?: string | null
@@ -123,7 +101,6 @@ export type Database = {
           availability?: string | null
           county?: string | null
           cover_letter?: string | null
-          cover_letter_url?: string | null
           created_at?: string
           cv_url?: string | null
           date_of_birth?: string | null
@@ -132,17 +109,13 @@ export type Database = {
           employer_feedback?: string | null
           expected_salary?: string | null
           gender?: string | null
-          hired_at?: string | null
           id?: string
           job_id?: string
           linkedin_url?: string | null
           phone?: string | null
           recommendation_letter_url?: string | null
-          rejected_at?: string | null
           resume_url?: string | null
-          reviewing_at?: string | null
-          reviewed_at?: string | null
-          shortlisted_at?: string | null
+          scanned_id_url?: string | null
           status?: string
           updated_at?: string
           years_of_experience?: string | null
@@ -181,51 +154,6 @@ export type Database = {
           message?: string
           name?: string
           subject?: string | null
-        }
-        Relationships: []
-      }
-      cv_export_purchases: {
-        Row: {
-          amount: number
-          checkout_url: string | null
-          created_at: string
-          currency: string
-          email: string
-          exported_at: string | null
-          id: string
-          provider_paid_at: string | null
-          reference: string
-          status: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount?: number
-          checkout_url?: string | null
-          created_at?: string
-          currency?: string
-          email: string
-          exported_at?: string | null
-          id?: string
-          provider_paid_at?: string | null
-          reference: string
-          status?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          checkout_url?: string | null
-          created_at?: string
-          currency?: string
-          email?: string
-          exported_at?: string | null
-          id?: string
-          provider_paid_at?: string | null
-          reference?: string
-          status?: string
-          updated_at?: string
-          user_id?: string
         }
         Relationships: []
       }
@@ -397,9 +325,7 @@ export type Database = {
           email_token: string | null
           id: string
           plan_code: string | null
-          provider_event_at: string | null
           status: string
-          transaction_reference: string | null
           subscription_code: string | null
           tier: string
           updated_at: string
@@ -413,9 +339,7 @@ export type Database = {
           email_token?: string | null
           id?: string
           plan_code?: string | null
-          provider_event_at?: string | null
           status?: string
-          transaction_reference?: string | null
           subscription_code?: string | null
           tier?: string
           updated_at?: string
@@ -429,9 +353,7 @@ export type Database = {
           email_token?: string | null
           id?: string
           plan_code?: string | null
-          provider_event_at?: string | null
           status?: string
-          transaction_reference?: string | null
           subscription_code?: string | null
           tier?: string
           updated_at?: string
@@ -573,13 +495,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_cv_export_revenue: {
-        Args: never
-        Returns: {
-          purchase_count: number
-          total_amount: number
-        }[]
-      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -631,12 +546,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -660,11 +575,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -685,11 +600,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -710,11 +625,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -727,11 +642,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

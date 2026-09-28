@@ -12,6 +12,7 @@ import { Search, MapPin, Clock, ShieldCheck, Building2, Briefcase, Filter, Globe
 import usePageTitle from "@/hooks/usePageTitle";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -195,7 +196,8 @@ const Jobs = () => {
         const recommendationUpload = recommendationFile ? await uploadFile(recommendationFile, "recommendation") : null;
         if (recommendationUpload) uploadedPaths.push(recommendationUpload.path);
 
-        const { error } = await supabase.from("applications").insert({
+        // The generated database types have not picked up cover_letter_url yet.
+        const application: Database["public"]["Tables"]["applications"]["Insert"] & { cover_letter_url: string | null } = {
           job_id: selectedJob.id,
           applicant_id: user.id,
           applicant_email: user.email || null,
@@ -211,7 +213,11 @@ const Jobs = () => {
           gender: gender || null,
           county: county || null,
           date_of_birth: dateOfBirth || null,
-        });
+        };
+        const insertApplication = supabase.from("applications").insert as unknown as (
+          values: typeof application
+        ) => PromiseLike<{ error: Error | null }>;
+        const { error } = await insertApplication(application);
         if (error) throw error;
       } catch (error) {
         if (uploadedPaths.length > 0) {

@@ -220,7 +220,12 @@ const Admin = () => {
     queryKey: ["admin-cv-export-revenue"],
     refetchInterval: 30_000,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_cv_export_revenue");
+      // The generated client types have not picked up this migration's RPC yet.
+      const revenueRpc = supabase.rpc as unknown as (name: "admin_cv_export_revenue") => PromiseLike<{
+        data: { total_amount: number; purchase_count: number }[] | null;
+        error: Error | null;
+      }>;
+      const { data, error } = await revenueRpc("admin_cv_export_revenue");
       if (error) throw error;
       return data?.[0] ?? { total_amount: 0, purchase_count: 0 };
     },

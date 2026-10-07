@@ -16,6 +16,7 @@ import { BookStrip } from "@/components/PromoBanners";
 import usePageTitle from "@/hooks/usePageTitle";
 import useBirthdayCelebration from "@/hooks/useBirthdayCelebration";
 import BirthdayCelebration from "@/components/BirthdayCelebration";
+import SwipeHero from "@/components/SwipeHero";
 
 const Index = () => {
   usePageTitle("");
@@ -23,7 +24,7 @@ const Index = () => {
   return (
   <div className="min-h-screen">
     <Navbar />
-    {birthdayActive ? <BirthdayCelebration /> : <HeroSection />}
+    {birthdayActive ? <SwipeHero /> : <HeroSection />}
     <TrustedBySection />
     <BookStrip />
     <ProblemSection />

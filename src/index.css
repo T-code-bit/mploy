@@ -260,7 +260,7 @@
 @keyframes birthday-fall { to { transform: translate(45px, 105svh) rotate(420deg); } }
 @media (max-width: 1023px) {
   .birthday-hero { height: 90svh; min-height: 740px; max-height: 1000px; }
-  .birthday-photo { width: 100%; object-position: 32% 22%; }
+  .birthday-photo { width: 100%; height: 58%; object-position: 32% 40%; }
   .birthday-shade { background: linear-gradient(180deg, hsl(var(--birthday-background) / .05) 22%, hsl(var(--birthday-background) / .8) 51%, hsl(var(--birthday-background)) 90%); }
   .birthday-copy { width: 100%; max-width: 600px; }
 }

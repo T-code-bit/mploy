@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import useBirthdayCelebration from "@/hooks/useBirthdayCelebration";
 import photo from "@/assets/phin-birthday.jpg.asset.json";
 
+const birthdayPhotoUrl = new URL(photo.url, "https://mploy.lovable.app").href;
+
 export function BirthdayConfetti() {
   const active = useBirthdayCelebration();
   if (!active) return null;
@@ -13,7 +15,7 @@ export function BirthdayConfetti() {
 export default function BirthdayCelebration() {
   return (
     <section className="birthday-hero" aria-labelledby="birthday-heading">
-      <img className="birthday-photo" src={photo.url} alt="Phinnaline Achieng, M-Ploy’s Product Manager, smiling at an event" loading="eager" fetchPriority="high" />
+      <img className="birthday-photo" src={birthdayPhotoUrl} alt="Phinnaline Achieng, M-Ploy’s Product Manager, smiling at an event" loading="eager" fetchPriority="high" />
       <div className="birthday-shade" aria-hidden="true" />
       <div className="container relative z-10 mx-auto flex h-full items-end px-5 pb-12 pt-28 sm:px-8 lg:items-center lg:justify-end lg:pb-8">
         <div className="birthday-copy">

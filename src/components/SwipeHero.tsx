@@ -1,18 +1,20 @@
 import { useRef, useState } from "react";
-import { CalendarDays, ExternalLink, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, ExternalLink, MapPin, ChevronLeft, ChevronRight, Phone, BookOpen } from "lucide-react";
 import BirthdayCelebration from "@/components/BirthdayCelebration";
 import summitPoster from "@/assets/aes-summit-november-2026.webp";
-import { AES_FORM_URL } from "@/components/PromoBanners";
+import bookCover from "@/assets/agile-jobseeker-book.jpg";
+import { AES_FORM_URL, BOOK_PHONE, BOOK_TEL } from "@/components/PromoBanners";
 
 /**
  * Swipeable hero shown while the birthday celebration is active.
- * Slide 1: birthday celebration. Slide 2: AES summit poster advert.
- * The poster stays live here and in the PromoBanners popup after the celebration ends.
+ * Slide 1: birthday celebration. Slide 2: AES summit poster advert. Slide 3: book advert.
+ * Both adverts stay live here and in the PromoBanners popup after the celebration ends.
  */
 export default function SwipeHero() {
   const [index, setIndex] = useState(0);
   const startX = useRef<number | null>(null);
   const startY = useRef<number | null>(null);
+  const slides = ["Birthday", "AES Summit", "The Agile Jobseeker"];
 
   const handleTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
@@ -27,7 +29,7 @@ export default function SwipeHero() {
     startY.current = null;
     // Only treat mostly-horizontal gestures as swipes.
     if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
-    setIndex((prev) => Math.min(1, Math.max(0, prev + (dx < 0 ? 1 : -1))));
+    setIndex((prev) => Math.min(slides.length - 1, Math.max(0, prev + (dx < 0 ? 1 : -1))));
   };
 
   return (
@@ -38,28 +40,29 @@ export default function SwipeHero() {
       >
         <div className="w-full shrink-0"><BirthdayCelebration /></div>
         <div className="w-full shrink-0"><SummitAdSlide /></div>
+        <div className="w-full shrink-0"><BookAdSlide /></div>
       </div>
 
       {/* Slide controls */}
       <button
-        onClick={() => setIndex(0)}
-        aria-label="Back to celebration"
+        onClick={() => setIndex((i) => Math.max(0, i - 1))}
+        aria-label="Previous slide"
         className="absolute left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background/60 p-2 text-primary-foreground backdrop-blur-sm transition-opacity hover:bg-background/80"
         style={{ opacity: index === 0 ? 0.35 : 1 }}
       >
         <ChevronLeft className="h-5 w-5" />
       </button>
       <button
-        onClick={() => setIndex(1)}
-        aria-label="Next: African Employability Summit"
+        onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
+        aria-label="Next slide"
         className="absolute right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-background/60 p-2 text-primary-foreground backdrop-blur-sm transition-opacity hover:bg-background/80"
-        style={{ opacity: index === 1 ? 0.35 : 1 }}
+        style={{ opacity: index === slides.length - 1 ? 0.35 : 1 }}
       >
         <ChevronRight className="h-5 w-5" />
       </button>
 
       <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
-        {["Birthday", "AES Summit"].map((label, i) => (
+        {slides.map((label, i) => (
           <button
             key={label}
             onClick={() => setIndex(i)}
@@ -103,6 +106,42 @@ function SummitAdSlide() {
             className="mt-7 inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-transform hover:scale-[1.02]"
           >
             Register Now <ExternalLink className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BookAdSlide() {
+  return (
+    <section className="birthday-hero" aria-label="The Agile Jobseeker book">
+      <img
+        className="summit-poster"
+        src={bookCover}
+        alt="The Agile Jobseeker book cover by Cavin O. Apodo"
+        loading="lazy"
+      />
+      <div className="birthday-shade" aria-hidden="true" />
+      <div className="container relative z-10 mx-auto flex h-full items-end px-5 pb-16 pt-28 sm:px-8 lg:items-center lg:justify-end lg:pb-8">
+        <div className="birthday-copy">
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-secondary/20 px-3 py-1.5 text-sm font-semibold text-secondary backdrop-blur-sm">
+            <BookOpen className="h-4 w-4" /> New Book
+          </p>
+          <h2 className="font-display text-4xl font-bold leading-tight text-primary-foreground sm:text-5xl lg:text-6xl">
+            The Agile<br /><span className="text-secondary">Jobseeker</span>
+          </h2>
+          <p className="mt-4 text-lg font-semibold text-primary-foreground">
+            Future-proof your career — from intern to icon.
+          </p>
+          <p className="mt-2 text-sm text-primary-foreground/80">
+            By Cavin O. Apodo · KSh 1,000 · Delivered anywhere in Kenya.
+          </p>
+          <a
+            href={`tel:${BOOK_TEL}`}
+            className="mt-7 inline-flex items-center gap-2 rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground transition-transform hover:scale-[1.02]"
+          >
+            <Phone className="h-4 w-4" /> Order: {BOOK_PHONE}
           </a>
         </div>
       </div>

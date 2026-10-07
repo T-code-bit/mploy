@@ -27,6 +27,7 @@ import BackToTop from "./components/BackToTop";
 import ScrollToTop from "./components/ScrollToTop";
 import CareerCoachChatbot from "./components/CareerCoachChatbot";
 import PromoBanners from "./components/PromoBanners";
+import { BirthdayConfetti } from "./components/BirthdayCelebration";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <ScrollToTop />
+          <BirthdayConfetti />
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />

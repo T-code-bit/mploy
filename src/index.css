@@ -244,6 +244,12 @@
 .birthday-photo { position: absolute; inset: 0; width: 65%; height: 100%; object-fit: cover; object-position: 35% 35%; }
 .birthday-shade { position: absolute; inset: 0; background: linear-gradient(90deg, transparent 25%, hsl(var(--birthday-background) / .35) 44%, hsl(var(--birthday-background)) 65%); }
 .birthday-copy { width: 46%; max-width: 560px; }
+.summit-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: .45; }
+.summit-poster + .birthday-shade { background: linear-gradient(90deg, hsl(var(--birthday-background) / .1) 30%, hsl(var(--birthday-background) / .55) 55%, hsl(var(--birthday-background)) 75%); }
+@media (max-width: 1023px) {
+  .summit-poster { opacity: .5; object-position: center 30%; }
+  .summit-poster + .birthday-shade { background: linear-gradient(180deg, hsl(var(--birthday-background) / .15) 25%, hsl(var(--birthday-background) / .75) 55%, hsl(var(--birthday-background)) 88%); }
+}
 .birthday-confetti { position: fixed; inset: 0; z-index: 80; pointer-events: none; overflow: hidden; }
 .birthday-confetti i { position: absolute; top: -24px; left: 5%; width: 7px; height: 13px; background: hsl(var(--secondary)); animation: birthday-fall 9s linear infinite; }
 .birthday-confetti i:nth-child(3n) { background: hsl(var(--primary)); width: 9px; height: 9px; }

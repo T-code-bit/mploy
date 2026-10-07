@@ -4,6 +4,7 @@ import { X, Phone, BookOpen, CalendarDays, ExternalLink, MapPin } from "lucide-r
 import { Button } from "@/components/ui/button";
 import bookCover from "@/assets/agile-jobseeker-book.jpg";
 import summitPoster from "@/assets/aes-summit-november-2026.webp";
+import useBirthdayCelebration from "@/hooks/useBirthdayCelebration";
 
 // The event banner disappears automatically after 6 November 2026 (end of day, EAT).
 export const AES_END = new Date("2026-11-06T23:59:59+03:00");
@@ -19,6 +20,7 @@ const isSummitLive = () => Date.now() <= AES_END.getTime();
 /** Full-screen announcement shown at most once every 24 hours per browser. */
 const PromoBanners = () => {
   const [open, setOpen] = useState(false);
+  const birthdayActive = useBirthdayCelebration();
   const summitLive = isSummitLive();
 
   useEffect(() => {
@@ -44,7 +46,7 @@ const PromoBanners = () => {
 
   return (
     <AnimatePresence>
-      {open && (
+      {open && !birthdayActive && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

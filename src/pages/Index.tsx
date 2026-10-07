@@ -14,13 +14,16 @@ import ContactSection from "@/components/landing/ContactSection";
 import CTASection from "@/components/landing/CTASection";
 import { BookStrip } from "@/components/PromoBanners";
 import usePageTitle from "@/hooks/usePageTitle";
+import useBirthdayCelebration from "@/hooks/useBirthdayCelebration";
+import BirthdayCelebration from "@/components/BirthdayCelebration";
 
 const Index = () => {
   usePageTitle("");
+  const birthdayActive = useBirthdayCelebration();
   return (
   <div className="min-h-screen">
     <Navbar />
-    <HeroSection />
+    {birthdayActive ? <BirthdayCelebration /> : <HeroSection />}
     <TrustedBySection />
     <BookStrip />
     <ProblemSection />

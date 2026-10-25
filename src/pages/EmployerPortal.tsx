@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import JobDescriptionEditor from "@/components/JobDescriptionEditor";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -194,7 +194,7 @@ const EmployerPortal = () => {
                   <Plus className="h-4 w-4" /> Post a Job
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg rounded-2xl">
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl">
                 <DialogHeader>
                   <DialogTitle className="font-display">{editingJob ? "Edit Job" : "Post a New Job"}</DialogTitle>
                 </DialogHeader>
@@ -237,7 +237,7 @@ const EmployerPortal = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Description</Label>
-                    <Textarea value={jobForm.description} onChange={(e) => setJobForm({ ...jobForm, description: e.target.value })} rows={4} className="rounded-xl" />
+                    <JobDescriptionEditor value={jobForm.description} onChange={(description) => setJobForm({ ...jobForm, description })} />
                   </div>
                   <Button onClick={() => createJob.mutate()} disabled={!jobForm.title || !jobForm.company} className="w-full bg-gradient-primary text-primary-foreground rounded-xl h-11 font-semibold">
                     {editingJob ? "Update Job" : "Publish Job"}

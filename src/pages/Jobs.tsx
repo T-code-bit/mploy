@@ -216,10 +216,11 @@ const Jobs = () => {
           county: county || null,
           date_of_birth: dateOfBirth || null,
         };
-        // Keep insert bound to its query builder so it retains the request state.
-        const insertApplication = supabase.from("applications").insert as unknown as
-          (values: typeof application) => PromiseLike<{ error: Error | null }>;
-        const { error } = await insertApplication(application);
+        // Call insert as a method on the builder so it keeps its internal state.
+        const applicationsTable = supabase.from("applications") as unknown as {
+          insert: (values: typeof application) => PromiseLike<{ error: Error | null }>;
+        };
+        const { error } = await applicationsTable.insert(application);
         if (error) throw error;
       } catch (error) {
         if (uploadedPaths.length > 0) {

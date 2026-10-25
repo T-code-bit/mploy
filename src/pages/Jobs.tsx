@@ -454,13 +454,23 @@ const Jobs = () => {
                             Applied <Check className="h-3.5 w-3.5" aria-hidden="true" />
                           </Badge>
                         ) : (
-                          <Button
-                            size="sm"
-                            className="bg-gradient-primary text-primary-foreground gap-1.5 rounded-xl shadow-glow hover:shadow-glow px-5"
-                            onClick={() => handleApplyClick(job)}
-                          >
-                            <Send className="h-3.5 w-3.5" /> Apply Now
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 rounded-xl"
+                              onClick={() => setViewJob(job)}
+                            >
+                              <Eye className="h-3.5 w-3.5" /> View Details
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-gradient-primary text-primary-foreground gap-1.5 rounded-xl shadow-glow hover:shadow-glow px-5"
+                              onClick={() => handleApplyClick(job)}
+                            >
+                              <Send className="h-3.5 w-3.5" /> Apply Now
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>

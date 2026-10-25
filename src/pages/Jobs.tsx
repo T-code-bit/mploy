@@ -215,7 +215,9 @@ const Jobs = () => {
           date_of_birth: dateOfBirth || null,
         };
         // Keep insert bound to its query builder so it retains the request state.
-        const { error } = await supabase.from("applications").insert(application);
+        const insertApplication = supabase.from("applications").insert as unknown as
+          (values: typeof application) => PromiseLike<{ error: Error | null }>;
+        const { error } = await insertApplication(application);
         if (error) throw error;
       } catch (error) {
         if (uploadedPaths.length > 0) {
@@ -454,13 +456,23 @@ const Jobs = () => {
                             Applied <Check className="h-3.5 w-3.5" aria-hidden="true" />
                           </Badge>
                         ) : (
-                          <Button
-                            size="sm"
-                            className="bg-gradient-primary text-primary-foreground gap-1.5 rounded-xl shadow-glow hover:shadow-glow px-5"
-                            onClick={() => handleApplyClick(job)}
-                          >
-                            <Send className="h-3.5 w-3.5" /> Apply Now
-                          </Button>
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5 rounded-xl"
+                              onClick={() => setViewJob(job)}
+                            >
+                              <Eye className="h-3.5 w-3.5" /> View Details
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="bg-gradient-primary text-primary-foreground gap-1.5 rounded-xl shadow-glow hover:shadow-glow px-5"
+                              onClick={() => handleApplyClick(job)}
+                            >
+                              <Send className="h-3.5 w-3.5" /> Apply Now
+                            </Button>
+                          </div>
                         )}
                       </div>
                     </div>

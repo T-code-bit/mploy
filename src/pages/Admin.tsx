@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import JobDescriptionEditor from "@/components/JobDescriptionEditor";
 import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -1082,7 +1082,7 @@ const Admin = () => {
                 <div><Label>Category</Label><Input value={editingJob.category || ""} onChange={(e) => setEditingJob({ ...editingJob, category: e.target.value })} /></div>
               </div>
               <div><Label>Salary range</Label><Input value={editingJob.salary_range || ""} onChange={(e) => setEditingJob({ ...editingJob, salary_range: e.target.value })} /></div>
-              <div><Label>Description</Label><Textarea rows={5} value={editingJob.description || ""} onChange={(e) => setEditingJob({ ...editingJob, description: e.target.value })} /></div>
+              <div><Label>Description</Label><JobDescriptionEditor value={editingJob.description || ""} onChange={(description) => setEditingJob({ ...editingJob, description })} /></div>
               <div className="flex items-center justify-between"><Label>Active</Label><Switch checked={!!editingJob.is_active} onCheckedChange={(v) => setEditingJob({ ...editingJob, is_active: v })} /></div>
               <div className="flex items-center justify-between"><Label>Verified</Label><Switch checked={!!editingJob.is_verified} onCheckedChange={(v) => setEditingJob({ ...editingJob, is_verified: v })} /></div>
             </div>

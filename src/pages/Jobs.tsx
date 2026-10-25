@@ -28,6 +28,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { uploadUserFile, validateUpload } from "@/lib/file-storage";
+import JobDescription from "@/components/JobDescription";
+import { jobDescriptionText } from "@/lib/job-description";
 
 const categories = ["All", "Remote", "Full-time", "Part-time", "Contract", "Internship"];
 const APPLICATION_FILE_ACCEPT = [
@@ -416,7 +418,7 @@ const Jobs = () => {
                           )}
                         </div>
                         {job.description && (
-                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2 sm:ml-[52px]">{job.description}</p>
+                          <p className="text-sm text-muted-foreground mb-3 line-clamp-2 sm:ml-[52px]">{jobDescriptionText(job.description)}</p>
                         )}
                         <div className="flex flex-wrap gap-1.5 sm:ml-[52px]">
                           {(job.requirements || []).slice(0, 4).map((tag: string) => (
@@ -536,7 +538,7 @@ const Jobs = () => {
               )}
               <div>
                 <h4 className="text-sm font-semibold text-foreground mb-2">Description</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{viewJob.description}</p>
+                <JobDescription value={viewJob.description} />
               </div>
               {viewJob.requirements?.length > 0 && (
                 <div>
